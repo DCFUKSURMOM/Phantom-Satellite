@@ -1,0 +1,8 @@
+XULRunner is a package which can be used to run applications written in HTML
+or XUL. It can also be used to embed the Goanna rendering engine into
+binary applications.
+
+For more information about using XULRunner or how to use this binary package,
+see the UDN Web Docs article:
+
+https://udn.realityripple.com/docs/Archive/Mozilla/XULRunner

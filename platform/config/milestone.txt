@@ -1,0 +1,11 @@
+# Holds the current platform (Goanna) milestone.
+# Should be in the format of
+#
+#    x.x.x
+#    x.x.x.x
+#    x.x.x+
+#
+# Referenced by milestone.py.
+#--------------------------------------------------------
+
+6.6.0
