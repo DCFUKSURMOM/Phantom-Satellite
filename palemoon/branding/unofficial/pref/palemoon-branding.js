@@ -2,7 +2,7 @@
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-pref("app.vendorURL", "http://www.palemoon.org/");
+pref("app.vendorURL", "http://dcfuksurmom.duckdns.org");
 pref("browser.identity.ssl_domain_display", 1);
 pref("browser.newtab.url","about:blank");
 pref("extensions.getMoreThemesURL", "https://addons.palemoon.org/themes/");
@@ -28,8 +28,8 @@ pref("services.sync.APILevel", 1);
 
 pref("accessibility.force_disabled", 1);
 pref("devtools.selfxss.count", 5);
-pref("startup.homepage_welcome_url","http://www.palemoon.org/unofficial.shtml");
-pref("startup.homepage_override_url","http://www.palemoon.org/unofficial.shtml");
+pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org");
+pref("startup.homepage_override_url","http://dcfuksurmom.duckdns.org");
 pref("app.releaseNotesURL", "http://www.palemoon.org/releasenotes.shtml");
 pref("app.update.enabled", false);
 pref("app.update.url", "");

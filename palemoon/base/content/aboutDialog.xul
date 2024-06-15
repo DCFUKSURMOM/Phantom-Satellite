@@ -64,10 +64,10 @@
           and <label class="text-link" href="https://repo.palemoon.org/MoonchildProductions/UXP/issues">UXP</label>.
 #endif
 #else
-          &brandFullName; is released by &vendorShortName;.
+          &brandFullName; is compiled by  &vendorShortName;.
         </description>
         <description class="text-credits">
-          This is an unofficial build of Pale Moon. For official builds, please go to <label class="text-link" href="http://www.palemoon.org/">the Pale Moon website</label>.
+          This browser is based on Pale Moon with the only changes being the branding for legal reasons. Official Pale Moon builds are <label class="text-link" href="http://www.palemoon.org/">here</label>.
 #endif
         </description>    
     </vbox>

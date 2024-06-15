@@ -8,9 +8,10 @@
 
 # BrandFullNameInternal is used for some registry and file system values
 # instead of BrandFullName and typically should not be modified.
-!define BrandFullNameInternal "Browser"
-!define CompanyName           "somebody"
-!define URLInfoAbout          " "
+!define BrandFullName "Phantom Satellite"
+!define BrandFullNameInternal "Phantom Satellite"
+!define CompanyName           "DCFUKSURMOM"
+!define URLInfoAbout          "http://dcfuksurmom.duckdns.org/about"
 !define URLUpdateInfo         " "
 !define HelpLink              " "
 !define URLSystemRequirements " "

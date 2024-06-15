@@ -1,8 +1,8 @@
 // ===| General |==============================================================
 
-pref("startup.homepage_welcome_url","https://www.palemoon.org/firstrun.shtml");
+pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org");
 
-pref("app.vendorURL", "https://www.palemoon.org/");
+pref("app.vendorURL", "http://dcfuksurmom.duckdns.org");
 
 
 // User Interface
