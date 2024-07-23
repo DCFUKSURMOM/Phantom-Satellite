@@ -1,0 +1,25 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+SPHINX_TREES['crash-manager'] = 'docs'
+
+EXTRA_COMPONENTS += [
+    'CrashService.js',
+    'CrashService.manifest',
+]
+
+EXTRA_JS_MODULES += [
+    'CrashManager.jsm',
+]
+
+TESTING_JS_MODULES += [
+    'CrashManagerTest.jsm',
+]
+
+XPIDL_MODULE = 'toolkit_crashservice'
+
+XPIDL_SOURCES += [
+    'nsICrashService.idl',
+]

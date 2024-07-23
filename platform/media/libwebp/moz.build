@@ -1,0 +1,30 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+with Files('**'):
+    BUG_COMPONENT = ('Core', 'ImageLib')
+
+EXPORTS.webp += [
+    'webp/decode.h',
+    'webp/demux.h',
+    'webp/encode.h',
+    'webp/format_constants.h',
+    'webp/mux_types.h',
+    'webp/types.h',
+]
+
+DIRS += [
+    'dec',
+    'demux',
+    'dsp',
+    'enc',
+    'moz',
+    'utils',
+]
+
+FINAL_LIBRARY = 'gkmedias'
+
+# We allow warnings for third-party code that can be updated from upstream.
+ALLOW_COMPILER_WARNINGS = True

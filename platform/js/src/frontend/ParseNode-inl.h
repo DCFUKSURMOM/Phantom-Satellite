@@ -1,0 +1,28 @@
+/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#ifndef frontend_ParseNode_inl_h
+#define frontend_ParseNode_inl_h
+
+#include "frontend/ParseNode.h"
+
+#include "frontend/SharedContext.h"
+
+namespace js {
+namespace frontend {
+
+inline PropertyName*
+ParseNode::name() const
+{
+    JSAtom* atom = is<FunctionNode>()
+                   ? as<FunctionNode>().funbox()->function()->explicitName()
+                   : as<NameNode>().atom();
+    return atom->asPropertyName();
+}
+
+} /* namespace frontend */
+} /* namespace js */
+
+#endif /* frontend_ParseNode_inl_h */
