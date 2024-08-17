@@ -1,0 +1,139 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+XPIDL_SOURCES += [
+    'nsIScriptError.idl'
+]
+
+XPIDL_MODULE = 'dom_bindings'
+
+EXPORTS.ipc += [
+    'ErrorIPCUtils.h',
+]
+
+EXPORTS.mozilla += [
+    'ErrorResult.h',
+    'RootedOwningNonNull.h',
+    'RootedRefPtr.h',
+]
+
+EXPORTS.mozilla.dom += [
+    'AtomList.h',
+    'BindingDeclarations.h',
+    'BindingUtils.h',
+    'CallbackFunction.h',
+    'CallbackInterface.h',
+    'CallbackObject.h',
+    'Date.h',
+    'DOMJSClass.h',
+    'DOMJSProxyHandler.h',
+    'DOMString.h',
+    'Errors.msg',
+    'Exceptions.h',
+    'FakeString.h',
+    'IterableIterator.h',
+    'JSSlots.h',
+    'NonRefcountedDOMObject.h',
+    'Nullable.h',
+    'PrimitiveConversions.h',
+    'ReadableStream.h',
+    'Record.h',
+    'RootedDictionary.h',
+    'SimpleGlobalObject.h',
+    'SpiderMonkeyInterface.h',
+    'StructuredClone.h',
+    'ToJSValue.h',
+    'TypedArray.h',
+    'UnionMember.h',
+    'WebIDLGlobalNameHash.h',
+    'XrayExpandoClass.h',
+]
+
+# Generated bindings reference *Binding.h, not mozilla/dom/*Binding.h. And,
+# since we generate exported bindings directly to $(DIST)/include, we need
+# to add that path to the search list.
+#
+# Ideally, binding generation uses the prefixed header file names.
+# Bug 932082 tracks.
+LOCAL_INCLUDES += [
+    '!/dist/include/mozilla/dom',
+]
+
+LOCAL_INCLUDES += [
+    '/dom/base',
+    '/dom/canvas',
+    '/dom/geolocation',
+    '/dom/html',
+    '/dom/indexedDB',
+    '/dom/media/webaudio',
+    '/dom/svg',
+    '/dom/workers',
+    '/dom/xbl',
+    '/dom/xml',
+    '/dom/xslt/base',
+    '/dom/xslt/xpath',
+    '/dom/xul',
+    '/js/xpconnect/src',
+    '/js/xpconnect/wrappers',
+    '/layout/generic',
+    '/layout/style',
+    '/layout/xul/tree',
+    '/media/mtransport',
+    '/media/webrtc/',
+    '/media/webrtc/signaling/src/common/time_profiling',
+    '/media/webrtc/signaling/src/peerconnection',
+]
+
+UNIFIED_SOURCES += [
+    'BindingUtils.cpp',
+    'CallbackInterface.cpp',
+    'CallbackObject.cpp',
+    'Date.cpp',
+    'DOMJSProxyHandler.cpp',
+    'Exceptions.cpp',
+    'IterableIterator.cpp',
+    'nsScriptError.cpp',
+    'nsScriptErrorWithStack.cpp',
+    'SimpleGlobalObject.cpp',
+    'ToJSValue.cpp',
+    'WebIDLGlobalNameHash.cpp',
+]
+
+SOURCES += [
+    'StructuredClone.cpp',
+]
+
+include('/ipc/chromium/chromium-config.mozbuild')
+
+if CONFIG['MOZ_AUDIO_CHANNEL_MANAGER']:
+    LOCAL_INCLUDES += [
+        '/dom/system/gonk',
+    ]
+
+FINAL_LIBRARY = 'xul'
+
+SPHINX_TREES['webidl'] = 'docs'
+SPHINX_PYTHON_PACKAGE_DIRS += ['mozwebidlcodegen']
+
+if CONFIG['MOZ_PHOENIX'] or CONFIG['MOZ_XULRUNNER']:
+    # This is needed for Window.webidl
+    DEFINES['HAVE_SIDEBAR'] = True
+
+
+PYTHON_UNIT_TESTS += [
+    'mozwebidlcodegen/test/test_mozwebidlcodegen.py',
+]
+
+if CONFIG['GNU_CXX']:
+    CXXFLAGS += ['-Wno-error=shadow']
+
+if CONFIG['COMPILE_ENVIRONMENT']:
+    GENERATED_FILES += ['CSS2Properties.webidl']
+    css_props = GENERATED_FILES['CSS2Properties.webidl']
+    css_props.script = 'GenerateCSS2PropertiesWebIDL.py:generate'
+    css_props.inputs = [
+        '/dom/webidl/CSS2Properties.webidl.in',
+        '/layout/style/PythonCSSProps.h',
+    ]

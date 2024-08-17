@@ -1,0 +1,17 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+MOCHITEST_CHROME_MANIFESTS += ['test/chrome.ini']
+XPCSHELL_TESTS_MANIFESTS += ['test/unit/xpcshell.ini']
+
+DevToolsModules(
+    'client.js',
+    'js-property-provider.js',
+    'network-helper.js',
+    'network-monitor.js',
+    'server-logger-monitor.js',
+    'server-logger.js',
+    'throttle.js',
+)

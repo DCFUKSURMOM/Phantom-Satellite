@@ -1,0 +1,8 @@
+WIN32_MODULE_COMPANYNAME=DCFUKSURMOM
+#WIN32_MODULE_COPYRIGHT=©Pale Moon, Firefox and Mozilla Developers, available under the MPL 2.0.
+WIN32_MODULE_PRODUCTVERSION=@MOZ_APP_WINVERSION@
+WIN32_MODULE_PRODUCTVERSION_STRING=@MOZ_APP_VERSION@
+#WIN32_MODULE_TRADEMARKS=The Pale Moon logo and project names are trademarks of Moonchild Productions.
+WIN32_MODULE_DESCRIPTION=Phantom Satellite web browser
+WIN32_MODULE_PRODUCTNAME=Phantom Satellite
+WIN32_MODULE_NAME=Phantom Satellite

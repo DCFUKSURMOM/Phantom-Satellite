@@ -1,0 +1,207 @@
+#filter substitution
+#include @TOPOBJDIR@/source-repo.h
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+"use strict";
+
+Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "Services", "resource://gre/modules/Services.jsm");
+
+this.EXPORTED_SYMBOLS = ["AppConstants"];
+
+// Immutable for export.
+this.AppConstants = Object.freeze({
+  // These defines are no longer used but kept for compatibility
+  NIGHTLY_BUILD: false,
+  RELEASE_OR_BETA: true,
+
+  ACCESSIBILITY:
+#ifdef ACCESSIBILITY
+  true,
+#else
+  false,
+#endif
+
+  // Official corresponds to whether this build is considered an
+  // official, branded release for the public. You should
+  // disable developer-only functionality when this flag is set.
+  // MOZILLA_OFFICIAL is deprecated but kept for extension compatibility.
+  MOZILLA_OFFICIAL:
+#ifdef MC_OFFICIAL
+  true,
+#else
+  false,
+#endif
+  MC_OFFICIAL:
+#ifdef MC_OFFICIAL
+  true,
+#else
+  false,
+#endif
+
+  MOZ_OFFICIAL_BRANDING:
+#ifdef MOZ_OFFICIAL_BRANDING
+  true,
+#else
+  false,
+#endif
+
+  MOZ_SERVICES_HEALTHREPORT: false,
+  MOZ_DATA_REPORTING: false,
+  MOZ_TELEMETRY_REPORTING: false,
+  MOZ_TELEMETRY_ON_BY_DEFAULT: false,
+
+  MOZ_UPDATER:
+#ifdef MOZ_UPDATER
+  true,
+#else
+  false,
+#endif
+
+  MOZ_SWITCHBOARD:
+#ifdef MOZ_SWITCHBOARD
+  true,
+#else
+  false,
+#endif
+
+  MOZ_WEBRTC:
+#ifdef MOZ_WEBRTC
+  true,
+#else
+  false,
+#endif
+
+  MOZ_WIDGET_GTK:
+#ifdef MOZ_WIDGET_GTK
+  true,
+#else
+  false,
+#endif
+
+  XP_UNIX:
+#ifdef XP_UNIX
+  true,
+#else
+  false,
+#endif
+
+  platform:
+#ifdef MOZ_WIDGET_GTK
+  "linux",
+#elif XP_WIN
+  "win",
+#elif XP_MACOSX
+  "macosx",
+#elif XP_LINUX
+  "linux",
+#else
+  "other",
+#endif
+
+  isPlatformAndVersionAtLeast(platform, version) {
+    let platformVersion = Services.sysinfo.getProperty("version");
+    return platform == this.platform &&
+           Services.vc.compare(platformVersion, version) >= 0;
+  },
+
+  isPlatformAndVersionAtMost(platform, version) {
+    let platformVersion = Services.sysinfo.getProperty("version");
+    return platform == this.platform &&
+           Services.vc.compare(platformVersion, version) <= 0;
+  },
+
+  MOZ_VERIFY_MAR_SIGNATURE:
+#ifdef MOZ_VERIFY_MAR_SIGNATURE
+  true,
+#else
+  false,
+#endif
+
+  DEBUG:
+#ifdef DEBUG
+  true,
+#else
+  false,
+#endif
+
+  ASAN:
+#ifdef MOZ_ASAN
+  true,
+#else
+  false,
+#endif
+
+  MOZ_PLACES:
+#ifdef MOZ_PLACES
+  true,
+#else
+  false,
+#endif
+
+  MENUBAR_CAN_AUTOHIDE:
+#ifdef MENUBAR_CAN_AUTOHIDE
+  true,
+#else
+  false,
+#endif
+
+  CAN_DRAW_IN_TITLEBAR:
+#ifdef MOZ_CAN_DRAW_IN_TITLEBAR
+  true,
+#else
+  false,
+#endif
+
+  MOZ_TOOLKIT_SEARCH:
+#ifdef MOZ_TOOLKIT_SEARCH
+  true,
+#else
+  false,
+#endif
+
+  DLL_PREFIX: "@DLL_PREFIX@",
+  DLL_SUFFIX: "@DLL_SUFFIX@",
+
+  MOZ_APP_NAME: "@MOZ_APP_NAME@",
+  MOZ_APP_VERSION: "@MOZ_APP_VERSION@",
+  MOZ_APP_VERSION_DISPLAY: "@MOZ_APP_VERSION_DISPLAY@",
+
+  MOZ_BUILD_APP:
+#ifdef MOZ_PHOENIX
+  "browser",
+#else
+  "@MOZ_BUILD_APP@",
+#endif
+
+  MOZ_MACBUNDLE_NAME: "@MOZ_MACBUNDLE_NAME@",
+  MOZ_UPDATE_CHANNEL: "@MOZ_UPDATE_CHANNEL@",
+  INSTALL_LOCALE: "@AB_CD@",
+  MOZ_WIDGET_TOOLKIT: "@MOZ_WIDGET_TOOLKIT@",
+
+  DEBUG_JS_MODULES: "@DEBUG_JS_MODULES@",
+
+  // URL to the hg revision this was built from (e.g.
+  // "https://hg.mozilla.org/mozilla-central/rev/6256ec9113c1")
+  // On unofficial builds, this is an empty string.
+#ifndef MOZ_SOURCE_URL
+#define MOZ_SOURCE_URL
+#endif
+  SOURCE_REVISION_URL: "@MOZ_SOURCE_URL@",
+
+  HAVE_USR_LIB64_DIR:
+#ifdef HAVE_USR_LIB64_DIR
+    true,
+#else
+    false,
+#endif
+
+  HAVE_SHELL_SERVICE:
+#ifdef HAVE_SHELL_SERVICE
+    true,
+#else
+    false,
+#endif
+});
