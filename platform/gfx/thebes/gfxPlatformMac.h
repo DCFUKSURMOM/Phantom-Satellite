@@ -1,0 +1,123 @@
+/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#ifndef GFX_PLATFORM_MAC_H
+#define GFX_PLATFORM_MAC_H
+
+#include "nsTArrayForwardDeclare.h"
+#include "gfxPlatform.h"
+#include "mozilla/LookAndFeel.h"
+#include <AvailabilityMacros.h>
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+#include "nsDataHashtable.h"
+#include "nsClassHashtable.h"
+
+typedef size_t ByteCount;
+#endif
+
+namespace mozilla {
+namespace gfx {
+class DrawTarget;
+class VsyncSource;
+} // namespace gfx
+} // namespace mozilla
+
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+class FontDirWrapper {
+public:
+	uint8_t fontDir[1024];
+	ByteCount sizer;
+	FontDirWrapper(ByteCount sized, uint8_t *dir) {
+		if (MOZ_UNLIKELY(sized < 1 || sized > 1023)) return;
+		sizer = sized;
+		memcpy(fontDir, dir, sizer);
+	}
+	~FontDirWrapper() { }
+};
+#endif
+
+class gfxPlatformMac : public gfxPlatform {
+public:
+    gfxPlatformMac();
+    virtual ~gfxPlatformMac();
+
+    static gfxPlatformMac *GetPlatform() {
+        return (gfxPlatformMac*) gfxPlatform::GetPlatform();
+    }
+
+    virtual already_AddRefed<gfxASurface>
+      CreateOffscreenSurface(const IntSize& aSize,
+                             gfxImageFormat aFormat) override;
+
+    gfxFontGroup*
+    CreateFontGroup(const mozilla::FontFamilyList& aFontFamilyList,
+                    const gfxFontStyle *aStyle,
+                    gfxTextPerfMetrics* aTextPerf,
+                    gfxUserFontSet *aUserFontSet,
+                    gfxFloat aDevToCssSize) override;
+
+    virtual gfxPlatformFontList* CreatePlatformFontList() override;
+
+    bool IsFontFormatSupported(nsIURI *aFontURI, uint32_t aFormatFlags) override;
+
+    virtual void GetCommonFallbackFonts(uint32_t aCh, uint32_t aNextCh,
+                                        Script aRunScript,
+                                        nsTArray<const char*>& aFontList) override;
+
+    // lookup the system font for a particular system font type and set
+    // the name and style characteristics
+    static void
+    LookupSystemFont(mozilla::LookAndFeel::FontID aSystemFontID,
+                     nsAString& aSystemFontName,
+                     gfxFontStyle &aFontStyle,
+                     float aDevPixPerCSSPixel);
+
+    virtual bool CanRenderContentToDataSurface() const override {
+      return true;
+    }
+
+    virtual bool SupportsApzWheelInput() const override {
+      return true;
+    }
+
+    bool RespectsFontStyleSmoothing() const override {
+      // gfxMacFont respects the font smoothing hint.
+      return true;
+    }
+
+    bool RequiresAcceleratedGLContextForCompositorOGL() const override {
+      // On OS X in a VM, unaccelerated CompositorOGL shows black flashes, so we
+      // require accelerated GL for CompositorOGL but allow unaccelerated GL for
+      // BasicCompositor.
+      return true;
+    }
+
+    virtual already_AddRefed<mozilla::gfx::VsyncSource> CreateHardwareVsyncSource() override;
+
+    // lower threshold on font anti-aliasing
+    uint32_t GetAntiAliasingThreshold() { return mFontAntiAliasingThreshold; }
+
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    /* ATS acceleration functions for 10.4 */
+    ByteCount GetCachedDirSizeForFont(nsString name);
+    uint8_t *GetCachedDirForFont(nsString name);
+    void SetCachedDirForFont(nsString name, uint8_t* table, ByteCount sizer);
+    nsClassHashtable< nsStringHashKey, FontDirWrapper > PlatformFontDirCache;
+#endif
+
+private:
+    virtual void GetPlatformCMSOutputProfile(void* &mem, size_t &size) override;
+
+    // read in the pref value for the lower threshold on font anti-aliasing
+    static uint32_t ReadAntiAliasingThreshold();
+
+    uint32_t mFontAntiAliasingThreshold;
+
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    int32_t mOSXVersion; // 10.4
+#endif
+};
+
+#endif /* GFX_PLATFORM_MAC_H */

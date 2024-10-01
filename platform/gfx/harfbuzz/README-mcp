@@ -1,0 +1,11 @@
+gfx/harfbuzz status as of 2023-04-04:
+
+This directory contains the harfbuzz source from the latest release tag of
+https://github.com/harfbuzz/harfbuzz.
+
+Current version: 7.1.0
+
+UPDATING:
+
+If the collection of source files changes, manual updates to moz.build may be
+needed, as we don't use the upstream makefiles.

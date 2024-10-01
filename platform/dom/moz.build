@@ -1,0 +1,118 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+JAR_MANIFESTS += ['jar.mn']
+
+interfaces = [
+    'base',
+    'canvas',
+    'core',
+    'html',
+    'events',
+    'settings',
+    'stylesheets',
+    'sidebar',
+    'css',
+    'traversal',
+    'range',
+    'xbl',
+    'xpath',
+    'xul',
+    'security',
+    'storage',
+    'json',
+    'offline',
+    'geolocation',
+    'notification',
+    'permission',
+    'svg',
+    'smil',
+    'apps',
+    'push',
+]
+
+DIRS += ['interfaces/' + i for i in interfaces]
+
+DIRS += [
+    'abort',
+    'animation',
+    'apps',
+    'base',
+    'bindings',
+    'browser-element',
+    'cache',
+    'canvas',
+    'crypto',
+    'encoding',
+    'events',
+    'fetch',
+    'filehandle',
+    'filesystem',
+    'gamepad',
+    'geolocation',
+    'grid',
+    'heapsnapshot',
+    'html',
+    'json',
+    'jsurl',
+    'asmjscache',
+    'mathml',
+    'media',
+    'notification',
+    'offline',
+    'power',
+    'push',
+    'quota',
+    'security',
+    'settings',
+    'storage',
+    'svg',
+    'time',
+    'locales',
+    'network',
+    'permission',
+    'plugins/base',
+    'indexedDB',
+    'system',
+    'ipc',
+    'workers',
+    'audiochannel',
+    'broadcastchannel',
+    'messagechannel',
+    'promise',
+    'smil',
+    'url',
+    'inputmethod',
+    'webidl',
+    'xbl',
+    'xml',
+    'xslt',
+    'xul',
+    'manifest',
+    'u2f',
+    'console',
+    'performance',
+    'xhr',
+    'worklet',
+    'script',
+]
+
+if CONFIG['MOZ_ENABLE_NPAPI']:
+    DIRS += ['plugins/ipc']
+
+if CONFIG['OS_ARCH'] == 'WINNT' and CONFIG['MOZ_ENABLE_NPAPI']:
+    DIRS += ['plugins/ipc/hangui']
+
+if CONFIG['MOZ_SECUREELEMENT']:
+    DIRS += ['secureelement']
+
+TEST_DIRS += [
+    'tests',
+    'imptests',
+]
+
+if CONFIG['MOZ_WIDGET_TOOLKIT'] in ('gtk2', 'gtk3', 'cocoa', 'windows'):
+    TEST_DIRS += ['plugins/test']
+

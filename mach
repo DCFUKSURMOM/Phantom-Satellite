@@ -1,0 +1,14 @@
+#!/bin/sh
+
+MCP_MACH=./platform/mach
+
+# Check to see if ./platform/mach exists.
+
+if [ ! -f "$MCP_MACH" ]; then
+  printf "Error: There is no platform codebase.\n"
+  printf "Make sure you have checked out the platform submodule before using this command.\n"
+  exit 1
+fi
+
+# Pass all arguments to ./platform/mach.
+$MCP_MACH $@

@@ -1,0 +1,8 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+
+LINTER = {
+    'name': "BadTypeLinter",
+    'description': "Has an invalid type.",
+    'type': 'invalid',
+    'payload': 'foobar',
+}
