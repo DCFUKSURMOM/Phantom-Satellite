@@ -1,0 +1,47 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+SOURCES += [
+    'affentry.cxx',
+    'affixmgr.cxx',
+    'csutil.cxx',
+    'filemgr.cxx',
+    'hashmgr.cxx',
+    'hunspell.cxx',
+    'hunzip.cxx',
+    'phonet.cxx',
+    'replist.cxx',
+    'suggestmgr.cxx',
+    'utf_info.cxx',
+]
+
+DEFINES['BUILDING_LIBHUNSPELL'] = True
+
+# Hunspell must be built into libxul on SunOS. See UXP Issue #2290.
+if CONFIG['OS_TARGET'] == 'SunOS':
+
+    FINAL_LIBRARY = 'xul'
+
+else:
+
+    SharedLibrary('hunspell')
+
+    USE_LIBS += [
+       'mozglue'
+    ]
+
+LOCAL_INCLUDES += [
+    '../glue',
+]
+
+# We allow warnings for third-party code that can be updated from upstream.
+ALLOW_COMPILER_WARNINGS = True
+
+include('/ipc/chromium/chromium-config.mozbuild')
+
+if CONFIG['CLANG_CXX'] or CONFIG['CLANG_CL']:
+    CXXFLAGS += [
+        '-Wno-implicit-fallthrough',
+    ]
