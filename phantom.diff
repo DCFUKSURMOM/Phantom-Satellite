@@ -1,0 +1,725 @@
+diff -ur Pale-Moon/palemoon/app/application.ini Phantom-Satellite/palemoon/app/application.ini
+--- Pale-Moon/palemoon/app/application.ini	2024-06-15 06:11:00.240969065 -0500
++++ Phantom-Satellite/palemoon/app/application.ini	2024-06-15 01:49:22.911026013 -0500
+@@ -20,9 +20,9 @@
+ 
+ [App]
+ # Vendor=@MOZ_APP_VENDOR@
+-Vendor=Moonchild Productions
++Vendor=DCFUKSURMOM
+ # Name=@MOZ_APP_BASENAME@
+-Name=Pale Moon
++Name=Phantom Satellite
+ RemotingName=@MOZ_APP_REMOTINGNAME@
+ #ifdef MOZ_APP_DISPLAYNAME
+ CodeName=@MOZ_APP_DISPLAYNAME@
+@@ -47,4 +47,4 @@
+ [XRE]
+ #ifdef MOZ_PROFILE_MIGRATOR
+ EnableProfileMigrator=1
+-#endif
+\ No newline at end of file
++#endif
+diff -ur Pale-Moon/palemoon/app/module.ver Phantom-Satellite/palemoon/app/module.ver
+--- Pale-Moon/palemoon/app/module.ver	2024-06-15 06:11:00.240969065 -0500
++++ Phantom-Satellite/palemoon/app/module.ver	2024-06-15 01:50:31.458494009 -0500
+@@ -1,8 +1,8 @@
+-WIN32_MODULE_COMPANYNAME=Moonchild Productions
+-WIN32_MODULE_COPYRIGHT=©Pale Moon, Firefox and Mozilla Developers, available under the MPL 2.0.
++WIN32_MODULE_COMPANYNAME=DCFUKSURMOM
++#WIN32_MODULE_COPYRIGHT=©Pale Moon, Firefox and Mozilla Developers, available under the MPL 2.0.
+ WIN32_MODULE_PRODUCTVERSION=@MOZ_APP_WINVERSION@
+ WIN32_MODULE_PRODUCTVERSION_STRING=@MOZ_APP_VERSION@
+-WIN32_MODULE_TRADEMARKS=The Pale Moon logo and project names are trademarks of Moonchild Productions.
+-WIN32_MODULE_DESCRIPTION=Pale Moon web browser
+-WIN32_MODULE_PRODUCTNAME=Pale Moon
+-WIN32_MODULE_NAME=Pale Moon
++#WIN32_MODULE_TRADEMARKS=The Pale Moon logo and project names are trademarks of Moonchild Productions.
++WIN32_MODULE_DESCRIPTION=Phantom Satellite web browser
++WIN32_MODULE_PRODUCTNAME=Phantom Satellite
++WIN32_MODULE_NAME=Phantom Satellite
+diff -ur Pale-Moon/palemoon/base/content/aboutDialog.xul Phantom-Satellite/palemoon/base/content/aboutDialog.xul
+--- Pale-Moon/palemoon/base/content/aboutDialog.xul	2024-06-15 06:11:00.244302436 -0500
++++ Phantom-Satellite/palemoon/base/content/aboutDialog.xul	2024-06-15 01:51:34.465897387 -0500
+@@ -64,10 +64,10 @@
+           and <label class="text-link" href="https://repo.palemoon.org/MoonchildProductions/UXP/issues">UXP</label>.
+ #endif
+ #else
+-          &brandFullName; is released by &vendorShortName;.
++          &brandFullName; is maintained by  &vendorShortName;.
+         </description>
+         <description class="text-credits">
+-          This is an unofficial build of Pale Moon. For official builds, please go to <label class="text-link" href="http://www.palemoon.org/">the Pale Moon website</label>.
++          This browser is based on Pale Moon with the only changes being the branding for legal reasons. Official Pale Moon builds are <label class="text-link" href="http://www.palemoon.org/">here</label>.
+ #endif
+         </description>    
+     </vbox>
+Only in Pale-Moon/palemoon/branding: beta
+Only in Pale-Moon/palemoon/branding: official
+Binary files Pale-Moon/palemoon/branding/shared/background.png and Phantom-Satellite/palemoon/branding/shared/background.png differ
+diff -ur Pale-Moon/palemoon/branding/shared/locales/browserconfig.properties Phantom-Satellite/palemoon/branding/shared/locales/browserconfig.properties
+--- Pale-Moon/palemoon/branding/shared/locales/browserconfig.properties	2024-06-15 06:11:00.274302780 -0500
++++ Phantom-Satellite/palemoon/branding/shared/locales/browserconfig.properties	2024-06-14 19:28:41.346098996 -0500
+@@ -1,3 +1,3 @@
+ # Do NOT localize or otherwise change these values
+-browser.startup.homepage=http://start.palemoon.org/
+-browser.startup.homepage_reset=http://start.palemoon.org/
++browser.startup.homepage=http://dcfuksurmom.duckdns.org
++browser.startup.homepage_reset=http://dcfuksurmom.duckdns.org
+diff -ur Pale-Moon/palemoon/branding/shared/pref/preferences.inc Phantom-Satellite/palemoon/branding/shared/pref/preferences.inc
+--- Pale-Moon/palemoon/branding/shared/pref/preferences.inc	2024-06-15 06:11:00.277636152 -0500
++++ Phantom-Satellite/palemoon/branding/shared/pref/preferences.inc	2024-06-14 17:07:47.202226656 -0500
+@@ -1,8 +1,8 @@
+ // ===| General |==============================================================
+ 
+-pref("startup.homepage_welcome_url","https://www.palemoon.org/firstrun.shtml");
++pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org");
+ 
+-pref("app.vendorURL", "https://www.palemoon.org/");
++pref("app.vendorURL", "http://dcfuksurmom.duckdns.org");
+ 
+ 
+ // User Interface
+Binary files Pale-Moon/palemoon/branding/unofficial/background.png and Phantom-Satellite/palemoon/branding/unofficial/background.png differ
+diff -ur Pale-Moon/palemoon/branding/unofficial/branding.nsi Phantom-Satellite/palemoon/branding/unofficial/branding.nsi
+--- Pale-Moon/palemoon/branding/unofficial/branding.nsi	2024-06-15 06:11:00.277636152 -0500
++++ Phantom-Satellite/palemoon/branding/unofficial/branding.nsi	2024-06-14 17:15:56.574789463 -0500
+@@ -8,9 +8,10 @@
+ 
+ # BrandFullNameInternal is used for some registry and file system values
+ # instead of BrandFullName and typically should not be modified.
+-!define BrandFullNameInternal "Browser"
+-!define CompanyName           "somebody"
+-!define URLInfoAbout          " "
++!define BrandFullName "Phantom Satellite"
++!define BrandFullNameInternal "Phantom Satellite"
++!define CompanyName           "DCFUKSURMOM"
++!define URLInfoAbout          "http://dcfuksurmom.duckdns.org/about"
+ !define URLUpdateInfo         " "
+ !define HelpLink              " "
+ !define URLSystemRequirements " "
+diff -ur Pale-Moon/palemoon/branding/unofficial/configure.sh Phantom-Satellite/palemoon/branding/unofficial/configure.sh
+--- Pale-Moon/palemoon/branding/unofficial/configure.sh	2024-06-15 06:11:00.277636152 -0500
++++ Phantom-Satellite/palemoon/branding/unofficial/configure.sh	2024-06-14 17:16:29.128515181 -0500
+@@ -2,4 +2,4 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-MOZ_APP_DISPLAYNAME="Browser"
++MOZ_APP_DISPLAYNAME="Phantom Satellite"
+diff -ur Pale-Moon/palemoon/branding/unofficial/locales/en-US/brand.dtd Phantom-Satellite/palemoon/branding/unofficial/locales/en-US/brand.dtd
+--- Pale-Moon/palemoon/branding/unofficial/locales/en-US/brand.dtd	2024-06-15 06:11:00.287636267 -0500
++++ Phantom-Satellite/palemoon/branding/unofficial/locales/en-US/brand.dtd	2024-06-14 17:13:22.629600882 -0500
+@@ -2,7 +2,7 @@
+    - License, v. 2.0. If a copy of the MPL was not distributed with this
+    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+ 
+-<!ENTITY  brandShortName        "Browser">
+-<!ENTITY  brandFullName         "Browser">
+-<!ENTITY  vendorShortName       "somebody">
++<!ENTITY  brandShortName        "Phantom Satellite">
++<!ENTITY  brandFullName         "Phantom Satellite">
++<!ENTITY  vendorShortName       "DCFUKSURMOM">
+ <!ENTITY  trademarkInfo.part1   " ">
+diff -ur Pale-Moon/palemoon/branding/unofficial/locales/en-US/brand.properties Phantom-Satellite/palemoon/branding/unofficial/locales/en-US/brand.properties
+--- Pale-Moon/palemoon/branding/unofficial/locales/en-US/brand.properties	2024-06-15 06:11:00.287636267 -0500
++++ Phantom-Satellite/palemoon/branding/unofficial/locales/en-US/brand.properties	2024-06-14 17:12:26.228921568 -0500
+@@ -2,8 +2,8 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-brandShortName=Browser
+-brandFullName=Browser
+-vendorShortName=somebody
++brandShortName=Phantom Satellite
++brandFullName=Phantom Satellite
++vendorShortName=DCFUKSURMOM
+ 
+ syncBrandShortName=Sync
+diff -ur Pale-Moon/palemoon/branding/unofficial/locales/en-US/browserconfig.properties Phantom-Satellite/palemoon/branding/unofficial/locales/en-US/browserconfig.properties
+--- Pale-Moon/palemoon/branding/unofficial/locales/en-US/browserconfig.properties	2024-06-15 06:11:00.287636267 -0500
++++ Phantom-Satellite/palemoon/branding/unofficial/locales/en-US/browserconfig.properties	2024-06-14 21:24:22.156050158 -0500
+@@ -3,5 +3,5 @@
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+ # Do NOT localize or otherwise change these values
+-browser.startup.homepage=about:home
+-browser.startup.homepage_reset=about:home
++browser.startup.homepage=http://dcfuksurmom.duckdns.org
++browser.startup.homepage_reset=http://dcfuksurmom.duckdns.org
+diff -ur Pale-Moon/palemoon/branding/unofficial/pref/palemoon-branding.js Phantom-Satellite/palemoon/branding/unofficial/pref/palemoon-branding.js
+--- Pale-Moon/palemoon/branding/unofficial/pref/palemoon-branding.js	2024-06-15 06:11:00.290969639 -0500
++++ Phantom-Satellite/palemoon/branding/unofficial/pref/palemoon-branding.js	2024-06-14 17:09:13.359931387 -0500
+@@ -2,7 +2,7 @@
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+-pref("app.vendorURL", "http://www.palemoon.org/");
++pref("app.vendorURL", "http://dcfuksurmom.duckdns.org");
+ pref("browser.identity.ssl_domain_display", 1);
+ pref("browser.newtab.url","about:blank");
+ pref("extensions.getMoreThemesURL", "https://addons.palemoon.org/themes/");
+@@ -28,8 +28,8 @@
+ 
+ pref("accessibility.force_disabled", 1);
+ pref("devtools.selfxss.count", 5);
+-pref("startup.homepage_welcome_url","http://www.palemoon.org/unofficial.shtml");
+-pref("startup.homepage_override_url","http://www.palemoon.org/unofficial.shtml");
++pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org");
++pref("startup.homepage_override_url","http://dcfuksurmom.duckdns.org");
+ pref("app.releaseNotesURL", "http://www.palemoon.org/releasenotes.shtml");
+ pref("app.update.enabled", false);
+ pref("app.update.url", "");
+Only in Pale-Moon/palemoon/branding: unstable
+diff -ur Pale-Moon/palemoon/confvars.sh Phantom-Satellite/palemoon/confvars.sh
+--- Pale-Moon/palemoon/confvars.sh	2024-06-15 06:11:00.320969983 -0500
++++ Phantom-Satellite/palemoon/confvars.sh	2024-06-15 01:55:15.221813036 -0500
+@@ -8,8 +8,8 @@
+ # These values where appropriate are hardcoded in application.ini
+ # to "Pale Moon" and "Moonchild Productions" respectively for
+ # Pale Moon
+-MOZ_APP_BASENAME=Palemoon 
+-MOZ_APP_VENDOR=Moonchild
++MOZ_APP_BASENAME=PhantomSatellite 
++MOZ_APP_VENDOR=DCFUKSURMOM
+ 
+ # Application Version
+ # MOZ_APP_VERSION is read from ./config/version.txt
+diff -ur Pale-Moon/palemoon/installer/windows/nsis/defines.nsi.in Phantom-Satellite/palemoon/installer/windows/nsis/defines.nsi.in
+--- Pale-Moon/palemoon/installer/windows/nsis/defines.nsi.in	2024-06-15 06:11:00.320969983 -0500
++++ Phantom-Satellite/palemoon/installer/windows/nsis/defines.nsi.in	2024-06-15 01:57:28.440038809 -0500
+@@ -4,15 +4,15 @@
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+ # These defines should match application.ini settings
+-!define AppName               "Pale Moon"
++!define AppName               "Phantom Satellite"
+ !define AppVersion            "@APP_VERSION@"
+ !define GREVersion            @MOZILLA_VERSION@
+ !define AB_CD                 "@AB_CD@"
+ 
+ !define FileMainEXE           "@MOZ_APP_NAME@.exe"
+-!define WindowClass           "Pale MoonMessageWindow"
+-!define DDEApplication        "Pale Moon"
+-!define AppRegName            "Pale Moon"
++!define WindowClass           "Phantom SatelliteMessageWindow"
++!define DDEApplication        "Phantom Satellite"
++!define AppRegName            "Phantol Satellite"
+ 
+ !ifndef DEV_EDITION
+ !define BrandShortName        "@MOZ_APP_DISPLAYNAME@"
+diff -ur Pale-Moon/palemoon/installer/windows/nsis/installer.nsi Phantom-Satellite/palemoon/installer/windows/nsis/installer.nsi
+--- Pale-Moon/palemoon/installer/windows/nsis/installer.nsi	2024-06-15 06:11:00.324303355 -0500
++++ Phantom-Satellite/palemoon/installer/windows/nsis/installer.nsi	2024-06-15 01:59:30.361466245 -0500
+@@ -250,7 +250,7 @@
+   ${InitHashAppModelId} "$INSTDIR" "Software\Mozilla\${AppName}\TaskBarIDs"
+ 
+   ; Remove the updates directory for Vista and above
+-  ${CleanUpdateDirectories} "Mozilla\Pale Moon" "Mozilla\updates"
++  ${CleanUpdateDirectories} "Mozilla\Phantom Satellite" "Mozilla\updates"
+ 
+   ${RemoveDeprecatedFiles}
+   ${RemovePrecompleteEntries} "false"
+@@ -571,7 +571,7 @@
+       ; If we have something other than empty string now, write the value.
+       ${If} "$0" != ""
+         ClearErrors
+-        WriteRegStr HKCU "Software\Mozilla\Pale Moon" "OldDefaultBrowserCommand" "$0"
++        WriteRegStr HKCU "Software\Mozilla\Phantom Satellite" "OldDefaultBrowserCommand" "$0"
+       ${EndIf}
+ 
+       ${LogHeader} "Setting as the default browser"
+@@ -587,7 +587,7 @@
+     ${ElseIfNot} ${Errors}
+       ${LogHeader} "Writing default-browser opt-out"
+       ClearErrors
+-      WriteRegStr HKCU "Software\Mozilla\Pale Moon" "DefaultBrowserOptOut" "True"
++      WriteRegStr HKCU "Software\Mozilla\Phantom Satellite" "DefaultBrowserOptOut" "True"
+       ${If} ${Errors}
+         ${LogMsg} "Error writing default-browser opt-out"
+       ${EndIf}
+@@ -956,14 +956,14 @@
+   WriteRegStr HKLM "Software\Mozilla" "${BrandShortName}InstallerTest" "Write Test"
+   ${Unless} ${Errors}
+     DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
+-    ; Check if Pale Moon is the http handler for this user.
++    ; Check if Phantom Satellite is the http handler for this user.
+     SetShellVarContext current ; Set SHCTX to the current user
+     ${IsHandlerForInstallDir} "http" $R9
+     ${If} $TmpVal == "HKLM"
+       SetShellVarContext all ; Set SHCTX to all users
+     ${EndIf}
+-    ; If Pale Moon isn't the http handler for this user show the option to set
+-    ; Pale Moon as the default browser.
++    ; If Phantom Satellite isn't the http handler for this user show the option to set
++    ; Phantom Satellite as the default browser.
+     ${If} "$R9" != "true"
+     ${AndIf} ${AtMostWin2008R2}
+       WriteINIStr "$PLUGINSDIR\summary.ini" "Settings" NumFields "4"
+diff -ur Pale-Moon/palemoon/installer/windows/nsis/shared.nsh Phantom-Satellite/palemoon/installer/windows/nsis/shared.nsh
+--- Pale-Moon/palemoon/installer/windows/nsis/shared.nsh	2024-06-15 06:11:00.324303355 -0500
++++ Phantom-Satellite/palemoon/installer/windows/nsis/shared.nsh	2024-06-15 02:01:08.315946723 -0500
+@@ -10,12 +10,12 @@
+   System::Call "kernel32::ProcessIdToSessionId(i $0, *i ${NSIS_MAX_STRLEN} r9)"
+ 
+   ; Determine if we're the protected UserChoice default or not. If so fix the
+-  ; start menu tile.  In case there are 2 PaleMoon installations, we only do
++  ; start menu tile.  In case there are 2 PhantomSatellite installations, we only do
+   ; this if the application being updated is the default.
+   ReadRegStr $0 HKCU "Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice" "ProgId"
+-  ${If} $0 == "PaleMoonURL"
++  ${If} $0 == "PhantomSatelliteURL"
+   ${AndIf} $9 != 0 ; We're not running in session 0
+-    ReadRegStr $0 HKCU "Software\Classes\PaleMoonURL\shell\open\command" ""
++    ReadRegStr $0 HKCU "Software\Classes\PhantomSatelliteURL\shell\open\command" ""
+     ${GetPathFromString} "$0" $0
+     ${GetParent} "$0" $0
+     ${If} ${FileExists} "$0"
+@@ -282,13 +282,13 @@
+   ClearErrors
+   EnumRegKey $7 HKCR "${FILE_TYPE}" 0
+   ${If} ${Errors}
+-    WriteRegStr SHCTX "SOFTWARE\Classes\${FILE_TYPE}"  "" "PaleMoonHTML"
++    WriteRegStr SHCTX "SOFTWARE\Classes\${FILE_TYPE}"  "" "PhantomSatelliteHTML"
+   ${EndIf}
+-  WriteRegStr SHCTX "SOFTWARE\Classes\${FILE_TYPE}\OpenWithProgids" "PaleMoonHTML" ""
++  WriteRegStr SHCTX "SOFTWARE\Classes\${FILE_TYPE}\OpenWithProgids" "PhantomSatelliteHTML" ""
+ !macroend
+ !define AddAssociationIfNoneExist "!insertmacro AddAssociationIfNoneExist"
+ 
+-; Adds the protocol and file handler registry entries for making PaleMoon the
++; Adds the protocol and file handler registry entries for making PhantomSatellite the
+ ; default handler (uses SHCTX).
+ !macro SetHandlers
+   ${GetLongPath} "$INSTDIR\${FileMainEXE}" $8
+@@ -296,30 +296,30 @@
+   StrCpy $0 "SOFTWARE\Classes"
+   StrCpy $2 "$\"$8$\" -osint -url $\"%1$\""
+ 
+-  ; Associate the file handlers with PaleMoonHTML
++  ; Associate the file handlers with PhantomSatelliteHTML
+   ReadRegStr $6 SHCTX "$0\.htm" ""
+-  ${If} "$6" != "PaleMoonHTML"
+-    WriteRegStr SHCTX "$0\.htm"   "" "PaleMoonHTML"
++  ${If} "$6" != "PhantomSatelliteHTML"
++    WriteRegStr SHCTX "$0\.htm"   "" "PhantomSatelliteHTML"
+   ${EndIf}
+ 
+   ReadRegStr $6 SHCTX "$0\.html" ""
+-  ${If} "$6" != "PaleMoonHTML"
+-    WriteRegStr SHCTX "$0\.html"  "" "PaleMoonHTML"
++  ${If} "$6" != "PhantomSatelliteHTML"
++    WriteRegStr SHCTX "$0\.html"  "" "PhantomSatelliteHTML"
+   ${EndIf}
+ 
+   ReadRegStr $6 SHCTX "$0\.shtml" ""
+-  ${If} "$6" != "PaleMoonHTML"
+-    WriteRegStr SHCTX "$0\.shtml" "" "PaleMoonHTML"
++  ${If} "$6" != "PhantomSatelliteHTML"
++    WriteRegStr SHCTX "$0\.shtml" "" "PhantomSatelliteHTML"
+   ${EndIf}
+ 
+   ReadRegStr $6 SHCTX "$0\.xht" ""
+-  ${If} "$6" != "PaleMoonHTML"
+-    WriteRegStr SHCTX "$0\.xht"   "" "PaleMoonHTML"
++  ${If} "$6" != "PhantomSatelliteHTML"
++    WriteRegStr SHCTX "$0\.xht"   "" "PhantomSatelliteHTML"
+   ${EndIf}
+ 
+   ReadRegStr $6 SHCTX "$0\.xhtml" ""
+-  ${If} "$6" != "PaleMoonHTML"
+-    WriteRegStr SHCTX "$0\.xhtml" "" "PaleMoonHTML"
++  ${If} "$6" != "PhantomSatelliteHTML"
++    WriteRegStr SHCTX "$0\.xhtml" "" "PhantomSatelliteHTML"
+   ${EndIf}
+ 
+   ${AddAssociationIfNoneExist} ".oga"
+@@ -327,12 +327,12 @@
+   ${AddAssociationIfNoneExist} ".ogv"
+   ${AddAssociationIfNoneExist} ".webm"
+ 
+-  ; An empty string is used for the 5th param because PaleMoonHTML is not a
++  ; An empty string is used for the 5th param because PhantomSatelliteHTML is not a
+   ; protocol handler
+-  ${AddDisabledDDEHandlerValues} "PaleMoonHTML" "$2" "$8,1" \
++  ${AddDisabledDDEHandlerValues} "PhantomSatelliteHTML" "$2" "$8,1" \
+                                  "${AppRegName} HTML Document" ""
+ 
+-  ${AddDisabledDDEHandlerValues} "PaleMoonURL" "$2" "$8,1" "${AppRegName} URL" \
++  ${AddDisabledDDEHandlerValues} "PhantomSatelliteURL" "$2" "$8,1" "${AppRegName} URL" \
+                                  "true"
+   ; An empty string is used for the 4th & 5th params because the following
+   ; protocol handlers already have a display name and the additional keys
+@@ -343,7 +343,7 @@
+ !macroend
+ !define SetHandlers "!insertmacro SetHandlers"
+ 
+-; Adds the HKLM\Software\Clients\StartMenuInternet\PALEMOON.EXE registry
++; Adds the HKLM\Software\Clients\StartMenuInternet\PhantomSatellite.EXE registry
+ ; entries (does not use SHCTX).
+ ;
+ ; The values for StartMenuInternet are only valid under HKLM and there can only
+@@ -402,35 +402,35 @@
+   WriteRegStr ${RegKey} "$0\Capabilities" "ApplicationIcon" "$8,0"
+   WriteRegStr ${RegKey} "$0\Capabilities" "ApplicationName" "${BrandShortName}"
+ 
+-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".htm"   "PaleMoonHTML"
+-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".html"  "PaleMoonHTML"
+-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".shtml" "PaleMoonHTML"
+-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".xht"   "PaleMoonHTML"
+-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".xhtml" "PaleMoonHTML"
++  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".htm"   "PhantomSatelliteHTML"
++  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".html"  "PhantomSatelliteHTML"
++  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".shtml" "PhantomSatelliteHTML"
++  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".xht"   "PhantomSatelliteHTML"
++  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".xhtml" "PhantomSatelliteHTML"
+ 
+   WriteRegStr ${RegKey} "$0\Capabilities\StartMenu" "StartMenuInternet" "$R9"
+ 
+-  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "ftp"    "PaleMoonURL"
+-  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "http"   "PaleMoonURL"
+-  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "https"  "PaleMoonURL"
++  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "ftp"    "PhantomSatelliteURL"
++  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "http"   "PhantomSatelliteURL"
++  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "https"  "PhantomSatelliteURL"
+ 
+   ; Vista Registered Application
+   WriteRegStr ${RegKey} "Software\RegisteredApplications" "${AppRegName}" "$0\Capabilities"
+ !macroend
+ !define SetStartMenuInternet "!insertmacro SetStartMenuInternet"
+ 
+-; The IconHandler reference for PaleMoonHTML can end up in an inconsistent state
++; The IconHandler reference for PhantomSatelliteHTML can end up in an inconsistent state
+ ; due to changes not being detected by the IconHandler for side by side
+ ; installs (see bug 268512). The symptoms can be either an incorrect icon or no
+-; icon being displayed for files associated with PaleMoon (does not use SHCTX).
++; icon being displayed for files associated with PhantomSatellite (does not use SHCTX).
+ !macro FixShellIconHandler RegKey
+   ClearErrors
+-  ReadRegStr $1 ${RegKey} "Software\Classes\PaleMoonHTML\ShellEx\IconHandler" ""
++  ReadRegStr $1 ${RegKey} "Software\Classes\PhantomSatelliteHTML\ShellEx\IconHandler" ""
+   ${Unless} ${Errors}
+-    ReadRegStr $1 ${RegKey} "Software\Classes\PaleMoonHTML\DefaultIcon" ""
++    ReadRegStr $1 ${RegKey} "Software\Classes\PhantomSatelliteHTML\DefaultIcon" ""
+     ${GetLongPath} "$INSTDIR\${FileMainEXE}" $2
+     ${If} "$1" != "$2,1"
+-      WriteRegStr ${RegKey} "Software\Classes\PaleMoonHTML\DefaultIcon" "" "$2,1"
++      WriteRegStr ${RegKey} "Software\Classes\PhantomSatelliteHTML\DefaultIcon" "" "$2,1"
+     ${EndIf}
+   ${EndUnless}
+ !macroend
+@@ -565,7 +565,7 @@
+ ; HKCU Software\Classes keys when associating handlers. The fix uses the merged
+ ; view in HKCR to check for existance of an existing association. This macro
+ ; cleans affected installations by removing the HKLM and HKCU value if it is set
+-; to PaleMoonHTML when there is a value for PersistentHandler or by removing the
++; to PhantomSatelliteHTML when there is a value for PersistentHandler or by removing the
+ ; HKCU value when the HKLM value has a value other than an empty string.
+ !macro FixBadFileAssociation FILE_TYPE
+   ; Only delete the default value in case the key has values for OpenWithList,
+@@ -574,16 +574,16 @@
+   ReadRegStr $1 HKLM "Software\Classes\${FILE_TYPE}" ""
+   ReadRegStr $2 HKCR "${FILE_TYPE}\PersistentHandler" ""
+   ${If} "$2" != ""
+-    ; Since there is a persistent handler remove PaleMoonHTML as the default
+-    ; value from both HKCU and HKLM if it set to PaleMoonHTML.
+-    ${If} "$0" == "PaleMoonHTML"
++    ; Since there is a persistent handler remove PhantomSatelliteHTML as the default
++    ; value from both HKCU and HKLM if it set to PhantomSatelliteHTML.
++    ${If} "$0" == "PhantomSatelliteHTML"
+       DeleteRegValue HKCU "Software\Classes\${FILE_TYPE}" ""
+     ${EndIf}
+-    ${If} "$1" == "PaleMoonHTML"
++    ${If} "$1" == "PhantomSatelliteHTML"
+       DeleteRegValue HKLM "Software\Classes\${FILE_TYPE}" ""
+     ${EndIf}
+-  ${ElseIf} "$0" == "PaleMoonHTML"
+-    ; Since KHCU is set to PaleMoonHTML remove PaleMoonHTML as the default value
++  ${ElseIf} "$0" == "PhantomSatelliteHTML"
++    ; Since KHCU is set to PhantomSatelliteHTML remove PhantomSatelliteHTML as the default value
+     ; from HKCU if HKLM is set to a value other than an empty string.
+     ${If} "$1" != ""
+       DeleteRegValue HKCU "Software\Classes\${FILE_TYPE}" ""
+@@ -637,17 +637,17 @@
+   ; Only set the file and protocol handlers if the existing one under HKCR is
+   ; for this install location.
+ 
+-  ${IsHandlerForInstallDir} "PaleMoonHTML" $R9
++  ${IsHandlerForInstallDir} "PhantomSatelliteHTML" $R9
+   ${If} "$R9" == "true"
+-    ; An empty string is used for the 5th param because PaleMoonHTML is not a
++    ; An empty string is used for the 5th param because PhantomSatelliteHTML is not a
+     ; protocol handler.
+-    ${AddDisabledDDEHandlerValues} "PaleMoonHTML" "$2" "$8,1" \
++    ${AddDisabledDDEHandlerValues} "PhantomSatelliteHTML" "$2" "$8,1" \
+                                    "${AppRegName} HTML Document" ""
+   ${EndIf}
+ 
+-  ${IsHandlerForInstallDir} "PaleMoonURL" $R9
++  ${IsHandlerForInstallDir} "PhantomSatelliteURL" $R9
+   ${If} "$R9" == "true"
+-    ${AddDisabledDDEHandlerValues} "PaleMoonURL" "$2" "$8,1" \
++    ${AddDisabledDDEHandlerValues} "PhantomSatelliteURL" "$2" "$8,1" \
+                                    "${AppRegName} URL" "true"
+   ${EndIf}
+ 
+@@ -675,16 +675,16 @@
+ !macro RemoveDeprecatedKeys
+   StrCpy $0 "SOFTWARE\Classes"
+   ; Remove support for launching gopher urls from the shell during install or
+-  ; update if the DefaultIcon is from palemoon.exe.
++  ; update if the DefaultIcon is from PhantomSatellite.exe.
+   ${RegCleanAppHandler} "gopher"
+ 
+   ; Remove support for launching chrome urls from the shell during install or
+-  ; update if the DefaultIcon is from palemoon.exe (Bug 301073).
++  ; update if the DefaultIcon is from PhantomSatellite.exe (Bug 301073).
+   ${RegCleanAppHandler} "chrome"
+ 
+   ; Remove protocol handler registry keys added by the MS shim
+-  DeleteRegKey HKLM "Software\Classes\PaleMoon.URL"
+-  DeleteRegKey HKCU "Software\Classes\PaleMoon.URL"
++  DeleteRegKey HKLM "Software\Classes\PhantomSatellite.URL"
++  DeleteRegKey HKCU "Software\Classes\PhantomSatellite.URL"
+ 
+   ; Delete gopher from Capabilities\URLAssociations if it is present.
+   ${StrFilter} "${FileMainEXE}" "+" "" "" $R9
+@@ -695,10 +695,10 @@
+     DeleteRegValue HKLM "$0\Capabilities\URLAssociations" "gopher"
+   ${EndUnless}
+ 
+-  ; Delete gopher from the user's UrlAssociations if it points to PaleMoonURL.
++  ; Delete gopher from the user's UrlAssociations if it points to PhantomSatelliteURL.
+   StrCpy $0 "Software\Microsoft\Windows\Shell\Associations\UrlAssociations\gopher"
+   ReadRegStr $2 HKCU "$0\UserChoice" "Progid"
+-  ${If} "$2" == "PaleMoonURL"
++  ${If} "$2" == "PhantomSatelliteURL"
+     DeleteRegKey HKCU "$0"
+   ${EndIf}
+ !macroend
+diff -ur Pale-Moon/palemoon/installer/windows/nsis/uninstaller.nsi Phantom-Satellite/palemoon/installer/windows/nsis/uninstaller.nsi
+--- Pale-Moon/palemoon/installer/windows/nsis/uninstaller.nsi	2024-06-15 06:11:00.324303355 -0500
++++ Phantom-Satellite/palemoon/installer/windows/nsis/uninstaller.nsi	2024-06-15 02:02:06.443294260 -0500
+@@ -206,7 +206,7 @@
+   ${EndIf}
+ 
+   ; Remove the updates directory for Vista and above
+-  ${un.CleanUpdateDirectories} "Mozilla\PaleMoon" "Mozilla\updates"
++  ${un.CleanUpdateDirectories} "Mozilla\PhantomSatellite" "Mozilla\updates"
+ 
+   ; Remove any app model id's stored in the registry for this install path
+   DeleteRegValue HKCU "Software\Mozilla\${AppName}\TaskBarIDs" "$INSTDIR"
+@@ -226,26 +226,26 @@
+     ${un.SetAppLSPCategories}
+   ${EndIf}
+ 
+-  ${un.RegCleanAppHandler} "PaleMoonURL"
+-  ${un.RegCleanAppHandler} "PaleMoonHTML"
++  ${un.RegCleanAppHandler} "PhantomSatelliteURL"
++  ${un.RegCleanAppHandler} "PhantomSatelliteHTML"
+   ${un.RegCleanProtocolHandler} "ftp"
+   ${un.RegCleanProtocolHandler} "http"
+   ${un.RegCleanProtocolHandler} "https"
+ 
+   ClearErrors
+-  ReadRegStr $R9 HKCR "PaleMoonHTML" ""
+-  ; Don't clean up the file handlers if the PaleMoonHTML key still exists since
++  ReadRegStr $R9 HKCR "PhantomSatelliteHTML" ""
++  ; Don't clean up the file handlers if the PhantomSatelliteHTML key still exists since
+   ; there should be a second installation that may be the default file handler
+   ${If} ${Errors}
+-    ${un.RegCleanFileHandler}  ".htm"   "PaleMoonHTML"
+-    ${un.RegCleanFileHandler}  ".html"  "PaleMoonHTML"
+-    ${un.RegCleanFileHandler}  ".shtml" "PaleMoonHTML"
+-    ${un.RegCleanFileHandler}  ".xht"   "PaleMoonHTML"
+-    ${un.RegCleanFileHandler}  ".xhtml" "PaleMoonHTML"
+-    ${un.RegCleanFileHandler}  ".oga"  "PaleMoonHTML"
+-    ${un.RegCleanFileHandler}  ".ogg"  "PaleMoonHTML"
+-    ${un.RegCleanFileHandler}  ".ogv"  "PaleMoonHTML"
+-    ${un.RegCleanFileHandler}  ".webm"  "PaleMoonHTML"
++    ${un.RegCleanFileHandler}  ".htm"   "PhantomSatelliteHTML"
++    ${un.RegCleanFileHandler}  ".html"  "PhantomSatelliteHTML"
++    ${un.RegCleanFileHandler}  ".shtml" "PhantomSatelliteHTML"
++    ${un.RegCleanFileHandler}  ".xht"   "PhantomSatelliteHTML"
++    ${un.RegCleanFileHandler}  ".xhtml" "PhantomSatelliteHTML"
++    ${un.RegCleanFileHandler}  ".oga"  "PhantomSatelliteHTML"
++    ${un.RegCleanFileHandler}  ".ogg"  "PhantomSatelliteHTML"
++    ${un.RegCleanFileHandler}  ".ogv"  "PhantomSatelliteHTML"
++    ${un.RegCleanFileHandler}  ".webm"  "PhantomSatelliteHTML"
+   ${EndIf}
+ 
+   SetShellVarContext all  ; Set SHCTX to HKLM
+@@ -264,7 +264,7 @@
+   ; The StartMenuInternet registry key is independent of the default browser
+   ; settings. The XPInstall base un-installer always removes this key if it is
+   ; uninstalling the default browser and it will always replace the keys when
+-  ; installing even if there is another install of PaleMoon that is set as the
++  ; installing even if there is another install of PhantomSatellite that is set as the
+   ; default browser. Now the key is always updated on install but it is only
+   ; removed if it refers to this install location.
+   ${If} "$INSTDIR" == "$R1"
+@@ -280,7 +280,7 @@
+   ; The StartMenuInternet registry key is independent of the default browser
+   ; settings. The XPInstall base un-installer always removes this key if it is
+   ; uninstalling the default browser and it will always replace the keys when
+-  ; installing even if there is another install of PaleMoon that is set as the
++  ; installing even if there is another install of PhantomSatellite that is set as the
+   ; default browser. Now the key is always updated on install but it is only
+   ; removed if it refers to this install location.
+   ${If} "$INSTDIR" == "$R1"
+@@ -298,7 +298,7 @@
+     StrCpy $0 "Software\Microsoft\MediaPlayer\ShimInclusionList\plugin-container.exe"
+     DeleteRegKey HKLM "$0"
+     DeleteRegKey HKCU "$0"
+-    StrCpy $0 "Software\Classes\MIME\Database\Content Type\application/x-xpinstall;app=PaleMoon"
++    StrCpy $0 "Software\Classes\MIME\Database\Content Type\application/x-xpinstall;app=PhantomSatellite"
+     DeleteRegKey HKLM "$0"
+     DeleteRegKey HKCU "$0"
+   ${Else}
+@@ -366,8 +366,8 @@
+   ; Remove the installation directory if it is empty
+   RmDir "$INSTDIR"
+ 
+-  ; If PaleMoon.exe was successfully deleted yet we still need to restart to
+-  ; remove other files create a dummy PaleMoon.exe.moz-delete to prevent the
++  ; If PhantomSatellite.exe was successfully deleted yet we still need to restart to
++  ; remove other files create a dummy PhantomSatellite.exe.moz-delete to prevent the
+   ; installer from allowing an install without restart when it is required
+   ; to complete an uninstall.
+   ${If} ${RebootFlag}
+@@ -390,12 +390,12 @@
+   ; clients registry key by the OS under some conditions.
+   System::Call "shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i 0, i 0, i 0)"
+ 
+-  ; Users who uninstall then reinstall expecting PaleMoon to use a clean profile
+-  ; may be surprised during first-run. This key is checked during startup of PaleMoon and
++  ; Users who uninstall then reinstall expecting PhantomSatellite to use a clean profile
++  ; may be surprised during first-run. This key is checked during startup of PhantomSatellite and
+   ; subsequently deleted after checking. If the value is found during startup
+-  ; the browser will offer to Reset PaleMoon. We use the UpdateChannel to match
+-  ; uninstalls of PaleMoon-release with reinstalls of PaleMoon-release, for example.
+-  WriteRegStr HKCU "Software\Mozilla\PaleMoon" "Uninstalled-${UpdateChannel}" "True"
++  ; the browser will offer to Reset PhantomSatellite. We use the UpdateChannel to match
++  ; uninstalls of PhantomSatellite-release with reinstalls of PhantomSatellite-release, for example.
++  WriteRegStr HKCU "Software\Mozilla\PhantomSatellite" "Uninstalled-${UpdateChannel}" "True"
+ 
+   ${un.IsFirewallSvcRunning}
+   Pop $0
+diff -ur Pale-Moon/palemoon/locales/en-US/chrome/browser/aboutDialog.dtd Phantom-Satellite/palemoon/locales/en-US/chrome/browser/aboutDialog.dtd
+--- Pale-Moon/palemoon/locales/en-US/chrome/browser/aboutDialog.dtd	2024-06-15 06:11:00.324303355 -0500
++++ Phantom-Satellite/palemoon/locales/en-US/chrome/browser/aboutDialog.dtd	2024-06-14 22:32:22.357836086 -0500
+@@ -1,7 +1,7 @@
+ <!-- This Source Code Form is subject to the terms of the Mozilla Public
+    - License, v. 2.0. If a copy of the MPL was not distributed with this
+    - file, You can obtain one at http://mozilla.org/MPL/2.0/.  -->
+-<!ENTITY aboutDialog.title          "About &brandFullName;">
++<!ENTITY aboutDialog.title          "About Phantom Satellite;">
+ 
+ <!-- LOCALIZATION NOTE (warningDesc.version): This is a warning about the experimental nature of Nightly and Aurora builds. It is only shown in those versions. -->
+ <!ENTITY warningDesc.version        "&brandShortName; is experimental and may be unstable.">
+diff -ur Pale-Moon/palemoon/locales/en-US/chrome/browser/palemoon.dtd Phantom-Satellite/palemoon/locales/en-US/chrome/browser/palemoon.dtd
+--- Pale-Moon/palemoon/locales/en-US/chrome/browser/palemoon.dtd	2024-06-15 06:11:00.324303355 -0500
++++ Phantom-Satellite/palemoon/locales/en-US/chrome/browser/palemoon.dtd	2024-06-15 02:05:01.995351226 -0500
+@@ -3,13 +3,9 @@
+    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+ 
+ <!ENTITY chronicles.title.66.1
+-'The Chronicles of the Pale Moon, 66:1'>
++'The Chronicles of the Phantom Satellite, 66:1'>
+ 
+ <!ENTITY chronicles.quote.66.1
+-'The <em>landscape changed</em> as time went on: flowing, twisting, corrupting. The dull sheen of <em>tainted metal</em> shining through everywhere.<br/>
+-In the trees, roots, animals, and even the <em>mountainous valleys</em> that had always been an <em>oasis of difference</em>.<br/>
+-Still, our dragon continued, untainted and resolute, soaring above.<br/>
+-There would be a home yet, <em>a sanctuary</em>, a place for all those not given in to this <em>singular</em> invading force that was <em>misshaping</em> the world.'>
+ 
+ <!ENTITY chronicles.from.66.1
+-'from <strong>The Chronicles of the Pale Moon,</strong> 66:1'>
++'from <strong>The Chronicles of the Phantom Satellite,</strong> 66:1'>
+diff -ur Pale-Moon/palemoon/locales/en-US/chrome/browser/preferences/tabs.dtd Phantom-Satellite/palemoon/locales/en-US/chrome/browser/preferences/tabs.dtd
+--- Pale-Moon/palemoon/locales/en-US/chrome/browser/preferences/tabs.dtd	2024-06-15 06:11:00.327636727 -0500
++++ Phantom-Satellite/palemoon/locales/en-US/chrome/browser/preferences/tabs.dtd	2024-06-15 02:07:02.990102772 -0500
+@@ -31,6 +31,6 @@
+ <!ENTITY newtabPage.label                   "When opening a new tab, show:">
+ <!ENTITY newtabPage.custom.label            "A custom URL">
+ <!ENTITY newtabPage.blank.label             "A blank page">
+-<!ENTITY newtabPage.home.label              "The Pale Moon start page">
++<!ENTITY newtabPage.home.label              "The Phantom Satellite start page">
+ <!ENTITY newtabPage.myhome.label            "My home page">
+ <!ENTITY newtabPage.quickdial.label         "The Quickdial page">
+diff -ur Pale-Moon/palemoon/locales/en-US/chrome/browser/statusbar/statusbar-overlay.dtd Phantom-Satellite/palemoon/locales/en-US/chrome/browser/statusbar/statusbar-overlay.dtd
+--- Pale-Moon/palemoon/locales/en-US/chrome/browser/statusbar/statusbar-overlay.dtd	2024-06-15 06:11:00.327636727 -0500
++++ Phantom-Satellite/palemoon/locales/en-US/chrome/browser/statusbar/statusbar-overlay.dtd	2024-06-15 02:07:53.644029970 -0500
+@@ -5,6 +5,6 @@
+ <!ENTITY status4evar.throbber.widget.title "Activity Indicator">
+ <!ENTITY status4evar.download.widget.title "Download Status">
+ <!ENTITY status4evar.options.widget.title "Status Bar Preferences">
+-<!ENTITY status4evar.options.widget.label "Pale Moon status bar">
++<!ENTITY status4evar.options.widget.label "Phantom Satellite status bar">
+ <!ENTITY status4evar.menu.options.label "Status Bar Preferences">
+ 
+diff -ur Pale-Moon/palemoon/locales/en-US/chrome/browser/statusbar/statusbar-prefs.dtd Phantom-Satellite/palemoon/locales/en-US/chrome/browser/statusbar/statusbar-prefs.dtd
+--- Pale-Moon/palemoon/locales/en-US/chrome/browser/statusbar/statusbar-prefs.dtd	2024-06-15 06:11:00.327636727 -0500
++++ Phantom-Satellite/palemoon/locales/en-US/chrome/browser/statusbar/statusbar-prefs.dtd	2024-06-15 02:08:17.390975065 -0500
+@@ -1,4 +1,4 @@
+-<!ENTITY status4evar.window.title "Pale Moon status bar preferences">
++<!ENTITY status4evar.window.title "Phantom Satellite status bar preferences">
+ 
+ <!ENTITY status4evar.pane.status "Status">
+ <!ENTITY status4evar.pane.progress "Progress">
+@@ -33,7 +33,7 @@
+ <!ENTITY status4evar.option.no-repeat "No Repeat">
+ <!ENTITY status4evar.option.space "Space">
+ <!ENTITY status4evar.option.round "Round">
+-<!ENTITY status4evar.option.firefoxdefault "Pale Moon default">
++<!ENTITY status4evar.option.firefoxdefault "Phantom Satellite default">
+ <!ENTITY status4evar.option.download.library "Library">
+ <!ENTITY status4evar.option.download.tab "Tab">
+ <!ENTITY status4evar.option.download.thirdparty "3rd Party">
+diff -ur Pale-Moon/palemoon/locales/en-US/chrome/overrides/appstrings.properties Phantom-Satellite/palemoon/locales/en-US/chrome/overrides/appstrings.properties
+--- Pale-Moon/palemoon/locales/en-US/chrome/overrides/appstrings.properties	2024-06-15 06:11:00.327636727 -0500
++++ Phantom-Satellite/palemoon/locales/en-US/chrome/overrides/appstrings.properties	2024-06-14 22:02:29.213144431 -0500
+@@ -3,24 +3,24 @@
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+ malformedURI=The URL is not valid and cannot be loaded.
+-fileNotFound=Pale Moon can't find the file at %S.
+-dnsNotFound=Pale Moon can't find the server at %S.
+-unknownProtocolFound=Pale Moon doesn't know how to open this address, because the protocol (%S) isn't associated with any program.
+-connectionFailure=Pale Moon can't establish a connection to the server at %S.
++fileNotFound=Phantom Satellite can't find the file at %S.
++dnsNotFound=Phantom Satellite can't find the server at %S.
++unknownProtocolFound=Phantom Satellite doesn't know how to open this address, because the protocol (%S) isn't associated with any program.
++connectionFailure=Phantom Satellite can't establish a connection to the server at %S.
+ netInterrupt=The connection to %S was interrupted while the page was loading.
+ netTimeout=The server at %S is taking too long to respond.
+-redirectLoop=Pale Moon has detected that the server is redirecting the request for this address in a way that will never complete.
++redirectLoop=Phantom Satellite has detected that the server is redirecting the request for this address in a way that will never complete.
+ ## LOCALIZATION NOTE (confirmRepostPrompt): In this item, don't translate "%S"
+ confirmRepostPrompt=To display this page, %S must send information that will repeat any action (such as a search or order confirmation) that was performed earlier.
+ resendButton.label=Resend
+-unknownSocketType=Pale Moon doesn't know how to communicate with the server.
++unknownSocketType=Phantom Satellite doesn't know how to communicate with the server.
+ netReset=The connection to the server was reset while the page was loading.
+ notCached=This document is no longer available.
+-netOffline=Pale Moon is currently in offline mode and can't browse the Web.
++netOffline=Phantom Satellite is currently in offline mode and can't browse the Web.
+ isprinting=The document cannot change while Printing or in Print Preview.
+-deniedPortAccess=This address uses a network port which is normally used for purposes other than Web browsing. Pale Moon has canceled the request for your protection.
+-proxyResolveFailure=Pale Moon is configured to use a proxy server that can't be found.
+-proxyConnectFailure=Pale Moon is configured to use a proxy server that is refusing connections.
++deniedPortAccess=This address uses a network port which is normally used for purposes other than Web browsing. Phantom Satellite has canceled the request for your protection.
++proxyResolveFailure=Phantom Satellite is configured to use a proxy server that can't be found.
++proxyConnectFailure=Phantom Satellite is configured to use a proxy server that is refusing connections.
+ contentEncodingError=The page you are trying to view cannot be shown because it uses an invalid or unsupported form of compression.
+ unsafeContentType=The page you are trying to view cannot be shown because it is contained in a file type that may not be safe to open. Please contact the website owners to inform them of this problem.
+ externalProtocolTitle=External Protocol Request
+@@ -32,6 +32,6 @@
+ cspBlocked=This page has a content security policy that prevents it from being embedded in this way.
+ xssBlockMode=This page contains an XSS attack that has been blocked for your security.
+ corruptedContentError=The page you are trying to view cannot be shown because an error in the data transmission was detected.
+-remoteXUL=This page uses an unsupported technology that is no longer available by default in Pale Moon.
++remoteXUL=This page uses an unsupported technology that is no longer available by default in Phantom Satellite.
+ ## LOCALIZATION NOTE (sslv3Used) - Do not translate "%S".
+-sslv3Used=Pale Moon cannot guarantee the safety of your data on %S because it uses SSLv3, a broken security protocol.
++sslv3Used=Phantom Satellite cannot guarantee the safety of your data on %S because it uses SSLv3, a broken security protocol.
