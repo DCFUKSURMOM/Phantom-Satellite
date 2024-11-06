@@ -1,0 +1,38 @@
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+######################################################################
+# HPPA
+######################################################################
+#
+# Linux/HPPA/gcc
+#
+ifeq ($(OS_ARCH),Linux)
+ifneq (,$(filter hppa hppa2.0 hppa1.1,$(OS_TEST)))
+ifndef GNU_CXX
+else
+# #434190 optimized builds crash
+CXXFLAGS 	:=  $(filter-out $(MOZ_OPTIMIZE_FLAGS), $(CXXFLAGS))
+endif
+endif
+endif
+
+
+######################################################################
+# PowerPC
+######################################################################
+#
+include $(topsrcdir)/config/rules.mk
+
+ifeq ($(OS_ARCH),Linux)
+ifneq (,$(findstring mips, $(OS_TEST)))
+xptcstubs_asm_mips.o: $(DIST)/include/xptcstubsdef.inc
+endif
+endif
+
+ifeq ($(OS_ARCH),Darwin)
+xptcstubs_asm_ppc_darwin.s: xptcstubs_asm_ppc_darwin.s.m4 $(DIST)/include/xptcstubsdef.inc Makefile
+	gm4 $(INCLUDES) $< > $@
+endif

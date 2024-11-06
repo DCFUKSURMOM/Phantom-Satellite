@@ -1,0 +1,45 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+include('/build/gyp.mozbuild')
+
+GYP_DIRS += ['.']
+
+libyuv_non_unified_sources = [
+    'source/convert.cc',
+    'source/convert_argb.cc',
+    'source/convert_from.cc',
+    'source/convert_from_argb.cc',
+    'source/mjpeg_decoder.cc',
+    'source/rotate_argb.cc',
+    'source/row_common.cc',
+    'source/scale.cc',
+    'source/scale_argb.cc',
+    'source/scale_common.cc',
+    'source/scale_uv.cc',
+]
+
+if CONFIG['CPU_ARCH'] == 'arm':
+    libyuv_non_unified_sources += [
+        'source/compare_neon.cc',
+        'source/rotate_neon.cc',
+        'source/row_neon.cc',
+        'source/scale_neon.cc',
+    ]
+if CONFIG['CPU_ARCH'] == 'aarch64':
+    libyuv_non_unified_sources += [
+        'source/compare_neon64.cc',
+        'source/rotate_neon64.cc',
+        'source/row_neon64.cc',
+        'source/scale_neon64.cc',
+    ]
+
+GYP_DIRS['.'].input = 'libyuv.gyp'
+GYP_DIRS['.'].variables = gyp_vars
+GYP_DIRS['.'].sandbox_vars['FINAL_LIBRARY'] = 'xul'
+GYP_DIRS['.'].non_unified_sources += sorted(libyuv_non_unified_sources)
+
+# We allow warnings for third-party code that can be updated from upstream.
+GYP_DIRS['.'].sandbox_vars['ALLOW_COMPILER_WARNINGS'] = True

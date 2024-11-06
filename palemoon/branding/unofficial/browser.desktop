@@ -1,0 +1,26 @@
+[Desktop Entry]
+Name=Phantom Satellite
+GenericName=Phantom Satellite
+Comment=Browse the World Wide Web
+Exec=phantomsatellite %u
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;
+StartupNotify=false
+Actions=NewTab;NewWindow;NewPrivateWindow;
+StartupWMClass="browser"
+Path=
+Icon=phantomsatellite
+
+[Desktop Action NewTab]
+Name=Open new tab
+Exec=phantomsatellite -new-tab
+
+[Desktop Action NewWindow]
+Name=Open new window
+Exec=phantomsatellite -new-window
+
+[Desktop Action NewPrivateWindow]
+Name=New private window
+Exec=phantomsatellite -private-window

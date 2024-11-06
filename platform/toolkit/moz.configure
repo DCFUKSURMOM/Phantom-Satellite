@@ -1,0 +1,507 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+# JACK cubeb backend
+# ==============================================================
+option('--enable-jack', env='MOZ_JACK',
+       help='Enable JACK audio backend.')
+
+@depends('--enable-jack')
+def jack(value):
+    if value:
+        return True
+
+set_config('MOZ_JACK', jack)
+set_define('MOZ_JACK', jack)
+
+# Javascript engine
+# ==============================================================
+include('../js/moz.configure')
+
+
+# L10N
+# ==============================================================
+option('--with-l10n-base', nargs=1, env='L10NBASEDIR',
+       help='Path to l10n repositories')
+
+@depends('--with-l10n-base')
+@imports(_from='os.path', _import='isdir')
+def l10n_base(value):
+    if value:
+        path = value[0]
+        if not isdir(path):
+            die("Invalid value --with-l10n-base, %s doesn't exist", path)
+        return os.path.realpath(os.path.abspath(path))
+
+set_config('L10NBASEDIR', l10n_base)
+
+
+# Default toolkit
+# ==============================================================
+# Normally, we'd want to use the `default` field on the option, but that
+# requires --target to be resolved at --help time, which requires to run
+# config.guess, which we want to avoid. Even better, we could actually set
+# `choices` depending on the target, but that doesn't pan out for the same
+# reason.
+option('--enable-default-toolkit', nargs=1,
+       choices=('cairo-windows', 'cairo-gtk2', 'cairo-gtk2-x11', 'cairo-gtk3',
+                'cairo-cocoa', 'cairo-uikit'),
+       help='Select default toolkit')
+
+@depends('--enable-default-toolkit', target)
+def toolkit(value, target):
+    # Define possible choices for each platform. The default is the first one
+    # listed when there are several.
+    os = target.os
+    if target.os == 'WINNT':
+        platform_choices = ('cairo-windows',)
+    elif target.os == 'OSX':
+        platform_choices = ('cairo-cocoa',)
+    elif target.os == 'iOS':
+        platform_choices = ('cairo-uikit',)
+    else:
+        platform_choices = ('cairo-gtk3', 'cairo-gtk2', 'cairo-gtk2-x11')
+
+    if value:
+        if value[0] not in platform_choices:
+            die('`%s` is not a valid value for --enable-default-toolkit on %s\n'
+                'Valid values: %s', value[0], os, ', '.join(platform_choices))
+        return value[0]
+
+    return platform_choices[0]
+
+
+@depends(toolkit)
+def toolkit(toolkit):
+    if toolkit == 'cairo-gtk2-x11':
+        widget_toolkit = 'gtk2'
+    else:
+        widget_toolkit = toolkit.replace('cairo-', '')
+    return widget_toolkit
+
+set_config('MOZ_WIDGET_TOOLKIT', toolkit)
+add_old_configure_assignment('MOZ_WIDGET_TOOLKIT', toolkit)
+
+@depends(toolkit)
+def toolkit_gtk(toolkit):
+    if toolkit == 'gtk2':
+        return '2'
+    elif toolkit == 'gtk3':
+        return '3'
+
+set_define('MOZ_WIDGET_GTK', toolkit_gtk)
+
+@depends(toolkit)
+def toolkit_define(toolkit):
+    if toolkit not in ('gtk2', 'gtk3', 'windows'):
+        return 'MOZ_WIDGET_%s' % toolkit.upper()
+
+set_define(toolkit_define, True)
+
+
+option('--without-x', env='WITHOUT_X', help='Disable X11 support')
+
+@depends('--without-x', toolkit)
+def x11(value, toolkit):
+    if not value:
+        die('--without-x is not supported')
+
+    x11_toolkits = ('gtk2', 'gtk3')
+    if value and value.origin != 'default' and toolkit not in x11_toolkits:
+        die('--with-x is only valid with --enable-default-toolkit={%s}',
+            ','.join(x11_toolkits))
+
+    return True if value and toolkit in x11_toolkits else None
+
+set_config('MOZ_ENABLE_XREMOTE', x11)
+set_define('MOZ_ENABLE_XREMOTE', x11)
+set_config('MOZ_X11', x11)
+set_define('MOZ_X11', x11)
+add_old_configure_assignment('MOZ_X11', x11)
+
+# GL Provider
+# ==============================================================
+option('--with-gl-provider', nargs=1, help='Set GL provider backend type')
+
+@depends('--with-gl-provider')
+def gl_provider(value):
+    if value:
+        return value[0]
+
+@depends(gl_provider)
+def gl_provider_define(provider):
+    if provider:
+        return 'GLContextProvider%s' % provider
+
+set_define('MOZ_GL_PROVIDER', gl_provider_define)
+
+@depends(gl_provider, x11)
+def gl_default_provider(value, x11):
+    if value:
+        return value
+    elif x11:
+        return 'GLX'
+
+set_config('MOZ_GL_PROVIDER', gl_provider)
+set_config('MOZ_GL_DEFAULT_PROVIDER', gl_default_provider)
+
+@depends(gl_default_provider)
+def gl_provider_define(provider):
+    if provider:
+        return 'GL_PROVIDER_%s' % provider
+
+set_define(gl_provider_define, True)
+
+
+# PDF printing
+# ==============================================================
+@depends(toolkit)
+def pdf_printing(toolkit):
+    if toolkit in ('windows', 'gtk2', 'gtk3'):
+        return True
+
+@depends(pdf_printing)
+def pdf_surface_feature(pdf_printing):
+    if pdf_printing:
+        return '#define CAIRO_HAS_PDF_SURFACE 1'
+    else:
+        # CONFIGURE_SUBST_FILES need explicit empty values.
+        return ''
+
+set_config('MOZ_PDF_PRINTING', pdf_printing)
+set_config('PDF_SURFACE_FEATURE', pdf_surface_feature)
+
+
+# Event loop instrumentation
+# ==============================================================
+option(env='MOZ_INSTRUMENT_EVENT_LOOP',
+       help='Force-enable event loop instrumentation')
+
+@depends('MOZ_INSTRUMENT_EVENT_LOOP', toolkit)
+def instrument_event_loop(value, toolkit):
+    if value or (toolkit in ('windows', 'gtk2', 'gtk3', 'cocoa') and value.origin == 'default'):
+        return True
+
+set_config('MOZ_INSTRUMENT_EVENT_LOOP', instrument_event_loop)
+set_define('MOZ_INSTRUMENT_EVENT_LOOP', instrument_event_loop)
+
+# Apple platform decoder support
+# ==============================================================
+option('--disable-apple-media',
+       help='Disable support for Apple Media')
+
+@depends('--disable-apple-media', toolkit)
+def applemedia(value, toolkit):
+    enabled = bool(value)
+    if value.origin == 'default':
+        enabled = toolkit in ('cocoa', 'uikit')
+    if enabled:
+        return True
+
+set_config('MOZ_APPLEMEDIA', applemedia)
+set_define('MOZ_APPLEMEDIA', applemedia)
+add_old_configure_assignment('MOZ_APPLEMEDIA', applemedia)
+
+# Windows Media Foundation support
+# ==============================================================
+option('--disable-wmf',
+       help='Disable support for Windows Media Foundation')
+
+@depends('--disable-wmf', target)
+def wmf(value, target):
+    enabled = bool(value)
+    if value.origin == 'default':
+        # Enable Windows Media Foundation support by default.
+        # Note our minimum SDK version is Windows 7 SDK, so we are (currently)
+        # guaranteed to have a recent-enough SDK to build WMF.
+        enabled = target.os == 'WINNT'
+    if enabled and target.os != 'WINNT':
+        die('Cannot enable Windows Media Foundation support on %s', target.os)
+    if enabled:
+        return True
+
+set_config('MOZ_WMF', wmf)
+set_define('MOZ_WMF', wmf)
+
+# FFmpeg H264/AAC Decoding Support
+# ==============================================================
+option('--disable-ffmpeg',
+       help='Disable FFmpeg for fragmented H264/AAC decoding')
+
+@depends('--disable-ffmpeg', target)
+def ffmpeg(value, target):
+    enabled = bool(value)
+    if value.origin == 'default':
+        enabled = target.os not in ('WINNT')
+    if enabled:
+        return True
+
+set_config('MOZ_FFMPEG', ffmpeg)
+set_define('MOZ_FFMPEG', ffmpeg)
+imply_option('--enable-fmp4', ffmpeg, '--enable-ffmpeg')
+
+# Built-in fragmented MP4 support.
+# ==============================================================
+option('--disable-fmp4', env='MOZ_FMP4',
+       help='Disable support for in built Fragmented MP4 parsing')
+
+@depends('--disable-fmp4', target, wmf, applemedia)
+def fmp4(value, target, wmf, applemedia):
+    enabled = bool(value)
+    if value.origin == 'default':
+        enabled = wmf or applemedia
+    if enabled:
+        return True
+
+set_config('MOZ_FMP4', fmp4)
+set_define('MOZ_FMP4', fmp4)
+add_old_configure_assignment('MOZ_FMP4', fmp4)
+
+# Permissions system
+# ==============================================================
+option(name='--disable-permissions',
+       help='Disable permissions (popup and cookie blocking)')
+
+moz_permissions = depends_if('--disable-permissions')(lambda _: True)
+
+set_config('MOZ_PERMISSIONS', moz_permissions)
+set_define('MOZ_PERMISSIONS', moz_permissions)
+
+# gpsd support
+# ==============================================================
+option('--enable-gpsd', env='MOZ_GPSD',
+       help='Enable gpsd support')
+
+@depends('--enable-gpsd')
+def gpsd(value):
+    return bool(value)
+
+system_gpsd = pkg_check_modules('MOZ_GPSD', 'libgps >= 3.11',
+                                when=gpsd)
+
+set_config('MOZ_GPSD', depends_if(system_gpsd)(lambda _: True))
+
+# Miscellaneous programs
+# ==============================================================
+
+check_prog('TAR', ('gnutar', 'gtar', 'tar'))
+check_prog('UNZIP', ('unzip',))
+check_prog('ZIP', ('zip',))
+
+# Key files
+# ==============================================================
+include('../build/moz.configure/keyfiles.configure')
+
+simple_keyfile('Mozilla API')
+
+simple_keyfile('Google API')
+
+id_and_secret_keyfile('Bing API')
+
+simple_keyfile('Adjust SDK')
+
+# Gecko integrated IPC fuzzer
+# ==============================================================
+option('--enable-ipc-fuzzer', env='MOZ_FAULTY',
+       help='Enable IPC fuzzer')
+
+@depends('--enable-ipc-fuzzer', target)
+def ipc_fuzzer(value, target):
+    if value:
+        if target.os == 'WINNT':
+            die('--enable-ipc-fuzzer is not supported on this platform.')
+        return bool(value)
+
+set_config('MOZ_FAULTY', ipc_fuzzer)
+set_define('MOZ_FAULTY', ipc_fuzzer)
+
+# Printing
+# ==============================================================
+@depends(target)
+def ios_disable_printing(target):
+    if target.os == 'iOS':
+        return False
+
+imply_option('--enable-printing', ios_disable_printing, reason='--target')
+
+option('--disable-printing', help='Disable printing support')
+
+@depends('--disable-printing')
+def printing(value):
+    if value:
+        return True
+
+set_config('NS_PRINTING', printing)
+set_define('NS_PRINTING', printing)
+set_define('NS_PRINT_PREVIEW', printing)
+
+# Speech-dispatcher support
+# ==============================================================
+@depends(toolkit)
+def no_speechd_on_non_gtk(toolkit):
+    if toolkit not in ('gtk2', 'gtk3'):
+        return False
+
+imply_option('--enable-synth-speechd', no_speechd_on_non_gtk,
+             reason='--enable-default-toolkit')
+
+option('--disable-synth-speechd', help='Disable speech-dispatcher support')
+
+set_config('MOZ_SYNTH_SPEECHD',
+           depends_if('--disable-synth-speechd')(lambda _: True))
+
+# Speech API
+# ==============================================================
+option('--disable-webspeech', help='Disable support for HTML Speech synthesis API')
+
+@depends('--disable-webspeech', '--help')
+def webspeech(value, _):
+    if value:
+        return True
+
+set_config('MOZ_WEBSPEECH', webspeech)
+set_define('MOZ_WEBSPEECH', webspeech)
+add_old_configure_assignment('MOZ_WEBSPEECH', webspeech)
+
+# Enable IPDL's "expensive" unit tests
+# ==============================================================
+option('--enable-ipdl-tests', help='Enable expensive IPDL tests')
+
+set_config('MOZ_IPDL_TESTS',
+           depends_if('--enable-ipdl-tests')(lambda _: True))
+
+# Network protocol support
+# ==============================================================
+@depends(check_build_environment, '--help')
+@imports('os')
+@imports(_from='__builtin__', _import='sorted')
+def all_necko_protocols(build_env, _):
+    basedir = os.path.join(build_env.topsrcdir, 'netwerk', 'protocol')
+    return tuple(sorted(p for p in os.listdir(basedir)
+                        if os.path.isdir(os.path.join(basedir, p))))
+
+default_necko_protocols = all_necko_protocols
+
+@deprecated_option('--enable-necko-protocols', nargs='*')
+def necko_protocols(protocols):
+    return protocols
+
+@depends(necko_protocols, default_necko_protocols)
+def necko_protocols(protocols, default_protocols):
+    if protocols is None or (protocols and len(protocols) == 0):
+        return None
+    if len(protocols) == 1 and protocols[0] == '':
+        return False
+    result = set()
+    for p in protocols:
+        if p in ('yes', 'all', 'default'):
+            result |= set(default_protocols)
+            continue
+        if p in ('no', 'none'):
+            result = set()
+            continue
+        if p.startswith('-'):
+            if p[1:] in result:
+                result.remove(p[1:])
+        else:
+            result.add(p)
+    if result != set(default_protocols):
+        return tuple(result)
+
+imply_option('--enable-network-protocols', necko_protocols,
+             reason='--enable-necko-protocols')
+
+option('--enable-network-protocols', nargs='+', default=default_necko_protocols,
+       choices=all_necko_protocols,
+       help='Enable/disable specific protocol handlers')
+
+@depends('--enable-network-protocols')
+def necko_protocol_defines(protocols):
+    return tuple('NECKO_PROTOCOL_%s' % p for p in protocols)
+
+add_old_configure_assignment('_NON_GLOBAL_ACDEFINES', necko_protocol_defines)
+
+@depends(necko_protocol_defines)
+@imports('__sandbox__')
+def set_necko_protocol_defines(protocols):
+    for p in protocols:
+        __sandbox__.set_define_impl(p, True)
+
+@depends('--enable-network-protocols')
+@imports(_from='__builtin__', _import='sorted')
+def necko_protocols(protocols):
+    return tuple(sorted(protocols))
+
+set_config('NECKO_PROTOCOLS', necko_protocols)
+add_old_configure_assignment('NECKO_PROTOCOLS', necko_protocols)
+
+# Graphics
+# ==============================================================
+option('--disable-skia', help='Disable use of Skia')
+
+@depends('--disable-skia', target)
+def skia(value, target):
+    if value.origin == 'default' and target.endianness == 'big':
+        return None
+    if value:
+        return True
+
+set_config('MOZ_ENABLE_SKIA', skia)
+set_define('MOZ_ENABLE_SKIA', skia)
+set_define('USE_SKIA', skia)
+
+option('--disable-skia-gpu', help='Disable use of Skia-GPU')
+
+@depends('--disable-skia-gpu', skia, target)
+def skia_gpu(value, skia, target):
+    if value.origin == 'default':
+        if not skia:
+            return None
+        # Skia GPU support may not reliably build on certain *BSDs (see bug 1234494)
+        if target.os in ('NetBSD', 'OpenBSD'):
+            return None
+    elif value and not skia:
+        die('Cannot enable Skia-GPU without enabling Skia')
+    if skia and value:
+        return True
+
+set_config('MOZ_ENABLE_SKIA_GPU', skia_gpu)
+set_define('USE_SKIA_GPU', skia_gpu)
+
+option('--enable-skia-pdf', help='Enable Skia PDF')
+
+@depends('--enable-skia-pdf', skia, target)
+def skia_pdf(value, skia, target):
+    if value.origin == 'default':
+        if not skia:
+            return None
+    elif value and not skia:
+        die('Cannot enable Skia PDF without enabling Skia')
+    if skia and value:
+        return True
+
+set_config('MOZ_ENABLE_SKIA_PDF', skia_pdf)
+set_define('MOZ_ENABLE_SKIA_PDF', skia_pdf)
+
+@depends(skia, skia_gpu)
+def skia_includes(skia, skia_gpu):
+    includes = []
+    if skia:
+        includes += [
+            '/gfx/skia',
+            '/gfx/skia/skia/include/config',
+            '/gfx/skia/skia/include/core',
+        ]
+
+    if skia_gpu:
+        includes += [
+            '/gfx/skia/skia/include/gpu',
+            '/gfx/skia/skia/include/utils',
+        ]
+
+    return includes
+
+set_config('SKIA_INCLUDES', skia_includes)
