@@ -1,0 +1,75 @@
+/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#if !defined(PDMFactory_h_)
+#define PDMFactory_h_
+
+#include "PlatformDecoderModule.h"
+#include "mozilla/Function.h"
+#include "mozilla/StaticMutex.h"
+
+namespace mozilla {
+
+class DecoderDoctorDiagnostics;
+class PDMFactoryImpl;
+template<class T> class StaticAutoPtr;
+
+class PDMFactory final {
+public:
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(PDMFactory)
+
+  PDMFactory();
+
+  // Factory method that creates the appropriate PlatformDecoderModule for
+  // the platform we're running on. Caller is responsible for deleting this
+  // instance. It's expected that there will be multiple
+  // PlatformDecoderModules alive at the same time.
+  // This is called on the decode task queue.
+  already_AddRefed<MediaDataDecoder>
+  CreateDecoder(const CreateDecoderParams& aParams);
+
+  bool SupportsMimeType(const nsACString& aMimeType,
+                        DecoderDoctorDiagnostics* aDiagnostics) const;
+  bool Supports(const TrackInfo& aTrackInfo,
+                DecoderDoctorDiagnostics* aDiagnostics) const;
+
+  static const int kYUV400 = 0;
+  static const int kYUV420 = 1;
+  static const int kYUV422 = 2;
+  static const int kYUV444 = 3;
+
+private:
+  virtual ~PDMFactory();
+  void CreatePDMs();
+  void CreateBlankPDM();
+  // Startup the provided PDM and add it to our list if successful.
+  bool StartupPDM(PlatformDecoderModule* aPDM);
+  // Returns the first PDM in our list supporting the mimetype.
+  already_AddRefed<PlatformDecoderModule>
+  GetDecoder(const TrackInfo& aTrackInfo,
+             DecoderDoctorDiagnostics* aDiagnostics) const;
+
+  already_AddRefed<MediaDataDecoder>
+  CreateDecoderWithPDM(PlatformDecoderModule* aPDM,
+                       const CreateDecoderParams& aParams);
+
+  nsTArray<RefPtr<PlatformDecoderModule>> mCurrentPDMs;
+  RefPtr<PlatformDecoderModule> mBlankPDM;
+
+  bool mWMFFailedToLoad = false;
+  bool mFFmpegFailedToLoad = false;
+#ifdef MOZ_GMP
+  bool mGMPPDMFailedToStartup = false;
+#endif
+
+  void EnsureInit() const;
+  template<class T> friend class StaticAutoPtr;
+  static StaticAutoPtr<PDMFactoryImpl> sInstance;
+  static StaticMutex sMonitor;
+};
+
+} // namespace mozilla
+
+#endif /* PDMFactory_h_ */

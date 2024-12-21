@@ -1,0 +1,94 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# These component dirs are built for all apps (including suite)
+if CONFIG['MOZ_ENABLE_XREMOTE']:
+    DIRS += ['remote']
+
+DIRS += [
+    'aboutcache',
+    'aboutcheckerboard',
+    'aboutmemory',
+    'aboutperformance',
+    'addoncompat',
+    'alerts',
+    'apppicker',
+    'asyncshutdown',
+    'blocklist',
+    'commandlines',
+    'console',
+    'contentprefs',
+    'cookie',
+    'crashmonitor',
+    'downloads',
+    'exthelper',
+    'filewatcher',
+    'finalizationwitness',
+    'formautofill',
+    'find',
+    'gfx',
+    'jsdownloads',
+    'lz4',
+    'mediasniffer',
+    'microformats',
+    'osfile',
+    'parentalcontrols',
+    'passwordmgr',
+    'perf',
+    'perfmonitoring',
+    'places',
+    'processsingleton',
+    'promiseworker',
+    'prompts',
+    'protobuf',
+    'reader',
+    'remotebrowserutils',
+    'reflect',
+    'startup',
+    'statusfilter',
+    'thumbnails',
+    'timermanager',
+    'tooltiptext',
+    'typeaheadfind',
+    'utils',
+    'urlformatter',
+    'viewconfig',
+    'workerloader',
+    'xulstore'
+]
+
+DIRS += ['mozintl']
+
+DIRS += ['narrate', 'viewsource'];
+
+if CONFIG['NS_PRINTING']:
+    DIRS += ['printing']
+
+if CONFIG['BUILD_CTYPES']:
+    DIRS += ['ctypes']
+
+if CONFIG['MOZ_FEEDS']:
+    DIRS += ['feeds']
+
+DIRS += ['autocomplete', 'satchel']
+
+if 'gtk' in CONFIG['MOZ_WIDGET_TOOLKIT']:
+    DIRS += ['filepicker']
+
+if CONFIG['MOZ_TOOLKIT_SEARCH'] and not CONFIG['MC_BASILISK'] \
+                                and not CONFIG['HYPE_ICEDOVE'] \
+                                and not CONFIG['HYPE_ICEWEASEL']:
+    DIRS += ['search']
+
+DIRS += ['captivedetect']
+
+DIRS += ['terminator']
+
+DIRS += ['build']
+
+EXTRA_COMPONENTS += [
+    'nsDefaultCLH.js',
+    'nsDefaultCLH.manifest',
+]
