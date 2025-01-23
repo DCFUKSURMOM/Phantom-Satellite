@@ -6,7 +6,7 @@ The only difference between this and stock Pale Moon is branding, at least for n
 
 I personally wouldnt mind having Windows XP support restored, and Id also like to be able to do non SSE builds for ancient CPUS (both of these mostly for fun), but I don't know how to do this. Any help would be appreciated.
 
-The contributor information is partially wrong, its like that becuase I accidentally uploaded without a fresh "git init" a while back, so it had the contribtor and commit info from the normal Pale Moon repo. I don't know of any way to fix it.
+The contributor information is partially wrong, its like that becuase I accidentally uploaded without a fresh "git init" a while back, so it had the contributor and commit info from the normal Pale Moon repo. I don't know of any way to fix it.
 
 You can build Phantom Satellite the same way you build stock Pale Moon using the instructions on the Pale Moon website
 
