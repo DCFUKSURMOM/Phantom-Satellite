@@ -12935,10 +12935,11 @@ nsGlobalWindow::RunTimeoutHandler(Timeout* aTimeout,
          nsJSUtils::ExecutionContext exec(aes.cx(), global);
          rv = exec.Compile(options, handler->GetHandlerText());
 
-         if (rv == NS_OK) {
+         JS::Rooted<JSScript*> script(aes.cx(), exec.GetScript());
+         if (script) {
            LoadedScript* initiatingScript = handler->GetInitiatingScript();
            if (initiatingScript) {
-             initiatingScript->AssociateWithScript(exec.GetScript());
+             initiatingScript->AssociateWithScript(script);
            }
 
            rv = exec.ExecScript();
@@ -13911,7 +13912,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(nsGlobalChromeWindow,
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 
 // QueryInterface implementation for nsGlobalChromeWindow
-NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION_INHERITED(nsGlobalChromeWindow)
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(nsGlobalChromeWindow)
   NS_INTERFACE_MAP_ENTRY(nsIDOMChromeWindow)
 NS_INTERFACE_MAP_END_INHERITING(nsGlobalWindow)
 

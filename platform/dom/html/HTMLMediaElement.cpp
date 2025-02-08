@@ -904,7 +904,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(HTMLMediaElement, nsGenericHTMLE
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mPendingPlayPromises)
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 
-NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION_INHERITED(HTMLMediaElement)
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(HTMLMediaElement)
   NS_INTERFACE_MAP_ENTRY(nsIDOMHTMLMediaElement)
   NS_INTERFACE_MAP_ENTRY(nsIAudioChannelAgentCallback)
 NS_INTERFACE_MAP_END_INHERITING(nsGenericHTMLElement)
@@ -2495,7 +2495,7 @@ NS_IMPL_ADDREF_INHERITED(HTMLMediaElement::StreamCaptureTrackSource,
                          MediaStreamTrackSource)
 NS_IMPL_RELEASE_INHERITED(HTMLMediaElement::StreamCaptureTrackSource,
                           MediaStreamTrackSource)
-NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION_INHERITED(HTMLMediaElement::StreamCaptureTrackSource)
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(HTMLMediaElement::StreamCaptureTrackSource)
 NS_INTERFACE_MAP_END_INHERITING(MediaStreamTrackSource)
 NS_IMPL_CYCLE_COLLECTION_INHERITED(HTMLMediaElement::StreamCaptureTrackSource,
                                    MediaStreamTrackSource,
@@ -2574,7 +2574,7 @@ NS_IMPL_ADDREF_INHERITED(HTMLMediaElement::DecoderCaptureTrackSource,
                          MediaStreamTrackSource)
 NS_IMPL_RELEASE_INHERITED(HTMLMediaElement::DecoderCaptureTrackSource,
                           MediaStreamTrackSource)
-NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION_INHERITED(HTMLMediaElement::DecoderCaptureTrackSource)
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(HTMLMediaElement::DecoderCaptureTrackSource)
 NS_INTERFACE_MAP_END_INHERITING(MediaStreamTrackSource)
 NS_IMPL_CYCLE_COLLECTION_INHERITED(HTMLMediaElement::DecoderCaptureTrackSource,
                                    MediaStreamTrackSource,
@@ -2618,7 +2618,7 @@ NS_IMPL_ADDREF_INHERITED(HTMLMediaElement::CaptureStreamTrackSourceGetter,
                          MediaStreamTrackSourceGetter)
 NS_IMPL_RELEASE_INHERITED(HTMLMediaElement::CaptureStreamTrackSourceGetter,
                           MediaStreamTrackSourceGetter)
-NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION_INHERITED(HTMLMediaElement::CaptureStreamTrackSourceGetter)
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(HTMLMediaElement::CaptureStreamTrackSourceGetter)
 NS_INTERFACE_MAP_END_INHERITING(MediaStreamTrackSourceGetter)
 NS_IMPL_CYCLE_COLLECTION_INHERITED(HTMLMediaElement::CaptureStreamTrackSourceGetter,
                                    MediaStreamTrackSourceGetter,
@@ -5595,8 +5595,14 @@ HTMLMediaElement::CopyInnerTo(Element* aDest)
 {
   nsresult rv = nsGenericHTMLElement::CopyInnerTo(aDest);
   NS_ENSURE_SUCCESS(rv, rv);
+
+  // Make sure cloned <audio> and <video> respect their "muted" attribute.
+  HTMLMediaElement* dest = static_cast<HTMLMediaElement*>(aDest);
+  if (HasAttr(kNameSpaceID_None, nsGkAtoms::muted)) {
+    dest->mMuted |= MUTED_BY_CONTENT;
+  }
+
   if (aDest->OwnerDoc()->IsStaticDocument()) {
-    HTMLMediaElement* dest = static_cast<HTMLMediaElement*>(aDest);
     dest->SetMediaInfo(mMediaInfo);
   }
   return rv;
