@@ -263,7 +263,7 @@ nsCSPContext::permitsInternal(CSPDirective aDir,
       // Do not send a report or notify observers if this is a preload - the
       // decision may be wrong due to the inability to get the nonce, and will
       // incorrectly fail the unit tests.
-      if (!aIsPreload && aSendViolationReports) {
+      if (CSPService::sCSPReportingEnabled && !aIsPreload && aSendViolationReports) {
         uint32_t lineNumber = 0;
         uint32_t columnNumber = 0;
         nsAutoCString spec;
@@ -601,13 +601,15 @@ nsCSPContext::GetAllowsInline(CSPDirective aDirective,
       }
       nsAutoString violatedDirective;
       mPolicies[i]->getDirectiveStringForContentType(aDirective, violatedDirective);
-      reportInlineViolation(aDirective,
-                            aNonce,
-                            aContent,
-                            violatedDirective,
-                            i,
-                            aLineNumber,
-                            aColumnNumber);
+      if(CSPService::sCSPReportingEnabled) {
+        reportInlineViolation(aDirective,
+                              aNonce,
+                              aContent,
+                              violatedDirective,
+                              i,
+                              aLineNumber,
+                              aColumnNumber);
+      }
     }
   }
   return NS_OK;
@@ -648,7 +650,8 @@ nsCSPContext::GetAllowsInline(CSPDirective aDirective,
     PR_BEGIN_MACRO                                                             \
     static_assert(directive##_SRC_DIRECTIVE == SCRIPT_SRC_DIRECTIVE ||         \
                   directive##_SRC_DIRECTIVE == STYLE_SRC_DIRECTIVE);           \
-    if (!mPolicies[p]->allows(directive##_SRC_DIRECTIVE, keyword, nonceOrHash, \
+    if(CSPService::sCSPReportingEnabled &&                                     \
+       !mPolicies[p]->allows(directive##_SRC_DIRECTIVE, keyword, nonceOrHash,  \
                               false)) {                                        \
       nsAutoString violatedDirective;                                          \
       mPolicies[p]->getDirectiveStringForContentType(                          \
