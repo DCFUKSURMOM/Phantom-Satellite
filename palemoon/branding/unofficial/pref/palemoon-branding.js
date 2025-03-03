@@ -4,7 +4,7 @@
 
 pref("app.vendorURL", "http://dcfuksurmom.duckdns.org");
 pref("browser.identity.ssl_domain_display", 1);
-pref("browser.newtab.url","about:blank");
+pref("browser.newtab.url","about:newtab");
 pref("extensions.getMoreThemesURL", "https://addons.palemoon.org/themes/");
 pref("extensions.update.autoUpdateDefault", true);
 pref("extensions.getAddons.maxResults", 10);
@@ -28,7 +28,7 @@ pref("services.sync.APILevel", 1);
 
 pref("accessibility.force_disabled", 1);
 pref("devtools.selfxss.count", 5);
-pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org");
+pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org/phantomsatellite");
 pref("startup.homepage_override_url","http://dcfuksurmom.duckdns.org");
 pref("app.releaseNotesURL", "http://www.palemoon.org/releasenotes.shtml");
 pref("app.update.enabled", false);

@@ -1,6 +1,6 @@
 // ===| General |==============================================================
 
-pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org");
+pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org/phantomsatellite");
 
 pref("app.vendorURL", "http://dcfuksurmom.duckdns.org");
 
