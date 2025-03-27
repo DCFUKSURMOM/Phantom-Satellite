@@ -7064,10 +7064,8 @@ class MRegExpMatcher
     TRIVIAL_NEW_WRAPPERS
     NAMED_OPERANDS((0, regexp), (1, string), (2, lastIndex))
 
-    [[nodiscard]] bool writeRecoverData(CompactBufferWriter& writer) const override;
-
     bool canRecoverOnBailout() const override {
-        return true;
+        return false;
     }
 
     bool possiblyCalls() const override {
@@ -7102,7 +7100,7 @@ class MRegExpSearcher
     [[nodiscard]] bool writeRecoverData(CompactBufferWriter& writer) const override;
 
     bool canRecoverOnBailout() const override {
-        return true;
+        return false;
     }
 
     bool possiblyCalls() const override {
