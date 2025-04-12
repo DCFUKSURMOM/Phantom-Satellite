@@ -91,7 +91,7 @@ class SharedArrayRawBuffer
 
     uint32_t refcount() const { return refcount_; }
 
-    void addReference();
+    [[nodiscard]] bool addReference();
     void dropReference();
 };
 

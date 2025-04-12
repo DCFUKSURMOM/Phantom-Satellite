@@ -177,8 +177,12 @@ FFmpegLibWrapper::Link()
   AV_FUNC(av_frame_unref,
           (AV_FUNC_AVUTIL_55 | AV_FUNC_AVUTIL_56 | AV_FUNC_AVUTIL_57 |
            AV_FUNC_AVUTIL_58 | AV_FUNC_AVUTIL_59 | AV_FUNC_AVUTIL_60))
-  AV_FUNC_OPTION(av_frame_get_colorspace, AV_FUNC_AVUTIL_ALL)
-  AV_FUNC_OPTION(av_frame_get_color_range, AV_FUNC_AVUTIL_ALL)
+  AV_FUNC_OPTION(av_frame_get_colorspace,
+          (AV_FUNC_AVUTIL_55 | AV_FUNC_AVUTIL_56 | AV_FUNC_AVUTIL_57 |
+           AV_FUNC_AVUTIL_58))
+  AV_FUNC_OPTION(av_frame_get_color_range,
+          (AV_FUNC_AVUTIL_55 | AV_FUNC_AVUTIL_56 | AV_FUNC_AVUTIL_57 |
+           AV_FUNC_AVUTIL_58))
 #undef AV_FUNC
 #undef AV_FUNC_OPTION
 

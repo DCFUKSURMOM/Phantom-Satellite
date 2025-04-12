@@ -28,8 +28,6 @@ if CONFIG['FFVPX_ASFLAGS']:
     else:
         # Default to unix, similar to how ASFLAGS setup works in configure.in
         ASFLAGS += ['-Pconfig_unix64.asm']
-    # default disabled components
-    ASFLAGS += ['-Pdefaults_disabled.asm']
 
 LOCAL_INCLUDES += ['/media/ffvpx']
 
@@ -49,11 +47,15 @@ if CONFIG['GNU_CC']:
     ]
     if CONFIG['CLANG_CXX']:
         CFLAGS += [
-            '-Wno-incompatible-pointer-types-discards-qualifiers',
+            '-Wno-absolute-value',
+            '-Wno-incompatible-pointer-types',
             '-Wno-string-conversion',
             '-Wno-visibility',
-            # Workaround for https://bugs.llvm.org/show_bug.cgi?id=26828#c4 :
-            '-ffreestanding',
+        ]
+    if CONFIG['CLANG_CL']:
+        CFLAGS += [
+            '-Wno-inconsistent-dllimport',
+            '-Wno-macro-redefined',
         ]
     else:
         CFLAGS += [
@@ -97,18 +99,3 @@ DEFINES['HAVE_AV_CONFIG_H'] = True
 if CONFIG['MOZ_DEBUG']:
     # Enable all assertions in debug builds.
     DEFINES['ASSERT_LEVEL'] = 2
-
-# clang-cl's <intrin.h> doesn't work the same as MSVC's.  For details, see:
-#
-# http://lists.llvm.org/pipermail/cfe-dev/2016-September/050943.html
-#
-# As a temporary workaround while upstream decides how to address this,
-# we enable modules to make <intrin.h> more MSVC-compatible.
-if CONFIG['CLANG_CL']:
-    CFLAGS += [
-        '-Xclang',
-        '-fmodules',
-        '-Xclang',
-        '-fmodules-cache-path=' + TOPOBJDIR + '/media/ffpvx',
-        '-fbuiltin-module-map',
-    ]

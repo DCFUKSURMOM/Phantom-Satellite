@@ -7,6 +7,7 @@
 #include "nsContentCID.h"
 #include "nsError.h"
 #include "nsIChannel.h"
+#include "mozilla/AutoRestore.h"
 #include "mozilla/dom/Element.h"
 #include "nsIDOMElement.h"
 #include "nsIDOMText.h"
@@ -568,6 +569,8 @@ public:
 
   NS_IMETHOD Run() override
   {
+    MOZ_RELEASE_ASSERT(mProcessor->mState ==
+                       txMozillaXSLTProcessor::State::None);
     mProcessor->TransformToDoc(nullptr, false);
     return NS_OK;
   }
@@ -601,6 +604,12 @@ txMozillaXSLTProcessor::ImportStylesheet(nsIDOMNode *aStyle)
     // We don't support importing multiple stylesheets yet.
     NS_ENSURE_TRUE(!mStylesheetDocument && !mStylesheet,
                    NS_ERROR_NOT_IMPLEMENTED);
+
+    if (mState != State::None) {
+        return NS_ERROR_DOM_INVALID_STATE_ERR;
+    }
+    mozilla::AutoRestore<State> restore(mState);
+    mState = State::Compiling;
 
     // Reset mCompileResult when importing.
     mCompileResult = NS_OK;
@@ -648,8 +657,16 @@ txMozillaXSLTProcessor::TransformToDocument(nsIDOMNode *aSource,
         return NS_ERROR_DOM_SECURITY_ERR;
     }
 
+    if (mState != State::None) {
+        return NS_ERROR_DOM_INVALID_STATE_ERR;
+    }
+
     nsresult rv = ensureStylesheet();
     NS_ENSURE_SUCCESS(rv, rv);
+
+    MOZ_RELEASE_ASSERT(mState == State::None);
+    mozilla::AutoRestore<State> restore(mState);
+    mState = State::Transforming;
 
     mSource = do_QueryInterface(aSource);
 
@@ -727,8 +744,16 @@ txMozillaXSLTProcessor::TransformToFragment(nsIDOMNode *aSource,
         return NS_ERROR_DOM_SECURITY_ERR;
     }
 
+    if (mState != State::None) {
+        return NS_ERROR_DOM_INVALID_STATE_ERR;        
+    }
+
     nsresult rv = ensureStylesheet();
     NS_ENSURE_SUCCESS(rv, rv);
+
+    MOZ_RELEASE_ASSERT(mState == State::None);
+    mozilla::AutoRestore<State> restore(mState);
+    mState = State::Transforming;
 
     nsAutoPtr<txXPathNode> sourceNode(txXPathNativeNode::createXPathNode(aSource));
     if (!sourceNode) {
@@ -765,6 +790,9 @@ txMozillaXSLTProcessor::SetParameter(const nsAString & aNamespaceURI,
                                      nsIVariant *aValue)
 {
     NS_ENSURE_ARG(aValue);
+    if (mState != State::None) {
+        return NS_ERROR_DOM_INVALID_STATE_ERR;
+    }
 
     nsCOMPtr<nsIVariant> value = aValue;
 
@@ -984,6 +1012,10 @@ NS_IMETHODIMP
 txMozillaXSLTProcessor::RemoveParameter(const nsAString& aNamespaceURI,
                                         const nsAString& aLocalName)
 {
+    if (mState != State::None) {
+        return NS_ERROR_DOM_INVALID_STATE_ERR;
+    }
+
     int32_t nsId = kNameSpaceID_Unknown;
     nsresult rv = nsContentUtils::NameSpaceManager()->
         RegisterNameSpace(aNamespaceURI, nsId);
@@ -998,6 +1030,10 @@ txMozillaXSLTProcessor::RemoveParameter(const nsAString& aNamespaceURI,
 NS_IMETHODIMP
 txMozillaXSLTProcessor::ClearParameters()
 {
+    if (mState != State::None) {
+        return NS_ERROR_DOM_INVALID_STATE_ERR;
+    }
+
     mVariables.clear();
 
     return NS_OK;
@@ -1006,6 +1042,10 @@ txMozillaXSLTProcessor::ClearParameters()
 NS_IMETHODIMP
 txMozillaXSLTProcessor::Reset()
 {
+    if (mState != State::None) {
+        return NS_ERROR_DOM_INVALID_STATE_ERR;
+    }
+
     if (mStylesheetDocument) {
         mStylesheetDocument->RemoveMutationObserver(this);
     }
@@ -1209,6 +1249,12 @@ txMozillaXSLTProcessor::notifyError()
 nsresult
 txMozillaXSLTProcessor::ensureStylesheet()
 {
+    if (mState != State::None) {
+        return NS_ERROR_DOM_INVALID_STATE_ERR;
+    }
+    mozilla::AutoRestore<State> restore(mState);
+    mState = State::Compiling;
+
     if (mStylesheet) {
         return NS_OK;
     }
@@ -1305,10 +1351,10 @@ txMozillaXSLTProcessor::Constructor(const GlobalObject& aGlobal,
 }
 
 void
-txMozillaXSLTProcessor::ImportStylesheet(nsINode& stylesheet,
+txMozillaXSLTProcessor::ImportStylesheet(nsINode& aStylesheet,
                                          mozilla::ErrorResult& aRv)
 {
-    aRv = ImportStylesheet(stylesheet.AsDOMNode());
+    aRv = ImportStylesheet(aStylesheet.AsDOMNode());
 }
 
 already_AddRefed<DocumentFragment>
@@ -1327,11 +1373,11 @@ txMozillaXSLTProcessor::TransformToFragment(nsINode& source,
 }
 
 already_AddRefed<nsIDocument>
-txMozillaXSLTProcessor::TransformToDocument(nsINode& source,
+txMozillaXSLTProcessor::TransformToDocument(nsINode& aSource,
                                             mozilla::ErrorResult& aRv)
 {
     nsCOMPtr<nsIDOMDocument> document;
-    aRv = TransformToDocument(source.AsDOMNode(), getter_AddRefs(document));
+    aRv = TransformToDocument(aSource.AsDOMNode(), getter_AddRefs(document));
     nsCOMPtr<nsIDocument> domDoc = do_QueryInterface(document);
     return domDoc.forget();
 }

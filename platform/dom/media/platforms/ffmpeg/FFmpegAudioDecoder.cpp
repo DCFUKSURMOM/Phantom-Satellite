@@ -149,21 +149,7 @@ FFmpegAudioDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample)
     }
 #else
 #define AVRESULT_OK 0
-
-    int ret = mLib->avcodec_receive_frame(mCodecContext, mFrame);
-    switch (ret) {
-      case AVRESULT_OK:
-        decoded = true;
-        break;
-      case AVERROR(EAGAIN):
-        break;
-      case AVERROR_EOF: {
-        FFMPEG_LOG("End of stream.");
-        return MediaResult(NS_ERROR_DOM_MEDIA_END_OF_STREAM,
-                           RESULT_DETAIL("End of stream"));
-      }
-    }
-    ret = mLib->avcodec_send_packet(mCodecContext, &packet);
+    int ret = mLib->avcodec_send_packet(mCodecContext, &packet);
     switch (ret) {
       case AVRESULT_OK:
         bytesConsumed = packet.size;
@@ -178,6 +164,20 @@ FFmpegAudioDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample)
         NS_WARNING("FFmpeg audio decoder error.");
         return MediaResult(NS_ERROR_DOM_MEDIA_DECODE_ERR,
                            RESULT_DETAIL("FFmpeg audio error"));
+    }
+
+    ret = mLib->avcodec_receive_frame(mCodecContext, mFrame);
+    switch (ret) {
+      case AVRESULT_OK:
+        decoded = true;
+        break;
+      case AVERROR(EAGAIN):
+        break;
+      case AVERROR_EOF: {
+        FFMPEG_LOG("End of stream.");
+        return MediaResult(NS_ERROR_DOM_MEDIA_END_OF_STREAM,
+                           RESULT_DETAIL("End of stream"));
+      }
     }
 #endif
 

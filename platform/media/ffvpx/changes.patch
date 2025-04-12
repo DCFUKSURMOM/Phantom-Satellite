@@ -1,233 +1,179 @@
-diff --git a/media/ffvpx/libavutil/eval.c b/media/ffvpx/libavutil/eval.c
-index 7642b91..e938bd5 100644
---- a/media/ffvpx/libavutil/eval.c
-+++ b/media/ffvpx/libavutil/eval.c
-@@ -34,7 +34,7 @@
- #include "internal.h"
- #include "log.h"
- #include "mathematics.h"
--#include "time.h"
-+#include "fftime.h"
- #include "avstring.h"
- #include "timer.h"
- 
-diff --git a/media/ffvpx/libavutil/time.h b/media/ffvpx/libavutil/fftime.h
-similarity index 100%
-rename from media/ffvpx/libavutil/time.h
-rename to media/ffvpx/libavutil/fftime.h
-diff --git a/media/ffvpx/libavutil/time.c b/media/ffvpx/libavutil/time.c
-index dbaee02..69419e6 100644
---- a/media/ffvpx/libavutil/time.c
-+++ b/media/ffvpx/libavutil/time.c
-@@ -33,7 +33,7 @@
- #include <windows.h>
- #endif
- 
--#include "time.h"
-+#include "fftime.h"
- #include "error.h"
- 
- int64_t av_gettime(void)
-diff --git a/media/ffvpx/libavutil/parseutils.c b/media/ffvpx/libavutil/parseutils.c
-index 9fb8d0a..97ad3b9 100644
---- a/media/ffvpx/libavutil/parseutils.c
-+++ b/media/ffvpx/libavutil/parseutils.c
-@@ -28,7 +28,7 @@
- #include "common.h"
- #include "eval.h"
- #include "log.h"
--#include "random_seed.h"
-+/* #include "random_seed.h" */
- #include "time_internal.h"
- #include "parseutils.h"
- 
-@@ -367,7 +367,7 @@ int av_parse_color(uint8_t *rgba_color, const char *color_string, int slen,
-     rgba_color[3] = 255;
- 
-     if (!av_strcasecmp(color_string2, "random") || !av_strcasecmp(color_string2, "bikeshed")) {
--        int rgba = av_get_random_seed();
-+        int rgba = 0xffffffff; /* av_get_random_seed(); */
-         rgba_color[0] = rgba >> 24;
-         rgba_color[1] = rgba >> 16;
-         rgba_color[2] = rgba >> 8;
+diff --git a/media/ffvpx/compat/w32pthreads.h b/media/ffvpx/compat/w32pthreads.h
+index 6405e72b64..b7a65b233b 100644
+--- a/media/ffvpx/compat/w32pthreads.h
++++ b/media/ffvpx/compat/w32pthreads.h
+@@ -44,7 +44,7 @@
+ #include "libavutil/common.h"
+ #include "libavutil/internal.h"
+ #include "libavutil/mem.h"
+-#include "libavutil/time.h"
++#include "libavutil/fftime.h"
 
-
+ typedef struct pthread_t {
+     void *handle;
 diff --git a/media/ffvpx/libavcodec/h264pred.c b/media/ffvpx/libavcodec/h264pred.c
-index 5632a58fd..f9f3af50e 100644
+index 25f9995a0b..da76ade34b 100644
 --- a/media/ffvpx/libavcodec/h264pred.c
 +++ b/media/ffvpx/libavcodec/h264pred.c
-@@ -592,12 +592,13 @@ av_cold void ff_h264_pred_init(H264PredContext *h, int codec_id,
+@@ -588,15 +588,15 @@ av_cold void ff_h264_pred_init(H264PredContext *h, int codec_id,
              break;
      }
 
--    if (ARCH_AARCH64)
-+    #if ARCH_AARCH64 == 1
-         ff_h264_pred_init_aarch64(h, codec_id, bit_depth, chroma_format_idc);
--    if (ARCH_ARM)
-+    #elif ARCH_ARM == 1
-         ff_h264_pred_init_arm(h, codec_id, bit_depth, chroma_format_idc);
--    if (ARCH_X86)
-+    #elif ARCH_X86 == 1
-         ff_h264_pred_init_x86(h, codec_id, bit_depth, chroma_format_idc);
--    if (ARCH_MIPS)
-+    #elif ARCH_MIPS == 1
-         ff_h264_pred_init_mips(h, codec_id, bit_depth, chroma_format_idc);
-+	#endif
+-#if ARCH_AARCH64
++#if ARCH_AARCH64 == 1
+     ff_h264_pred_init_aarch64(h, codec_id, bit_depth, chroma_format_idc);
+-#elif ARCH_ARM
++#elif ARCH_ARM == 1
+     ff_h264_pred_init_arm(h, codec_id, bit_depth, chroma_format_idc);
+-#elif ARCH_X86
++#elif ARCH_X86 == 1
+     ff_h264_pred_init_x86(h, codec_id, bit_depth, chroma_format_idc);
+-#elif ARCH_MIPS
++#elif ARCH_MIPS == 1
+     ff_h264_pred_init_mips(h, codec_id, bit_depth, chroma_format_idc);
+-#elif ARCH_LOONGARCH
++#elif ARCH_LOONGARCH == 1
+     ff_h264_pred_init_loongarch(h, codec_id, bit_depth, chroma_format_idc);
+ #endif
  }
 diff --git a/media/ffvpx/libavcodec/videodsp.c b/media/ffvpx/libavcodec/videodsp.c
-index ce9e9eb14..4f082a426 100644
+index bdff2e76f5..ef0f21f99a 100644
 --- a/media/ffvpx/libavcodec/videodsp.c
 +++ b/media/ffvpx/libavcodec/videodsp.c
-@@ -44,14 +44,15 @@ av_cold void ff_videodsp_init(VideoDSPContext *ctx, int bpc)
+@@ -45,17 +45,17 @@ av_cold void ff_videodsp_init(VideoDSPContext *ctx, int bpc)
          ctx->emulated_edge_mc = ff_emulated_edge_mc_16;
      }
 
--    if (ARCH_AARCH64)
-+    #if ARCH_AARCH64 == 1
-         ff_videodsp_init_aarch64(ctx, bpc);
--    if (ARCH_ARM)
-+    #elif ARCH_ARM == 1
-         ff_videodsp_init_arm(ctx, bpc);
--    if (ARCH_PPC)
-+    #elif ARCH_PPC == 1
-         ff_videodsp_init_ppc(ctx, bpc);
--    if (ARCH_X86)
-+    #elif ARCH_X86 == 1
-         ff_videodsp_init_x86(ctx, bpc);
--    if (ARCH_MIPS)
-+    #elif ARCH_MIPS == 1
-         ff_videodsp_init_mips(ctx, bpc);
-+    #endif
+-#if ARCH_AARCH64
++#if ARCH_AARCH64 == 1
+     ff_videodsp_init_aarch64(ctx, bpc);
+-#elif ARCH_ARM
++#elif ARCH_ARM == 1
+     ff_videodsp_init_arm(ctx, bpc);
+-#elif ARCH_PPC
++#elif ARCH_PPC == 1
+     ff_videodsp_init_ppc(ctx, bpc);
+-#elif ARCH_X86
++#elif ARCH_X86 == 1
+     ff_videodsp_init_x86(ctx, bpc);
+-#elif ARCH_MIPS
++#elif ARCH_MIPS == 1
+     ff_videodsp_init_mips(ctx, bpc);
+-#elif ARCH_LOONGARCH64
++#elif ARCH_LOONGARCH64 == 1
+     ff_videodsp_init_loongarch(ctx, bpc);
+ #endif
  }
 diff --git a/media/ffvpx/libavcodec/vp8dsp.c b/media/ffvpx/libavcodec/vp8dsp.c
-index 4ff63d078..efaf3e71a 100644
+index 7a85e9f4ca..4bffdea52f 100644
 --- a/media/ffvpx/libavcodec/vp8dsp.c
 +++ b/media/ffvpx/libavcodec/vp8dsp.c
-@@ -673,14 +673,15 @@ av_cold void ff_vp78dsp_init(VP8DSPContext *dsp)
+@@ -675,13 +675,13 @@ av_cold void ff_vp78dsp_init(VP8DSPContext *dsp)
      VP78_BILINEAR_MC_FUNC(1, 8);
      VP78_BILINEAR_MC_FUNC(2, 4);
 
--    if (ARCH_AARCH64)
-+    #if ARCH_AARCH64 == 1
-         ff_vp78dsp_init_aarch64(dsp);
--    if (ARCH_ARM)
-+    #elif ARCH_ARM == 1
-         ff_vp78dsp_init_arm(dsp);
--    if (ARCH_PPC)
-+    #elif ARCH_PPC == 1
-         ff_vp78dsp_init_ppc(dsp);
--    if (ARCH_X86)
-+    #elif ARCH_X86 == 1
-         ff_vp78dsp_init_x86(dsp);
-+    #endif
+-#if ARCH_AARCH64
++#if ARCH_AARCH64 == 1
+     ff_vp78dsp_init_aarch64(dsp);
+-#elif ARCH_ARM
++#elif ARCH_ARM == 1
+     ff_vp78dsp_init_arm(dsp);
+-#elif ARCH_PPC
++#elif ARCH_PPC == 1
+     ff_vp78dsp_init_ppc(dsp);
+-#elif ARCH_X86
++#elif ARCH_X86 == 1
+     ff_vp78dsp_init_x86(dsp);
+ #endif
  }
-
- #if CONFIG_VP7_DECODER
-@@ -735,13 +736,14 @@ av_cold void ff_vp8dsp_init(VP8DSPContext *dsp)
+@@ -738,15 +738,15 @@ av_cold void ff_vp8dsp_init(VP8DSPContext *dsp)
      dsp->vp8_v_loop_filter_simple = vp8_v_loop_filter_simple_c;
      dsp->vp8_h_loop_filter_simple = vp8_h_loop_filter_simple_c;
 
--    if (ARCH_AARCH64)
-+    #if ARCH_AARCH64 == 1
-         ff_vp8dsp_init_aarch64(dsp);
--    if (ARCH_ARM)
-+    #elif ARCH_ARM == 1
-         ff_vp8dsp_init_arm(dsp);
--    if (ARCH_X86)
-+    #elif ARCH_X86 == 1
-         ff_vp8dsp_init_x86(dsp);
--    if (ARCH_MIPS)
-+    #elif ARCH_MIPS == 1
-         ff_vp8dsp_init_mips(dsp);
-+    #endif
+-#if ARCH_AARCH64
++#if ARCH_AARCH64 == 1
+     ff_vp8dsp_init_aarch64(dsp);
+-#elif ARCH_ARM
++#elif ARCH_ARM == 1
+     ff_vp8dsp_init_arm(dsp);
+-#elif ARCH_X86
++#elif ARCH_X86 == 1
+     ff_vp8dsp_init_x86(dsp);
+-#elif ARCH_MIPS
++#elif ARCH_MIPS == 1
+     ff_vp8dsp_init_mips(dsp);
+-#elif ARCH_LOONGARCH
++#elif ARCH_LOONGARCH == 1
+     ff_vp8dsp_init_loongarch(dsp);
+ #endif
  }
- #endif /* CONFIG_VP8_DECODER */
 diff --git a/media/ffvpx/libavcodec/vp9dsp.c b/media/ffvpx/libavcodec/vp9dsp.c
-index f6d73f73c..b8fa3be36 100644
+index d8ddf74d4f..8de952343a 100644
 --- a/media/ffvpx/libavcodec/vp9dsp.c
 +++ b/media/ffvpx/libavcodec/vp9dsp.c
-@@ -92,8 +92,13 @@ av_cold void ff_vp9dsp_init(VP9DSPContext *dsp, int bpp, int bitexact)
+@@ -96,15 +96,15 @@ av_cold void ff_vp9dsp_init(VP9DSPContext *dsp, int bpp, int bitexact)
          ff_vp9dsp_init_12(dsp);
      }
 
--    if (ARCH_AARCH64) ff_vp9dsp_init_aarch64(dsp, bpp);
--    if (ARCH_ARM) ff_vp9dsp_init_arm(dsp, bpp);
--    if (ARCH_X86) ff_vp9dsp_init_x86(dsp, bpp, bitexact);
--    if (ARCH_MIPS) ff_vp9dsp_init_mips(dsp, bpp);
-+    #if ARCH_AARCH64 == 1
-+        ff_vp9dsp_init_aarch64(dsp, bpp);
-+    #elif ARCH_ARM == 1
-+        ff_vp9dsp_init_arm(dsp, bpp);
-+    #elif ARCH_X86 == 1
-+        ff_vp9dsp_init_x86(dsp, bpp, bitexact);
-+    #elif ARCH_MIPS == 1
-+        ff_vp9dsp_init_mips(dsp, bpp);
-+    #endif
+-#if ARCH_AARCH64
++#if ARCH_AARCH64 == 1
+     ff_vp9dsp_init_aarch64(dsp, bpp);
+-#elif ARCH_ARM
++#elif ARCH_ARM == 1
+     ff_vp9dsp_init_arm(dsp, bpp);
+-#elif ARCH_X86
++#elif ARCH_X86 == 1
+     ff_vp9dsp_init_x86(dsp, bpp, bitexact);
+-#elif ARCH_MIPS
++#elif ARCH_MIPS == 1
+     ff_vp9dsp_init_mips(dsp, bpp);
+-#elif ARCH_LOONGARCH
++#elif ARCH_LOONGARCH == 1
+     ff_vp9dsp_init_loongarch(dsp, bpp);
+ #endif
  }
 diff --git a/media/ffvpx/libavutil/cpu.c b/media/ffvpx/libavutil/cpu.c
-index 6548cc304..2cf1a3829 100644
+index 2c5f7f4958..86b571ff81 100644
 --- a/media/ffvpx/libavutil/cpu.c
 +++ b/media/ffvpx/libavutil/cpu.c
-@@ -51,41 +51,43 @@ static atomic_int cpu_flags = ATOMIC_VAR_INIT(-1);
+@@ -54,27 +54,27 @@ static atomic_int cpu_count = ATOMIC_VAR_INIT(-1);
 
  static int get_cpu_flags(void)
  {
--    if (ARCH_AARCH64)
-+    #if ARCH_AARCH64 == 1
-         return ff_get_cpu_flags_aarch64();
--    if (ARCH_ARM)
-+    #elif ARCH_ARM == 1
-         return ff_get_cpu_flags_arm();
--    if (ARCH_PPC)
-+    #elif ARCH_PPC == 1
-         return ff_get_cpu_flags_ppc();
--    if (ARCH_X86)
-+    #elif ARCH_X86 == 1
-         return ff_get_cpu_flags_x86();
-+    #endif
+-#if ARCH_MIPS
++#if ARCH_MIPS == 1
+     return ff_get_cpu_flags_mips();
+-#elif ARCH_AARCH64
++#elif ARCH_AARCH64 == 1
+     return ff_get_cpu_flags_aarch64();
+-#elif ARCH_ARM
++#elif ARCH_ARM == 1
+     return ff_get_cpu_flags_arm();
+-#elif ARCH_PPC
++#elif ARCH_PPC == 1
+     return ff_get_cpu_flags_ppc();
+-#elif ARCH_RISCV
++#elif ARCH_RISCV == 1
+     return ff_get_cpu_flags_riscv();
+-#elif ARCH_X86
++#elif ARCH_X86 == 1
+     return ff_get_cpu_flags_x86();
+-#elif ARCH_LOONGARCH
++#elif ARCH_LOONGARCH == 1
+     return ff_get_cpu_flags_loongarch();
+ #endif
      return 0;
  }
 
  void av_force_cpu_flags(int arg){
 -    if (ARCH_X86 &&
 -           (arg & ( AV_CPU_FLAG_3DNOW    |
--                    AV_CPU_FLAG_3DNOWEXT |
--                    AV_CPU_FLAG_MMXEXT   |
--                    AV_CPU_FLAG_SSE      |
--                    AV_CPU_FLAG_SSE2     |
--                    AV_CPU_FLAG_SSE2SLOW |
--                    AV_CPU_FLAG_SSE3     |
--                    AV_CPU_FLAG_SSE3SLOW |
--                    AV_CPU_FLAG_SSSE3    |
--                    AV_CPU_FLAG_SSE4     |
--                    AV_CPU_FLAG_SSE42    |
--                    AV_CPU_FLAG_AVX      |
--                    AV_CPU_FLAG_AVXSLOW  |
--                    AV_CPU_FLAG_XOP      |
--                    AV_CPU_FLAG_FMA3     |
--                    AV_CPU_FLAG_FMA4     |
--                    AV_CPU_FLAG_AVX2     |
--                    AV_CPU_FLAG_AVX512   ))
 +    #if ARCH_X86 == 1
-+    if ((arg & (AV_CPU_FLAG_3DNOW    |
-+                AV_CPU_FLAG_3DNOWEXT |
-+                AV_CPU_FLAG_MMXEXT   |
-+                AV_CPU_FLAG_SSE      |
-+                AV_CPU_FLAG_SSE2     |
-+                AV_CPU_FLAG_SSE2SLOW |
-+                AV_CPU_FLAG_SSE3     |
-+                AV_CPU_FLAG_SSE3SLOW |
-+                AV_CPU_FLAG_SSSE3    |
-+                AV_CPU_FLAG_SSE4     |
-+                AV_CPU_FLAG_SSE42    |
-+                AV_CPU_FLAG_AVX      |
-+                AV_CPU_FLAG_AVXSLOW  |
-+                AV_CPU_FLAG_XOP      |
-+                AV_CPU_FLAG_FMA3     |
-+                AV_CPU_FLAG_FMA4     |
-+                AV_CPU_FLAG_AVX2     |
-+                AV_CPU_FLAG_AVX512   ))
-         && !(arg & AV_CPU_FLAG_MMX)) {
++       if ((arg & ( AV_CPU_FLAG_3DNOW    |
+                     AV_CPU_FLAG_3DNOWEXT |
+                     AV_CPU_FLAG_MMXEXT   |
+                     AV_CPU_FLAG_SSE      |
+@@ -96,6 +96,7 @@ void av_force_cpu_flags(int arg){
          av_log(NULL, AV_LOG_WARNING, "MMX implied by specified flags\n");
          arg |= AV_CPU_FLAG_MMX;
      }
@@ -235,49 +181,88 @@ index 6548cc304..2cf1a3829 100644
 
      atomic_store_explicit(&cpu_flags, arg, memory_order_relaxed);
  }
-@@ -308,14 +310,15 @@ int av_cpu_count(void)
+diff --git a/media/ffvpx/libavutil/eval.c b/media/ffvpx/libavutil/eval.c
+index d0bada9b31..17381256fb 100644
+--- a/media/ffvpx/libavutil/eval.c
++++ b/media/ffvpx/libavutil/eval.c
+@@ -35,7 +35,7 @@
+ #include "internal.h"
+ #include "log.h"
+ #include "mathematics.h"
+-#include "time.h"
++#include "fftime.h"
+ #include "avstring.h"
+ #include "timer.h"
+ #include "reverse.h"
 
- size_t av_cpu_max_align(void)
- {
--    if (ARCH_AARCH64)
-+    #if ARCH_AARCH64 == 1
-         return ff_get_cpu_max_align_aarch64();
--    if (ARCH_ARM)
-+    #elif ARCH_ARM == 1
-         return ff_get_cpu_max_align_arm();
--    if (ARCH_PPC)
-+    #elif ARCH_PPC == 1
-         return ff_get_cpu_max_align_ppc();
--    if (ARCH_X86)
-+    #elif ARCH_X86 == 1
-         return ff_get_cpu_max_align_x86();
-+    #endif
-
-     return 8;
- }
+diff --git a/media/ffvpx/libavutil/time.h b/media/ffvpx/libavutil/fftime.h
+similarity index 100%
+rename from media/ffvpx/libavutil/time.h
+rename to media/ffvpx/libavutil/fftime.h
 diff --git a/media/ffvpx/libavutil/float_dsp.c b/media/ffvpx/libavutil/float_dsp.c
-index 6e28d71b5..6c30dafc5 100644
+index 742dd679d2..6e7b4cd67d 100644
 --- a/media/ffvpx/libavutil/float_dsp.c
 +++ b/media/ffvpx/libavutil/float_dsp.c
-@@ -150,15 +150,16 @@ av_cold AVFloatDSPContext *avpriv_float_dsp_alloc(int bit_exact)
+@@ -150,17 +150,17 @@ av_cold AVFloatDSPContext *avpriv_float_dsp_alloc(int bit_exact)
      fdsp->butterflies_float = butterflies_float_c;
      fdsp->scalarproduct_float = avpriv_scalarproduct_float_c;
 
--    if (ARCH_AARCH64)
-+    #if ARCH_AARCH64 == 1
-         ff_float_dsp_init_aarch64(fdsp);
--    if (ARCH_ARM)
-+    #elif ARCH_ARM == 1
-         ff_float_dsp_init_arm(fdsp);
--    if (ARCH_PPC)
-+    #elif ARCH_PPC == 1
-         ff_float_dsp_init_ppc(fdsp, bit_exact);
--    if (ARCH_X86)
-+    #elif ARCH_X86 == 1
-         ff_float_dsp_init_x86(fdsp);
--    if (ARCH_MIPS)
-+    #elif ARCH_MIPS == 1
-         ff_float_dsp_init_mips(fdsp);
-+    #endif
+-#if ARCH_AARCH64
++#if ARCH_AARCH64 == 1
+     ff_float_dsp_init_aarch64(fdsp);
+-#elif ARCH_ARM
++#elif ARCH_ARM == 1
+     ff_float_dsp_init_arm(fdsp);
+-#elif ARCH_PPC
++#elif ARCH_PPC == 1
+     ff_float_dsp_init_ppc(fdsp, bit_exact);
+-#elif ARCH_RISCV
++#elif ARCH_RISCV == 1
+     ff_float_dsp_init_riscv(fdsp);
+-#elif ARCH_X86
++#elif ARCH_X86 == 1
+     ff_float_dsp_init_x86(fdsp);
+-#elif ARCH_MIPS
++#elif ARCH_MIPS == 1
+     ff_float_dsp_init_mips(fdsp);
+ #endif
      return fdsp;
- }
+diff --git a/media/ffvpx/libavutil/parseutils.c b/media/ffvpx/libavutil/parseutils.c
+index 94e88e0a79..c2916c458b 100644
+--- a/media/ffvpx/libavutil/parseutils.c
++++ b/media/ffvpx/libavutil/parseutils.c
+@@ -28,10 +28,10 @@
+ #include "common.h"
+ #include "eval.h"
+ #include "log.h"
+-#include "random_seed.h"
++/* #include "random_seed.h" */
+ #include "time_internal.h"
+ #include "parseutils.h"
+-#include "time.h"
++#include "fftime.h"
+
+ #ifdef TEST
+
+@@ -375,7 +375,7 @@ int av_parse_color(uint8_t *rgba_color, const char *color_string, int slen,
+     rgba_color[3] = 255;
+
+     if (!av_strcasecmp(color_string2, "random") || !av_strcasecmp(color_string2, "bikeshed")) {
+-        int rgba = av_get_random_seed();
++        int rgba = 0xffffffff; /* av_get_random_seed(); */
+         rgba_color[0] = rgba >> 24;
+         rgba_color[1] = rgba >> 16;
+         rgba_color[2] = rgba >> 8;
+diff --git a/media/ffvpx/libavutil/time.c b/media/ffvpx/libavutil/time.c
+index 740afc4785..83743da0b2 100644
+--- a/media/ffvpx/libavutil/time.c
++++ b/media/ffvpx/libavutil/time.c
+@@ -33,7 +33,7 @@
+ #include <windows.h>
+ #endif
+
+-#include "time.h"
++#include "fftime.h"
+ #include "error.h"
+
+ int64_t av_gettime(void)

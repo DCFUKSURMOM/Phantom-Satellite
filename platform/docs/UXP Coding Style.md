@@ -129,7 +129,7 @@ switch (variable) {
   case value2: // Comment describing 2 (alternative)
     code_for_2;
     code_for_2;
-    // fallthrough
+    [[fallthrough]];
   case value3:
   case value4:
     code_for_3_and_4;
@@ -139,6 +139,7 @@ switch (variable) {
     code_for_default;
 }
 ```
+All fallthrough cases in C++ should include the `[[fallthrough]]` C++17 keyword.
 ### Classes
 Classes have some special formatting rules applied to them:
 - Classes follow the following sequence: CTOR, DTOR, methods, variables

@@ -374,26 +374,39 @@ FFmpegVideoDecoder<LIBAV_VER>::CreateImage(int64_t aOffset, int64_t aPts,
     b.mPlanes[1].mWidth = b.mPlanes[2].mWidth = (mFrame->width + 1) >> 1;
     b.mPlanes[1].mHeight = b.mPlanes[2].mHeight = (mFrame->height + 1) >> 1;
   }
+
+  AVColorSpace colorSpace = AVCOL_SPC_UNSPECIFIED;
+#if LIBAVCODEC_VERSION_MAJOR > 58
+  colorSpace = mFrame->colorspace;
+#else
   if (mLib->av_frame_get_colorspace) {
-    switch (mLib->av_frame_get_colorspace(mFrame)) {
-      case AVCOL_SPC_BT709:
-        b.mYUVColorSpace = YUVColorSpace::BT709;
-        break;
-      case AVCOL_SPC_SMPTE170M:
-      case AVCOL_SPC_BT470BG:
-        b.mYUVColorSpace = YUVColorSpace::BT601;
-        break;
-      case AVCOL_SPC_RGB:
-        b.mYUVColorSpace = YUVColorSpace::IDENTITY;
-        break;
-      default:
-        break;
-    }
+    colorSpace = (AVColorSpace)mLib->av_frame_get_colorspace(mFrame);
   }
- if (mLib->av_frame_get_color_range) {
-   auto range = mLib->av_frame_get_color_range(mFrame);
-   b.mColorRange = range == AVCOL_RANGE_JPEG ? ColorRange::FULL : ColorRange::LIMITED;
- }
+#endif
+  switch (colorSpace) {
+    case AVCOL_SPC_BT709:
+      b.mYUVColorSpace = YUVColorSpace::BT709;
+      break;
+    case AVCOL_SPC_SMPTE170M:
+    case AVCOL_SPC_BT470BG:
+      b.mYUVColorSpace = YUVColorSpace::BT601;
+      break;
+    case AVCOL_SPC_RGB:
+      b.mYUVColorSpace = YUVColorSpace::IDENTITY;
+      break;
+    default:
+      break;
+  }
+
+  AVColorRange range = AVCOL_RANGE_UNSPECIFIED;
+#if LIBAVCODEC_VERSION_MAJOR > 58
+  range = mFrame->color_range;
+#else
+  if (mLib->av_frame_get_color_range) {
+	range = (AVColorRange)mLib->av_frame_get_color_range(mFrame);
+  }
+#endif
+  b.mColorRange = range == AVCOL_RANGE_JPEG ? ColorRange::FULL : ColorRange::LIMITED;
 
   RefPtr<VideoData> v =
     VideoData::CreateAndCopyData(mInfo,

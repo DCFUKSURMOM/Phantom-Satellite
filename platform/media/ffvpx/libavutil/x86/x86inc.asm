@@ -411,16 +411,6 @@ DECLARE_REG_TMP_SIZE 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14
     %endif
 %endmacro
 
-%macro DEFINE_ARGS_INTERNAL 3+
-    %ifnum %2
-        DEFINE_ARGS %3
-    %elif %1 == 4
-        DEFINE_ARGS %2
-    %elif %1 > 4
-        DEFINE_ARGS %2, %3
-    %endif
-%endmacro
-
 %if WIN64 ; Windows x64 ;=================================================
 
 DECLARE_REG 0,  rcx
@@ -439,7 +429,7 @@ DECLARE_REG 12, R15, 104
 DECLARE_REG 13, R12, 112
 DECLARE_REG 14, R13, 120
 
-%macro PROLOGUE 2-5+ 0 ; #args, #regs, #xmm_regs, [stack_size,] arg_names...
+%macro PROLOGUE 2-5+ 0, 0 ; #args, #regs, #xmm_regs, [stack_size,] arg_names...
     %assign num_args %1
     %assign regs_used %2
     ASSERT regs_used >= num_args
@@ -451,7 +441,15 @@ DECLARE_REG 14, R13, 120
         WIN64_SPILL_XMM %3
     %endif
     LOAD_IF_USED 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
-    DEFINE_ARGS_INTERNAL %0, %4, %5
+    %if %0 > 4
+        %ifnum %4
+            DEFINE_ARGS %5
+        %else
+            DEFINE_ARGS %4, %5
+        %endif
+    %elifnnum %4
+        DEFINE_ARGS %4
+    %endif
 %endmacro
 
 %macro WIN64_PUSH_XMM 0
@@ -547,7 +545,7 @@ DECLARE_REG 12, R15, 56
 DECLARE_REG 13, R12, 64
 DECLARE_REG 14, R13, 72
 
-%macro PROLOGUE 2-5+ 0 ; #args, #regs, #xmm_regs, [stack_size,] arg_names...
+%macro PROLOGUE 2-5+ 0, 0 ; #args, #regs, #xmm_regs, [stack_size,] arg_names...
     %assign num_args %1
     %assign regs_used %2
     %assign xmm_regs_used %3
@@ -557,7 +555,15 @@ DECLARE_REG 14, R13, 72
     PUSH_IF_USED 9, 10, 11, 12, 13, 14
     ALLOC_STACK %4
     LOAD_IF_USED 6, 7, 8, 9, 10, 11, 12, 13, 14
-    DEFINE_ARGS_INTERNAL %0, %4, %5
+    %if %0 > 4
+        %ifnum %4
+            DEFINE_ARGS %5
+        %else
+            DEFINE_ARGS %4, %5
+        %endif
+    %elifnnum %4
+        DEFINE_ARGS %4
+    %endif
 %endmacro
 
 %define has_epilogue regs_used > 9 || stack_size > 0 || vzeroupper_required
@@ -598,7 +604,7 @@ DECLARE_REG 6, ebp, 28
 
 DECLARE_ARG 7, 8, 9, 10, 11, 12, 13, 14
 
-%macro PROLOGUE 2-5+ ; #args, #regs, #xmm_regs, [stack_size,] arg_names...
+%macro PROLOGUE 2-5+ 0, 0 ; #args, #regs, #xmm_regs, [stack_size,] arg_names...
     %assign num_args %1
     %assign regs_used %2
     ASSERT regs_used >= num_args
@@ -613,7 +619,15 @@ DECLARE_ARG 7, 8, 9, 10, 11, 12, 13, 14
     PUSH_IF_USED 3, 4, 5, 6
     ALLOC_STACK %4
     LOAD_IF_USED 0, 1, 2, 3, 4, 5, 6
-    DEFINE_ARGS_INTERNAL %0, %4, %5
+    %if %0 > 4
+        %ifnum %4
+            DEFINE_ARGS %5
+        %else
+            DEFINE_ARGS %4, %5
+        %endif
+    %elifnnum %4
+        DEFINE_ARGS %4
+    %endif
 %endmacro
 
 %define has_epilogue regs_used > 3 || stack_size > 0 || vzeroupper_required
@@ -803,32 +817,33 @@ BRANCH_INSTR jz, je, jnz, jne, jl, jle, jnl, jnle, jg, jge, jng, jnge, ja, jae, 
 
 ; cpuflags
 
-%assign cpuflags_mmx      (1<<0)
-%assign cpuflags_mmx2     (1<<1) | cpuflags_mmx
-%assign cpuflags_3dnow    (1<<2) | cpuflags_mmx
-%assign cpuflags_3dnowext (1<<3) | cpuflags_3dnow
-%assign cpuflags_sse      (1<<4) | cpuflags_mmx2
-%assign cpuflags_sse2     (1<<5) | cpuflags_sse
-%assign cpuflags_sse2slow (1<<6) | cpuflags_sse2
-%assign cpuflags_lzcnt    (1<<7) | cpuflags_sse2
-%assign cpuflags_sse3     (1<<8) | cpuflags_sse2
-%assign cpuflags_ssse3    (1<<9) | cpuflags_sse3
-%assign cpuflags_sse4     (1<<10)| cpuflags_ssse3
-%assign cpuflags_sse42    (1<<11)| cpuflags_sse4
-%assign cpuflags_aesni    (1<<12)| cpuflags_sse42
-%assign cpuflags_avx      (1<<13)| cpuflags_sse42
-%assign cpuflags_xop      (1<<14)| cpuflags_avx
-%assign cpuflags_fma4     (1<<15)| cpuflags_avx
-%assign cpuflags_fma3     (1<<16)| cpuflags_avx
-%assign cpuflags_bmi1     (1<<17)| cpuflags_avx|cpuflags_lzcnt
-%assign cpuflags_bmi2     (1<<18)| cpuflags_bmi1
-%assign cpuflags_avx2     (1<<19)| cpuflags_fma3|cpuflags_bmi2
-%assign cpuflags_avx512   (1<<20)| cpuflags_avx2 ; F, CD, BW, DQ, VL
+%assign cpuflags_mmx       (1<<0)
+%assign cpuflags_mmx2      (1<<1) | cpuflags_mmx
+%assign cpuflags_3dnow     (1<<2) | cpuflags_mmx
+%assign cpuflags_3dnowext  (1<<3) | cpuflags_3dnow
+%assign cpuflags_sse       (1<<4) | cpuflags_mmx2
+%assign cpuflags_sse2      (1<<5) | cpuflags_sse
+%assign cpuflags_sse2slow  (1<<6) | cpuflags_sse2
+%assign cpuflags_lzcnt     (1<<7) | cpuflags_sse2
+%assign cpuflags_sse3      (1<<8) | cpuflags_sse2
+%assign cpuflags_ssse3     (1<<9) | cpuflags_sse3
+%assign cpuflags_sse4      (1<<10)| cpuflags_ssse3
+%assign cpuflags_sse42     (1<<11)| cpuflags_sse4
+%assign cpuflags_aesni     (1<<12)| cpuflags_sse42
+%assign cpuflags_avx       (1<<13)| cpuflags_sse42
+%assign cpuflags_xop       (1<<14)| cpuflags_avx
+%assign cpuflags_fma4      (1<<15)| cpuflags_avx
+%assign cpuflags_fma3      (1<<16)| cpuflags_avx
+%assign cpuflags_bmi1      (1<<17)| cpuflags_avx|cpuflags_lzcnt
+%assign cpuflags_bmi2      (1<<18)| cpuflags_bmi1
+%assign cpuflags_avx2      (1<<19)| cpuflags_fma3|cpuflags_bmi2
+%assign cpuflags_avx512    (1<<20)| cpuflags_avx2 ; F, CD, BW, DQ, VL
+%assign cpuflags_avx512icl (1<<25)| cpuflags_avx512
 
-%assign cpuflags_cache32  (1<<21)
-%assign cpuflags_cache64  (1<<22)
-%assign cpuflags_aligned  (1<<23) ; not a cpu feature, but a function variant
-%assign cpuflags_atom     (1<<24)
+%assign cpuflags_cache32   (1<<21)
+%assign cpuflags_cache64   (1<<22)
+%assign cpuflags_aligned   (1<<23) ; not a cpu feature, but a function variant
+%assign cpuflags_atom      (1<<24)
 
 ; Returns a boolean value expressing whether or not the specified cpuflag is enabled.
 %define    cpuflag(x) (((((cpuflags & (cpuflags_ %+ x)) ^ (cpuflags_ %+ x)) - 1) >> 31) & 1)

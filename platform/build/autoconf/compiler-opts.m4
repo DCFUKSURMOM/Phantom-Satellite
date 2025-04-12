@@ -188,7 +188,7 @@ if test "$GNU_CC"; then
 
     if test -z "$CLANG_CC"; then
         case "$CC_VERSION" in
-        4.* | 5.* | 6.*)
+        4.* | 5.* | 6.* | 7.* | 8.*)
             AC_MSG_ERROR([Unsupported GCC version.])
             ;;
         *)
