@@ -1,0 +1,11 @@
+--- platform/memory/mozjemalloc/jemalloc.c.orig	2024-08-21 12:02:59.609309620 +0200
++++ platform/memory/mozjemalloc/jemalloc.c	2024-04-21 12:03:20.199164183 +0200
+@@ -896,7 +896,7 @@
+  * controlling the malloc behavior are defined as compile-time constants
+  * for best performance and cannot be altered at runtime.
+  */
+-#if !defined(__ia64__) && !defined(__sparc__) && !defined(__mips__) && !defined(__aarch64__)
++#if !defined(__ia64__) && !defined(__sparc__) && !defined(__mips__) && !defined(__aarch64__) && !defined(__powerpc) && !defined(__powerpc64)
+ #define MALLOC_STATIC_SIZES 1
+ #endif
+ 
