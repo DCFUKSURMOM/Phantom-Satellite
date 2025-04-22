@@ -36,9 +36,14 @@ Since modern Mac OS support is already here, this probably isnt that far fetched
 
 Due to a personal skill issue when I was half asleep, the contributor information is partially wrong. I accidentally uploaded without a fresh "git init" a while back, so it has the contributor and commit info from the normal Pale Moon repo. I don't know of any way to fix this, if its even possible...
 
-You can build Phantom Satellite the same way you build stock Pale Moon using the instructions on the Pale Moon website
-The configs I use for the builds in the release tab are in the configs branch of this repository [Shortcut](https://github.com/DCFUKSURMOM/Phantom-Satellite/tree/configs)
+If you are intested in applying some of the changes from this browser to your own fork, you can find patches in the [patches](https://github.com/DCFUKSURMOM/Phantom-Satellite/tree/patches) branch
+
+The configs I use for the builds in the release tab are in the [configs](https://github.com/DCFUKSURMOM/Phantom-Satellite/tree/configs) branch
+
 I will no longer be doing GTK 3 builds, GTK builds do not look or function any differently but they use more ram (I will keep the config file up and it will stay updated with any config tweaks for anyone that wants GTK3)
+
+You can build Phantom Satellite the same way you build stock Pale Moon using the instructions on the Pale Moon website
+
 * [Build for Windows](https://developer.palemoon.org/build/windows/)
 * [Build for Linux](https://developer.palemoon.org/build/linux/)
 * [Pale Moon home page](http://www.palemoon.org/)
