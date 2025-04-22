@@ -13,6 +13,7 @@ I would like for it to eventually become something more. I'm not opposed to appl
 Features I would like to have (but arent currently planned because I have no idea where to start with them):
 
 * Support for Windows XP and Windows Vista
+
 There are some Pale Moon forks that support Windows XP and Vista, but they are based on older Pale Moon versions
 
 * Support for x86 CPUs that do not support SSE2 (This would allow the browser to run on a Pentium 3)
@@ -20,13 +21,17 @@ There are some Pale Moon forks that support Windows XP and Vista, but they are b
 * Support for x86 CPUs that do not supprt SSE (This would allow the browser to run on a Pentium 2, and potentially the Pentium Pro and Pentium MMX)
 
 * Proper support for Android
+
 Stock Pale Moon had Android support for a while, but it was removed and is unmaintained (and undocumented), however some traces are still present in the code
 
 * Support for Classic Mac OS X versions, including PowerPC Macs
+
 Stock Pale moon does have Mac OS support (but apparently no build documentation), it also supports the PowerPC architecture for Linux
+
 There are some Pale Moon forks that support old Macs, but they are based on older Pale Moon versions
 
 * Proper support for iOS
+
 Since modern Mac OS support is already here, this probably isnt that far fetched
 
 Due to a personal skill issue when I was half asleep, the contributor information is partially wrong. I accidentally uploaded without a fresh "git init" a while back, so it has the contributor and commit info from the normal Pale Moon repo. I don't know of any way to fix this, if its even possible...
