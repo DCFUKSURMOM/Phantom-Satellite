@@ -1,0 +1,23 @@
+--- 33.7.0/platform/mozglue/misc/StackWalk.cpp	2025-04-11 19:57:04.000000000 -0500
++++ 33.7.0.1/platform/mozglue/misc/StackWalk.cpp	2025-04-22 03:08:47.086625957 -0500
+@@ -40,13 +40,14 @@
+ #define MOZ_STACKWALK_SUPPORTS_MACOSX 0
+ #endif
+ 
+-#if (defined(linux) && \
+-     ((defined(__GNUC__) && (defined(__i386) || defined(PPC))) || \
+-      defined(HAVE__UNWIND_BACKTRACE)))
+-#define MOZ_STACKWALK_SUPPORTS_LINUX 1
+-#else
++//disabled this check, seems to break on musl (or at least on adelie linux)
++//#if (defined(linux) && \
++//     ((defined(__GNUC__) && (defined(__i386) || defined(PPC))) || \
++//      defined(HAVE__UNWIND_BACKTRACE)))
++//#define MOZ_STACKWALK_SUPPORTS_LINUX 1
++//#else
+ #define MOZ_STACKWALK_SUPPORTS_LINUX 0
+-#endif
++//#endif
+ 
+ #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 1)
+ #define HAVE___LIBC_STACK_END 1
