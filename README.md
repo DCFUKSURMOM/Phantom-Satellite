@@ -10,7 +10,9 @@ The only real difference between this and stock Pale Moon at the moment is brand
 
 There are also some fixes for PowerPC Linux being worked on, with one already in master, as well a fix for building on Linux systems with the musl libc (so far it seems to build but not run)
 
-I would like for it to eventually become something more. I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
+I would like for it to eventually become something more.
+
+I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
 
 Features I would like to have (but arent currently planned because I have no idea where to start with them):
 
