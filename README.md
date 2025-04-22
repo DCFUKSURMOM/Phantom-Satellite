@@ -2,7 +2,7 @@
 
 This is the source code for the Phantom Satellite web browser, it was started as a rebranded fork of Pale Moon to get around their branding drama.
 
-The name is a play one Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon (the moon is a natural satellite)
+The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon (the moon is a natural satellite)
 
 More information about the backstory can be found on the page I made for it on my website [Phantom Satellite Homepage](http://dcfuksurmom.duckdns.org/phantomsatellite)
 
