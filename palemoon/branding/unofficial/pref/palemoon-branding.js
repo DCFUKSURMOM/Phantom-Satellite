@@ -2,7 +2,7 @@
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-pref("app.vendorURL", "http://dcfuksurmom.duckdns.org");
+pref("app.vendorURL", "http://dcfuksurmom.duckdns.org/phantomsatellite");
 pref("browser.identity.ssl_domain_display", 1);
 pref("browser.newtab.url","about:newtab");
 pref("extensions.getMoreThemesURL", "https://addons.palemoon.org/themes/");
@@ -29,7 +29,11 @@ pref("services.sync.APILevel", 1);
 pref("accessibility.force_disabled", 1);
 pref("devtools.selfxss.count", 5);
 pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org/phantomsatellite");
-pref("startup.homepage_override_url","http://dcfuksurmom.duckdns.org");
-pref("app.releaseNotesURL", "http://www.palemoon.org/releasenotes.shtml");
+pref("startup.homepage_override_url","http://dcfuksurmom.duckdns.org/phantomsatellite");
+pref("app.releaseNotesURL", "https://github.com/DCFUKSURMOM/Phantom-Satellite/releases/latest");
 pref("app.update.enabled", false);
 pref("app.update.url", "");
+pref("general.useragent.compatMode", 2);
+pref("general.useragent.compatMode.firefox", true);
+pref("general.useragent.compatMode.gecko", true);
+pref("layers.acceleration.enabled", true);
