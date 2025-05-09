@@ -51,24 +51,21 @@
         <description class="text-credits text-center">
 #if defined(MOZ_OFFICIAL_BRANDING) || defined(MC_OFFICIAL)
 #ifdef MC_PRIVATE_BUILD
-          This is a private build of Pale Moon. If you did not manually build this copy from source yourself, then please download an official version from the <label class="text-link" href="https://www.palemoon.org/">Pale Moon website</label>.
-#else
-          <label class="text-link" href="https://www.palemoon.org">Pale Moon</label> is released by
-          <label class="text-link" href="https://www.moonchild.productions">Moonchild Productions</label>.
-        </description>
-        <description class="text-credits text-center">
-          Special thanks to all our supporters and donors for making this browser possible!
+         &brandFullName; is maintained by &vendorShortName;.
         </description>
         <description class="text-credits">
-          If you wish to contribute, please consider helping out by providing support to other users on the <label class="text-link" href="https://forum.palemoon.org/">Pale Moon forum</label>
-          or getting involved in our development by tackling some of the issues found in the issue trackers for <label class="text-link" href="https://repo.palemoon.org/MoonchildProductions/Pale-Moon/issues">Pale Moon</label>
-          and <label class="text-link" href="https://repo.palemoon.org/MoonchildProductions/UXP/issues">UXP</label>.
+          This browser was originally started as a rebranded fork of Pale Moon to get around their branding drama. I would like for it to eventually become something more. It already has some patches that arent in stock Pale Moon, like fixes for PPC builds. Source code is <label class="text-link" href="https://github.com/DCFUKSURMOM/Phantom-Satellite">here</label>
+#else
+         &brandFullName; is maintained by &vendorShortName;.
+        </description>
+        <description class="text-credits">
+          This browser was originally started as a rebranded fork of Pale Moon to get around their branding drama. I would like for it to eventually become something more. It already has some patches that arent in stock Pale Moon, like fixes for PPC builds. Source code is <label class="text-link" href="https://github.com/DCFUKSURMOM/Phantom-Satellite">here</label>
 #endif
 #else
-          &brandFullName; is maintained by &vendorShortName;.
+         &brandFullName; is maintained by &vendorShortName;.
         </description>
         <description class="text-credits">
-          This browser is based on Pale Moon with the only changes being the branding for legal reasons. Official Pale Moon builds are <label class="text-link" href="http://www.palemoon.org/">here</label>
+          This browser was originally started as a rebranded fork of Pale Moon to get around their branding drama. I would like for it to eventually become something more. It already has some patches that arent in stock Pale Moon, like fixes for PPC builds. Source code is <label class="text-link" href="https://github.com/DCFUKSURMOM/Phantom-Satellite">here</label>
 #endif
         </description>    
     </vbox>

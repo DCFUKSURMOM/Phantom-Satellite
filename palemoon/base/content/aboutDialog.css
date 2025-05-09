@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #aboutPMDialogContainer {
-  width: 700px;
-  height: 410px;
+  width: 420px;
+  height: 240px;
 }
 
 #aboutVersionBox {
@@ -16,6 +16,7 @@
   text-align: center;
   font-size: 18px;
   font-weight: bold;
+  color: #00FFFF;
   margin: 4px;
 }
 
@@ -34,9 +35,9 @@
   font-size: 14px;
   margin: 5px 20px;
   padding: 4px 10px 0px;
-  border-radius: 3px;
-  color: black;
-  background-color: rgba(240, 240, 240, .6);
+  border: 1px solid;
+  border-color: #00FFFF;
+  color: #0088AA;
 }
 
 #aboutLinkBox {
@@ -62,13 +63,14 @@
   text-align: center;
   text-decoration: none !important;
   padding: 4px;
-  border-radius: 3px;
-  color: #244C8A;
-  background-color: rgba(240, 240, 240, .7);
+  border: 1px solid;
+  border-color: #00FFFF;
+  color: #00FFFF;
+  background-color: rgba(0,0,0,1);
   margin: 0 40px;
   transition: background-color 0.5s ease-out;
 }
 
 .bottom-link:hover {
-  background-color: rgba(240, 240, 255, .95);
+  color: #000000;
 }

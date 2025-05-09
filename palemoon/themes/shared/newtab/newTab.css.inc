@@ -5,11 +5,11 @@
 :root {
   -moz-appearance: none;
   font-size: 75%;
-  background-color: transparent;
+  background-color: rgba(000,000,000,255);
 }
 
 body {
-  background: #eee;
+  background: #000;
 }
 
 /* SCROLLBOX */
@@ -76,16 +76,16 @@ body {
 /* CELLS */
 .newtab-cell {
   -moz-margin-end: 20px;
-  background-color: rgba(255,255,255,.3);
+  background-color: rgba(20,20,20,1);
   border: 1px solid;
-  border-color: rgba(8,22,37,.12) rgba(8,22,37,.14) rgba(8,22,37,.16);
+  border-color: rgba(0,255,255,1) rgba(0,255,255,1) rgba(0,255,255,1);
   border-radius: 3.5px;
   transition: border-color 100ms ease-out;
 }
 
 .newtab-cell:empty {
-  border: 1px dashed;
-  border-color: rgba(8,22,37,.15) rgba(8,22,37,.17) rgba(8,22,37,.19);
+  border: 1px solid;
+  border-color: rgba(0,255,255,1) rgba(0,255,255,1) rgba(0,255,255,1);
 }
 
 .newtab-cell:last-child {
@@ -125,8 +125,8 @@ body {
 /* TITLES */
 .newtab-title {
   padding: 0 8px 1px;
-  background: linear-gradient(to bottom, rgba(245, 245, 245, .95), rgba(225, 225, 225, .95));
-  color: #303030;
+  background: linear-gradient(to bottom, rgba(50, 50, 50, 1), rgba(50, 50, 50, 1));
+  color: #00ffff;
   line-height: 24px;
 }
 
