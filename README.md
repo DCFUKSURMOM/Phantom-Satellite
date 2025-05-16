@@ -2,6 +2,8 @@
 
 This is the source code for the Phantom Satellite web browser, it was started as a rebranded fork of Pale Moon to get around their branding drama.
 
+I would like for it to eventually become something more.
+
 The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon (the moon is a natural satellite)
 
 More information about the backstory can be found on the page I made for it on my website [Phantom Satellite Homepage](http://dcfuksurmom.duckdns.org/phantomsatellite)
@@ -9,8 +11,6 @@ More information about the backstory can be found on the page I made for it on m
 The only real difference between this and stock Pale Moon at the moment is branding, at least for now.
 
 There are also some fixes for PowerPC Linux being worked on, with one already in master, as well a fix for building on Linux systems with the musl libc (so far it seems to build but not run)
-
-I would like for it to eventually become something more.
 
 I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
 
@@ -24,9 +24,9 @@ There are some Pale Moon forks that support Windows XP and Vista, but they are b
 
 * Support for x86 CPUs that do not supprt SSE (This would allow the browser to run on a Pentium 2, and potentially the Pentium Pro and Pentium MMX)
 
-* Proper support for Android
+* Proper support for Android (depends on working ARM support)
 
-Stock Pale Moon had Android support for a while, but it was removed and is unmaintained (and undocumented), however some traces are still present in the code
+Stock Pale Moon had Android support for a while, but it was removed, I thought there was still some traces in the code but I was apparently wrong.
 
 * Support for Classic Mac OS X versions, including PowerPC Macs
 
@@ -34,11 +34,17 @@ Stock Pale moon does have Mac OS support (but apparently no build documentation)
 
 There are some Pale Moon forks that support old Macs, but they are based on older Pale Moon versions
 
-* Proper support for iOS
+* Proper support for iOS (depends on working ARM support)
 
 Since modern Mac OS support is already here, this probably isnt that far fetched
 
-Due to a personal skill issue when I was half asleep, the contributor information is partially wrong. I accidentally uploaded without a fresh "git init" a while back, so it has the contributor and commit info from the normal Pale Moon repo. I don't know of any way to fix this, if its even possible...
+Known issues:
+
+* 64 bit PowerPC builds but crashes after a few seconds (this issue is also present in upstream Pale Moon), I'm working with some people to try to fix this.
+* 32 bit ARM does not build at all (this issue is also present in upstream Pale Moon), 64 bit ARM is untested
+* Builds on systems with musl, but does not run, something is broken in XPCOM (this issue is also present in upstream Pale Moon)
+
+Due to a personal skill issue when I was half asleep, the contributor information is partially wrong. I accidentally uploaded without a fresh init a while back, so it has the contributor and commit info from the normal Pale Moon repo. I don't know of any way to fix this, if its even possible...
 
 If you are intested in applying some of the changes from this browser to your own fork, you can find patches in the [patches](https://github.com/DCFUKSURMOM/Phantom-Satellite/tree/patches) branch
 
@@ -47,6 +53,7 @@ The configs I use for the builds in the release tab are in the [configs](https:/
 I will no longer be doing GTK 3 builds, GTK builds do not look or function any differently but they use more ram (I will keep the config file up and it will stay updated with any config tweaks for anyone that wants GTK3)
 
 You can build Phantom Satellite the same way you build stock Pale Moon using the instructions on the Pale Moon website
+I have not attempted a Windows build but I see no reason why it should not work, theming may not be consitent on Windows though because I've mostly focused on Linux
 
 * [Build for Windows](https://developer.palemoon.org/build/windows/)
 * [Build for Linux](https://developer.palemoon.org/build/linux/)
