@@ -40,8 +40,8 @@ Since modern Mac OS support is already here, this probably isnt that far fetched
 
 Known issues:
 
-* 64 bit PowerPC builds but crashes after a few seconds (this issue is also present in upstream Pale Moon), I'm working with some people to try to fix this.
-* 32 bit ARM does not build at all (this issue is also present in upstream Pale Moon), 64 bit ARM is untested
+* 64 bit PowerPC has been parially fixed (the illegal instruction in freebl) with the help of ReDave in the ArchPOWER discord server, however something in the wasm stuff is still causing a crash, even if the browser is just sitting on the new tab page.
+* 32 bit ARM does not build at all (this issue is also present in upstream Pale Moon), it's possible im doing something wrong, 64 bit ARM is untested
 * Builds on systems with musl, but does not run, something is broken in XPCOM (this issue is also present in upstream Pale Moon)
 
 Due to a personal skill issue when I was half asleep, the contributor information is partially wrong. I accidentally uploaded without a fresh init a while back, so it has the contributor and commit info from the normal Pale Moon repo. I don't know of any way to fix this, if its even possible...
