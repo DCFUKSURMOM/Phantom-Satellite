@@ -39,8 +39,6 @@ There are some Pale Moon forks that support old Macs, but they are based on olde
 Since modern Mac OS support is already here, this probably isnt that far fetched
 
 Known issues:
-
-* 64 bit PowerPC has been parially fixed (the illegal instruction in freebl) with the help of ReDave in the ArchPOWER discord server, however something in the wasm stuff is still causing a crash, even if the browser is just sitting on the new tab page.
 * 32 bit ARM does not build at all (this issue is also present in upstream Pale Moon), it's possible im doing something wrong, 64 bit ARM is untested
 * Builds on systems with musl, but does not run, something is broken in XPCOM (this issue is also present in upstream Pale Moon)
 
