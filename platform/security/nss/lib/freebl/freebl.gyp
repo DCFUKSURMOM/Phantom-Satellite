@@ -299,11 +299,11 @@
       'conditions': [
         [ 'disable_crypto_vsx==0', {
           'cflags': [
-            '-mcrypto',
+            '-mno-crypto',
             '-maltivec'
            ],
            'cflags_mozilla': [
-             '-mcrypto',
+             '-mno-crypto',
              '-maltivec'
            ],
         }, 'disable_crypto_vsx==1', {
@@ -376,14 +376,14 @@
       'conditions': [
         [ 'disable_crypto_vsx==0', {
           'cflags': [
-            '-mcrypto',
+            '-mno-crypto',
             '-maltivec',
             '-mvsx',
             '-funroll-loops',
             '-fpeel-loops'
            ],
            'cflags_mozilla': [
-            '-mcrypto',
+            '-mno-crypto',
             '-maltivec',
             '-mvsx',
             '-funroll-loops',
@@ -415,14 +415,14 @@
       'conditions': [
         [ 'disable_crypto_vsx==0', {
           'cflags': [
-            '-mcrypto',
+            '-mno-crypto',
             '-maltivec',
             '-mvsx',
             '-funroll-loops',
             '-fpeel-loops'
            ],
            'cflags_mozilla': [
-            '-mcrypto',
+            '-mno-crypto',
             '-maltivec',
             '-mvsx',
             '-funroll-loops',
