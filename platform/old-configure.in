@@ -2047,7 +2047,6 @@ MOZ_JETPACK=1
 MOZ_DEVTOOLS_SERVER=1
 MOZ_DEVTOOLS=
 MOZ_PLACES=1
-MOZ_SERVICES_SYNC=1
 MOZ_USERINFO=1
 NSS_DISABLE_DBM=1
 MOZ_MAILNEWS=
@@ -4696,13 +4695,6 @@ AC_SUBST(MOZ_PLACES)
 if test "$MOZ_PLACES"; then
   AC_DEFINE(MOZ_PLACES)
 fi
-
-dnl Build Sync Services if required
-AC_SUBST(MOZ_SERVICES_SYNC)
-if test -n "$MOZ_SERVICES_SYNC"; then
-  AC_DEFINE(MOZ_SERVICES_SYNC)
-fi
-
 
 dnl ========================================================
 if test "$MOZ_DEBUG"; then
