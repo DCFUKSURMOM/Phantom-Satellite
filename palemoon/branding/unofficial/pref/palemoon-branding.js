@@ -34,6 +34,11 @@ pref("app.releaseNotesURL", "https://github.com/DCFUKSURMOM/Phantom-Satellite/re
 pref("app.update.enabled", false);
 pref("app.update.url", "");
 pref("general.useragent.compatMode", 2);
-pref("general.useragent.compatMode.firefox", true);
+pref("general.useragent.compatMode.firefox", true); //firefox compatibility mode by default (improves website compatibility)
 pref("general.useragent.compatMode.gecko", true);
-pref("layers.acceleration.enabled", true);
+pref("layers.acceleration.enabled", false); //no longer enabled by default, does not work properly on PowerPC
+pref("network.captive-portal-service.enabled", true); //captive portal (browser based wifi login) support by default
+pref("privacy.GPCheader.enabled", true); //tell sites to not share or sell data by default
+pref("canvas.poisondata", true); //poison canvas data by default
+pref("general.warnOnAboutConfig", false); //nuke about:config warning
+pref("xpinstall.whitelist.required", true); //warn when sites try to install extentions
