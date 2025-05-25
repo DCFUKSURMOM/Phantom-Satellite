@@ -73,7 +73,7 @@ toolbar[mode="icons"] #status4evar-download-button[forcelabel="true"] > label
 #status4evar-download-progress-bar > *
 {
 	-moz-appearance: none;
-	background: #FFFFFF;
+	background: #00FFFF;
 }
 
 #status4evar-download-progress-bar[pmType$="unknown"] > .progress-bar

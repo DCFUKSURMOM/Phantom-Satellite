@@ -11,8 +11,8 @@
 
 %include ../shared/browser.inc
 %filter substitution
-%define toolbarHighlight rgba(255,255,255,.3)
-%define selectedTabHighlight rgba(255,255,255,.8) 1px, rgba(255,255,255,.5) 3px
+%define toolbarHighlight rgb(0,0,0)
+%define selectedTabHighlight rgb(0,150,150) 0.5px
 %define forwardTransitionLength 150ms
 %define conditionalForwardWithUrlbar       window:not([chromehidden~=toolbar]) :-moz-any(#nav-bar[currentset*="unified-back-forward-button,urlbar-container"][mode=icons],                #nav-bar:not([currentset])[mode=icons])                 > #unified-back-forward-button
 %define conditionalForwardWithUrlbar_small window:not([chromehidden~=toolbar]) :-moz-any(#nav-bar[currentset*="unified-back-forward-button,urlbar-container"][mode=icons][iconsize=small],#nav-bar:not([currentset])[mode=icons][iconsize=small]) > #unified-back-forward-button
@@ -27,7 +27,7 @@
 
 #navigator-toolbox {
   -moz-appearance: none;
-  background-color: transparent;
+  background-color: #000000;
   border-top: none;
 }
 
@@ -39,7 +39,7 @@
 #navigator-toolbox[tabsontop=false] > toolbar:not(:-moz-lwtheme):not(#toolbar-menubar) {
   -moz-appearance: none;
   border-style: none;
-  background-color: -moz-Dialog;
+  background-color: #000000;
 }
 
 #navigator-toolbox > toolbar:not(#toolbar-menubar):not(#TabsToolbar) {
@@ -53,13 +53,13 @@
 #nav-bar[tabsontop=true],
 #nav-bar[tabsontop=true][collapsed=true]:not([customizing]) + toolbar,
 #nav-bar[tabsontop=true][collapsed=true]:not([customizing]) + #customToolbars + #PersonalToolbar {
-  background-image: linear-gradient(@toolbarHighlight@, rgba(255,255,255,0));
+  background-image: linear-gradient(@toolbarHighlight@, rgb(0,0,0));
 }
 
 #nav-bar[tabsontop=true]:-moz-lwtheme,
 #nav-bar[tabsontop=true][collapsed=true]:not([customizing]):-moz-lwtheme + toolbar,
 #nav-bar[tabsontop=true][collapsed=true]:not([customizing]):-moz-lwtheme + #customToolbars + #PersonalToolbar {
-  background-image: linear-gradient(rgba(255,255,255,.8), rgba(255,255,255,0));
+  background-image: linear-gradient(rgb(0,0,0), rgba(0,0,0));
 }
 
 #nav-bar[tabsontop=true]:-moz-lwtheme-brighttext,
