@@ -28,8 +28,8 @@ ac_add_options --disable-elf-hack
 ac_add_options --disable-gconf
 ac_add_options --disable-gold # Disable ld.gold, problematic on PPC
 
-# Remove unused function sections, this doesnt work when set globally sadly
-ac_add_options --enable-optimize="-ffunction-sections"
+# Optimize for size and remove unused function sections, these don't work properly when set globally sadly
+ac_add_options --enable-optimize="-Os -ffunction-sections"
 
 export MOZ_PKG_SPECIAL=gtk$_GTK_VERSION
 
@@ -42,5 +42,5 @@ ac_add_options --with-system-jpeg
 ac_add_options --enable-system-cairo
 
 # Set PPC 604e as minimum CPU but optimize for PPC 750/G3+, optimize for size, remove unused data sections
-export CFLAGS="-mcpu=604e -mtune=750 -Os -fdata-sections"
-export LDFLAGS="-mcpu=604e -mtune=750 -Os -fdata-sections"
+export CFLAGS="-mcpu=604e -mtune=750 -fdata-sections"
+export LDFLAGS="-mcpu=604e -mtune=750 -fdata-sections"
