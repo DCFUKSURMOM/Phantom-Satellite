@@ -8,7 +8,7 @@
 # These values where appropriate are hardcoded in application.ini
 # to "Phantom Satellite" and "DCFUKSURMOM" respectively for
 # Pale Moon
-MOZ_APP_BASENAME=Phantom Satellite 
+MOZ_APP_BASENAME=PhantomSatellite 
 MOZ_APP_VENDOR=DCFUKSURMOM
 
 # Application Version
