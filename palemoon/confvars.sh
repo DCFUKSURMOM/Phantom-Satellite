@@ -6,9 +6,9 @@
 # Application Basename and Vendor
 # MOZ_APP_BASENAME and MOZ_APP_VENDOR must not have spaces.
 # These values where appropriate are hardcoded in application.ini
-# to "Pale Moon" and "Moonchild Productions" respectively for
+# to "Phantom Satellite" and "DCFUKSURMOM" respectively for
 # Pale Moon
-MOZ_APP_BASENAME=PhantomSatellite 
+MOZ_APP_BASENAME=Phantom Satellite 
 MOZ_APP_VENDOR=DCFUKSURMOM
 
 # Application Version
@@ -34,7 +34,7 @@ MOZ_APP_STATIC_INI=1
 # dependencies are broken.
 # MOZ_APP_DISPLAYNAME will be set by [branding]/configure.sh
 MOZ_BRANDING_DIRECTORY=palemoon/branding/unofficial
-MOZ_OFFICIAL_BRANDING_DIRECTORY=palemoon/branding/official
+MOZ_OFFICIAL_BRANDING_DIRECTORY=palemoon/branding/unofficial
 
 # Enables conditional code in the platform for Pale Moon only
 MC_PALEMOON=1
@@ -72,7 +72,7 @@ UXP_APPCOMPAT_GUID=1
 
 # Platform Feature: Sync Service
 MOZ_SERVICES_COMMON=1
-MOZ_SERVICES_SYNC=1
+MOZ_SERVICES_SYNC=0
 
 # Platform Feature: JS based Downloads Manager
 MOZ_JSDOWNLOADS=1
