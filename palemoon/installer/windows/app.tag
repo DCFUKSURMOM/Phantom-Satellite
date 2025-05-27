@@ -1,4 +1,4 @@
 ;!@Install@!UTF-8!
-Title="Pale Moon"
+Title="Phantom Satellite"
 RunProgram="setup.exe"
 ;!@InstallEnd@!
