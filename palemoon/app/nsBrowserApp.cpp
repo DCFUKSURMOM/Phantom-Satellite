@@ -75,7 +75,7 @@ static void Output(const char *fmt, ... )
     decltype(MessageBoxW)* messageBoxW =
       (decltype(MessageBoxW)*) GetProcAddress(user32, "MessageBoxW");
     if (messageBoxW) {
-      messageBoxW(nullptr, wide_msg, L"Pale Moon", MB_OK
+      messageBoxW(nullptr, wide_msg, L"Phantom Satellite", MB_OK
                                                | MB_ICONERROR
                                                | MB_SETFOREGROUND);
     }
@@ -159,7 +159,7 @@ static int do_main(int argc, char* argv[], char* envp[], nsIFile *xreDirectory)
   nsresult rv;
   uint32_t mainFlags = 0;
 
-  // Allow palemoon.exe to launch XULRunner apps via -app <application.ini>
+  // Allow phantomsatellite.exe to launch XULRunner apps via -app <application.ini>
   // Note that -app must be the *first* argument.
   const char *appDataFile = getenv("XUL_APP_FILE");
   if (appDataFile && *appDataFile) {
