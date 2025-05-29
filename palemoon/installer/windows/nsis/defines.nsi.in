@@ -61,12 +61,23 @@
 !define InstallerArch "AVX2"
 #endif
 
+# Original kept here as backup
+## File details shared by both the installer and uninstaller
+#VIProductVersion "1.0.0.0"
+#VIAddVersionKey "ProductName"     "${BrandShortName}"
+#VIAddVersionKey "CompanyName"     "${CompanyName}"
+#VIAddVersionKey "LegalCopyright"  "${CompanyName}"
+#VIAddVersionKey "FileVersion"     "${AppVersion}"
+#VIAddVersionKey "ProductVersion"  "${AppVersion}"
+## Comments is not used but left below commented out for future reference
+## VIAddVersionKey "Comments"        "Comments"
+
 # File details shared by both the installer and uninstaller
 VIProductVersion "1.0.0.0"
-VIAddVersionKey "ProductName"     "${BrandShortName}"
-VIAddVersionKey "CompanyName"     "${CompanyName}"
-VIAddVersionKey "LegalCopyright"  "${CompanyName}"
-VIAddVersionKey "FileVersion"     "${AppVersion}"
-VIAddVersionKey "ProductVersion"  "${AppVersion}"
+VIAddVersionKey "ProductName"     "Phantom Satellite"
+VIAddVersionKey "CompanyName"     "DCFUKSURMOM"
+VIAddVersionKey "LegalCopyright"  "DCFUKSURMOM"
+VIAddVersionKey "FileVersion"     "33.7.1.1"
+VIAddVersionKey "ProductVersion"  "33.7.1.1"
 # Comments is not used but left below commented out for future reference
 # VIAddVersionKey "Comments"        "Comments"

@@ -72,7 +72,7 @@ Var PreventRebootRequired
 !include common.nsh
 !include locales.nsi
 
-VIAddVersionKey "FileDescription" "${BrandShortName} Installer"
+VIAddVersionKey "FileDescription" "Phantom Satellite Installer"
 VIAddVersionKey "OriginalFilename" "setup.exe"
 
 ; Must be inserted before other macros that use logging
