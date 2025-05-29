@@ -15,7 +15,7 @@ I'm not opposed to applying any cool patches that are submitted or that I find m
 
 Features I would like to have (but arent currently planned because I have no idea where to start with them):
 
-* Support for Windows XP and Windows Vista, I may be able to pull stuff from [here]([https://github.com/DCFUKSURMOM/Phantom-Satellite/tree/patches](https://github.com/roytam1/UXP), but no guarantees.
+* Support for Windows XP and Windows Vista, I may be able to pull stuff from [here](https://github.com/roytam1/UXP), but no guarantees.
 
 There are some Pale Moon forks that support Windows XP and Vista, but they are based on older Pale Moon versions
 
