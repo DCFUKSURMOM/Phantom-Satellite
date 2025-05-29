@@ -40,7 +40,6 @@ Known issues:
 * Builds on systems with musl, but does not run, something is broken in XPCOM (this issue is also present in upstream Pale Moon)
 * Hardware acceleration is broken on PowerPC, causes rendering issues
 * 32 bit Windows builds fail if optimized for size, something in mozavcodec, builds fine otherwise
-* Windows installer executables still have Pale Moon and Moonchild Productions in the file details, the installer itself is fine, I have not found where these are set.
 
 If you are intested in applying some of the changes from this browser to your own fork, you can find patches in the [patches](https://github.com/DCFUKSURMOM/Phantom-Satellite/tree/patches) branch
 
