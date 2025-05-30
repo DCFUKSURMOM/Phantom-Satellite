@@ -1,8 +1,8 @@
-mk_add_options MOZ_MAKE_FLAGS="-j3"
+mk_add_options MOZ_MAKE_FLAGS="-j7"
 
 # Set GTK Version to 2 or 3
-# GTK 3 is not recommended because it uses more ram, but I kept this config available so people can still choose
-_GTK_VERSION=3
+# GTK 3 is not recommended because it uses more ram
+_GTK_VERSION=2
 
 # Build options for Phantom Satellite
 ac_add_options --enable-application=palemoon
@@ -19,14 +19,14 @@ ac_add_options --disable-tests
 ac_add_options --disable-debug
 ac_add_options --disable-necko-wifi
 ac_add_options --disable-updater
-ac_add_options --with-pthreads
+ac_add_options --with-pthreads # I was wrong about this not being supported on PPC, it failing was related to the ld.gold issue
 ac_add_options --x-libraries=/usr/lib
 ac_add_options --disable-crashreporter
 ac_add_options --disable-js-shell
 ac_add_options --disable-precompiled-startupcache
 ac_add_options --disable-elf-hack
 ac_add_options --disable-gconf
-ac_add_options --disable-gold # Disable ld.gold, not required for x86 but done anyways for consistency
+ac_add_options --disable-gold # Disable ld.gold, problematic on PPC
 
 # Optimize for size and remove unused function sections, these don't work properly when set globally sadly
 ac_add_options --enable-optimize="-Os -ffunction-sections"
@@ -41,6 +41,6 @@ ac_add_options --enable-system-pixman
 ac_add_options --with-system-jpeg
 ac_add_options --enable-system-cairo
 
-# Optimize for generic x86_64 since this should run on any x86_64 CPU, optimize for size, remove unused data sections
-export CFLAGS="-march=x86-64 -mcpu=x86-64 -mtune=generic -fdata-sections"
-export LDFLAGS="-march=x86-64 -mcpu=x86-64 -mtune=generic -fdata-sections"
+# Set PPC 604e as minimum CPU but optimize for PPC 750/G3+, remove unused data sections
+export CFLAGS="-mcpu=604e -mtune=750 -fdata-sections"
+export LDFLAGS="-mcpu=604e -mtune=750 -fdata-sections"

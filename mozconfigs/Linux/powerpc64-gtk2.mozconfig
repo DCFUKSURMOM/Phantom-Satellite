@@ -1,4 +1,4 @@
-mk_add_options MOZ_MAKE_FLAGS="-j7" # The PPC machine I'm building on has more threads than my main machine
+mk_add_options MOZ_MAKE_FLAGS="-j7"
 
 # Set GTK Version to 2 or 3
 # GTK 3 is not recommended because it uses more ram
@@ -19,7 +19,7 @@ ac_add_options --disable-tests
 ac_add_options --disable-debug
 ac_add_options --disable-necko-wifi
 ac_add_options --disable-updater
-ac_add_options --with-pthreads # I was wrong about this not being supported on PPC, it failing was related to the ld.gold issue
+ac_add_options --with-pthreads
 ac_add_options --x-libraries=/usr/lib
 ac_add_options --disable-crashreporter
 ac_add_options --disable-js-shell
@@ -41,6 +41,6 @@ ac_add_options --enable-system-pixman
 ac_add_options --with-system-jpeg
 ac_add_options --enable-system-cairo
 
-# Set PPC 604e as minimum CPU but optimize for PPC 750/G3+, optimize for size, remove unused data sections
-export CFLAGS="-mcpu=604e -mtune=750 -fdata-sections"
-export LDFLAGS="-mcpu=604e -mtune=750 -fdata-sections"
+# Optimize for generic PPC64, ensure altivec is enabled, remove unused data sections
+export CFLAGS="-mcpu=powerpc64 -mtune=powerpc64 -maltivec -mabi=altivec -fdata-sections"
+export LDFLAGS="-mcpu=powerpc64 -mtune=powerpc64 -maltivec -mabi=altivec -fdata-sections"
