@@ -45,8 +45,6 @@ If you are intested in applying some of the changes from this browser to your ow
 
 The configs I use for the builds in the release tab are in the mozconfigs directory.
 
-I will no longer be doing GTK 3 builds, GTK3 builds do not look or function any differently but they use more ram (I will keep the config file up and it will stay updated with any config tweaks for anyone that wants GTK3)
-
 You can build Phantom Satellite the same way you build stock Pale Moon using the instructions on the Pale Moon website
 
 * [Build for Windows](https://developer.palemoon.org/build/windows/)
