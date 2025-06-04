@@ -7,8 +7,8 @@ It is slowly becoming something more
 The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon (the moon is a natural satellite)
 
 Key differences:
-* Custom Branding (Obviously)
-* Custom theme (Work in progress)
+* Custom Branding (Obviously, work in progress)
+* Custom theme (WORK IN PROGRESS, recommended to use a dark theme on your system or a 3rd party theme on the browser itself for now)
 * Working PPC64 support (a little rough around the edges but is usable)
 
 I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
@@ -40,6 +40,7 @@ Known issues:
 * Builds on systems with musl, but does not run, something is broken in XPCOM (this issue is also present in upstream Pale Moon)
 * Hardware acceleration is broken on PowerPC, causes rendering issues
 * 32 bit Windows builds fail if optimized for size, something in mozavcodec, builds fine otherwise
+* Replacing -mcrypto with -nmo-crypto fixed older PPC64 chips but broke modern ones, should be possible to make this a config option (cflags probably) so both can work
 
 If you are intested in applying some of the changes from this browser to your own fork, you can find patches in the [patches](https://github.com/DCFUKSURMOM/Phantom-Satellite/tree/patches) branch
 
