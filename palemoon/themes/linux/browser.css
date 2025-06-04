@@ -12,7 +12,7 @@
 %include ../shared/browser.inc
 %filter substitution
 %define toolbarHighlight rgb(0,0,0)
-%define selectedTabHighlight rgb(0,150,150) 0.5px
+%define selectedTabHighlight rgb(0,150,150) 0.3px
 %define forwardTransitionLength 150ms
 %define conditionalForwardWithUrlbar       window:not([chromehidden~=toolbar]) :-moz-any(#nav-bar[currentset*="unified-back-forward-button,urlbar-container"][mode=icons],                #nav-bar:not([currentset])[mode=icons])                 > #unified-back-forward-button
 %define conditionalForwardWithUrlbar_small window:not([chromehidden~=toolbar]) :-moz-any(#nav-bar[currentset*="unified-back-forward-button,urlbar-container"][mode=icons][iconsize=small],#nav-bar:not([currentset])[mode=icons][iconsize=small]) > #unified-back-forward-button
@@ -74,7 +74,7 @@
 
 #browser-bottombox {
   /* opaque for layers optimization */
-  background-color: -moz-Dialog;
+  background-color: -moz-Dialog; /* wtf does this even do */
 }
 
 #urlbar:-moz-lwtheme:not([focused="true"]),
@@ -129,6 +129,7 @@ menu.bookmark-item,
 menuitem.bookmark-item {
   min-width: 0;
   max-width: 32em;
+  color: #000000; /* bookmark dropdown text */
 }
 
 .bookmark-item > .menu-iconic-left {
@@ -913,8 +914,9 @@ toolbar[iconsize="small"] #webrtc-status-button {
 /* Location bar */
 #urlbar {
   width: 7em;
-  -moz-appearance: textfield;
   padding: 0;
+  color: #00ffff; /* url text color */
+  background: #000000; /* url background color */
 }
 
 .urlbar-textbox-container {
@@ -954,6 +956,7 @@ toolbar[iconsize="small"] #webrtc-status-button {
 #urlbar-search-splitter + #urlbar-container > #urlbar ,
 #urlbar-search-splitter + #search-container > #searchbar > .searchbar-textbox {
   margin-inline-start: 0;
+  color: #000000; /* top search bar text color */
 }
 
 #urlbar-display-box {
@@ -1254,7 +1257,7 @@ toolbar[iconsize="small"] #webrtc-status-button {
 /* Notification icon box */
 #notification-popup-box {
   position: relative;
-  background-color: #fff;
+  background-color: #000000;
   background-clip: padding-box;
   padding-left: 4px;
   border-radius: 2.5px 0 0 2.5px;
@@ -1576,7 +1579,7 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 
 /* Content area */
 #sidebar {
-  background-color: Window;
+  background-color: #000000;
 }
 
 /* Throbber */
@@ -1631,12 +1634,12 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 .tabs-newtab-button {
   position: static;
   -moz-appearance: none;
-  background: linear-gradient(hsla(0,0%,100%,.2), hsla(0,0%,45%,.2) 2px, hsla(0,0%,32%,.2) 80%);
+  background: #000000;
   background-origin: border-box;
   background-position: 1px 2px;
   background-size: 100% calc(100% - 2px);
   background-repeat: no-repeat;
-  color: inherit;
+  color: #00ffff;
   margin: 0;
   padding: 0;
   border-width: 4px 5px 3px 6px;
@@ -1657,7 +1660,7 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 }
 
 .tabbrowser-tab[selected="true"]:not(:-moz-lwtheme) {
-  color: -moz-dialogtext;
+  color: #00ffff;
 }
 
 #main-window[tabsontop=false]:not([disablechrome]) .tabbrowser-tab[selected=true]:not(:-moz-lwtheme) {
@@ -2015,7 +2018,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 .ctrlTab-favicon[src],
 .allTabs-favicon[src] {
-  background-color: white;
+  background-color: #000000;
   width: 20px;
   height: 20px;
   padding: 2px;
@@ -2025,6 +2028,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 #ctrlTab-panel {
   padding: 10px;
+  background: #000000;
 }
 
 .ctrlTab-preview:not(#ctrlTab-showAll) .tabPreview-canvas {
@@ -2046,6 +2050,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 #allTabs-meta {
   padding: 5px;
+  background: #000000;
 }
 
 #allTabs-filter {
@@ -2105,8 +2110,8 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 #status-bar {
   min-height: 0;
-  -moz-appearance: none;
-  background-color: transparent;
+  -moz-appearance: none; 
+  background-color: #000000;
   border: none;
 }
 
@@ -2132,7 +2137,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 .statuspanel-label {
   margin: 0;
   padding: 2px 4px;
-  background: linear-gradient(#fff, #ddd);
+  background: linear-gradient(#000, #000);
   border: 1px none #ccc;
   border-top-style: solid;
   color: #333;
