@@ -51,4 +51,3 @@ You can build Phantom Satellite the same way you build stock Pale Moon using the
 * [Build for Windows](https://developer.palemoon.org/build/windows/)
 * [Build for Linux](https://developer.palemoon.org/build/linux/)
 * [Pale Moon home page](http://www.palemoon.org/)
-* [Pale Moon Code of Conduct, Contributing, and UXP Coding style](https://repo.palemoon.org/MoonchildProductions/UXP/src/branch/master/docs)
