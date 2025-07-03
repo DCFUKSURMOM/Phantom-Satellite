@@ -716,7 +716,8 @@ nsresult
 nsImageLoadingContent::LoadImage(const nsAString& aNewURI,
                                  bool aForce,
                                  bool aNotify,
-                                 ImageLoadType aImageLoadType)
+                                 ImageLoadType aImageLoadType,
+                                 nsIPrincipal* aTriggeringPrincipal)
 {
   // First, get a document (needed for security checks and the like)
   nsIDocument* doc = GetOurOwnerDoc();
@@ -750,7 +751,8 @@ nsImageLoadingContent::LoadImage(const nsAString& aNewURI,
 
   NS_TryToSetImmutable(imageURI);
 
-  return LoadImage(imageURI, aForce, aNotify, aImageLoadType, false, doc);
+  return LoadImage(imageURI, aForce, aNotify, aImageLoadType, false, doc,
+                   nsIRequest::LOAD_NORMAL, aTriggeringPrincipal);
 }
 
 nsresult
@@ -760,7 +762,8 @@ nsImageLoadingContent::LoadImage(nsIURI* aNewURI,
                                  ImageLoadType aImageLoadType,
                                  bool aLoadStart,
                                  nsIDocument* aDocument,
-                                 nsLoadFlags aLoadFlags)
+                                 nsLoadFlags aLoadFlags,
+                                 nsIPrincipal* aTriggeringPrincipal)
 {
   MOZ_ASSERT(!mIsStartingImageLoad, "some evil code is reentering LoadImage.");
   if (mIsStartingImageLoad) {
@@ -868,7 +871,7 @@ nsImageLoadingContent::LoadImage(nsIURI* aNewURI,
   nsresult rv = nsContentUtils::LoadImage(aNewURI,
                                           thisNode,
                                           aDocument,
-                                          aDocument->NodePrincipal(),
+                                          aTriggeringPrincipal ? aTriggeringPrincipal : aDocument->NodePrincipal(),
                                           aDocument->GetDocumentURI(),
                                           referrerPolicy,
                                           this, loadFlags,

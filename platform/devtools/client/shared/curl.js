@@ -75,7 +75,7 @@ const Curl = {
                        utils.escapeStringWin : utils.escapeStringPosix;
 
     // Add URL.
-    commandParts.push(escapeString(data.url));
+    commandParts.push(data.url);
 
     // Disable globbing if the URL contains brackets.
     // cURL also globs braces but they are already percent-encoded.

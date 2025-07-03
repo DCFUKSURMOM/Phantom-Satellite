@@ -5,9 +5,9 @@
 #ifndef __FFmpegLibWrapper_h__
 #define __FFmpegLibWrapper_h__
 
-#include "FFmpegRDFTTypes.h" // for AvRdftInitFn, etc.
 #include "mozilla/Attributes.h"
 #include "mozilla/Types.h"
+#include "ffvpx/tx.h"
 
 struct AVCodec;
 struct AVCodecContext;
@@ -30,13 +30,8 @@ struct FFmpegLibWrapper
     Success,
     NoProvidedLib,
     NoAVCodecVersion,
-    CannotUseLibAV57,
-    BlockedOldLibAVVersion,
-    UnknownFutureLibAVVersion,
-    UnknownFutureFFMpegVersion,
-    UnknownOlderFFMpegVersion,
+    UnknownFFMpegVersion,
     MissingFFMpegFunction,
-    MissingLibAVFunction,
   };
   // Examine mAVCodecLib and mAVUtilLib, and attempt to resolve all symbols.
   // Upon failure, the entire object will be reset and any attached libraries
@@ -65,35 +60,22 @@ struct FFmpegLibWrapper
   AVCodecParserContext* (*av_parser_init)(int codec_id);
   void (*av_parser_close)(AVCodecParserContext* s);
   int (*av_parser_parse2)(AVCodecParserContext* s, AVCodecContext* avctx, uint8_t** poutbuf, int* poutbuf_size, const uint8_t* buf, int buf_size, int64_t pts, int64_t dts, int64_t pos);
-
-  // only used in libavcodec <= 54
-  AVFrame* (*avcodec_alloc_frame)();
-  void (*avcodec_get_frame_defaults)(AVFrame* pic);
-  // libavcodec v54 only
-  void (*avcodec_free_frame)(AVFrame** frame);
-
-  // libavcodec v58 and later only
   int (*avcodec_send_packet)(AVCodecContext* avctx, const AVPacket* avpkt);
   int (*avcodec_receive_frame)(AVCodecContext* avctx, AVFrame* frame);
-
-  // libavcodec optional
-  AvRdftInitFn av_rdft_init;
-  AvRdftCalcFn av_rdft_calc;
-  AvRdftEndFn av_rdft_end;
 
   // libavutil
   void (*av_log_set_level)(int level);
   void*	(*av_malloc)(size_t size);
   void (*av_freep)(void *ptr);
-
-  // libavutil v55 and later only
   AVFrame* (*av_frame_alloc)();
   void (*av_frame_free)(AVFrame** frame);
   void (*av_frame_unref)(AVFrame* frame);
-
-  // libavutil optional
   int (*av_frame_get_colorspace)(const AVFrame *frame);
   int (*av_frame_get_color_range)(const AVFrame *frame);
+
+  // Only ever used with ffvpx
+  decltype(::av_tx_init)* av_tx_init;
+  decltype(::av_tx_uninit)* av_tx_uninit;
 
   PRLibrary* mAVCodecLib;
   PRLibrary* mAVUtilLib;

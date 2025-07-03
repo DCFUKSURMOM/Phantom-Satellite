@@ -114,6 +114,7 @@ av_frame_new_side_data
 av_frame_new_side_data_from_buf
 av_frame_ref
 av_frame_remove_side_data
+av_frame_replace
 av_frame_side_data_name
 av_frame_unref
 av_free
@@ -311,3 +312,6 @@ av_hwdevice_ctx_init
 av_hwframe_transfer_get_formats
 av_hwdevice_ctx_create_derived
 av_malloc_array
+av_tx_uninit
+av_tx_init
+av_channel_layout_describe_bprint

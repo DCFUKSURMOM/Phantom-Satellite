@@ -61,6 +61,33 @@ isValidHexDig(char16_t aHexDig)
           (aHexDig >= 'a' && aHexDig <= 'f'));
 }
 
+// Checks grammar for valid base-64 strings. Does not verify decodability.
+static bool
+isValidBase64Value(const char16_t* cur, const char16_t* end)
+{
+  // Using grammar at https://w3c.github.io/webappsec-csp/#grammardef-nonce-source
+
+  // May end with one or two =
+  if (end > cur && *(end-1) == EQUALS) end--;
+  if (end > cur && *(end-1) == EQUALS) end--;
+
+  // Must have at least one character aside from any =
+  if (end == cur) {
+    return false;
+  }
+
+  // Rest must all be A-Za-z0-9+/-_
+  for (; cur < end; ++cur) {
+    if (!(isCharacterToken(*cur) || isNumberToken(*cur) ||
+          *cur == PLUS || *cur == SLASH ||
+          *cur == DASH || *cur == UNDERLINE)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // ============================================
 
 namespace mozilla {
@@ -134,7 +161,6 @@ static const char* CSPStrDirectives[] = {
   "reflected-xss",             // REFLECTED_XSS_DIRECTIVE
   "base-uri",                  // BASE_URI_DIRECTIVE
   "form-action",               // FORM_ACTION_DIRECTIVE
-  "referrer",                  // REFERRER_DIRECTIVE
   "manifest-src",              // MANIFEST_SRC_DIRECTIVE
   "upgrade-insecure-requests", // UPGRADE_IF_INSECURE_DIRECTIVE
   "child-src",                 // CHILD_SRC_DIRECTIVE
@@ -714,15 +740,6 @@ class nsCSPPolicy {
     inline bool getReportOnlyFlag() const
       { return mReportOnly; }
 
-    inline void setReferrerPolicy(const nsAString* aValue)
-      {
-        mReferrerPolicy = *aValue;
-        ToLowerCase(mReferrerPolicy);
-      }
-
-    inline void getReferrerPolicy(nsAString& outPolicy) const
-      { outPolicy.Assign(mReferrerPolicy); }
-
     void getReportURIs(nsTArray<nsString> &outReportURIs) const;
 
     void getDirectiveStringForContentType(CSPDirective aDirective,
@@ -743,7 +760,6 @@ class nsCSPPolicy {
     nsUpgradeInsecureDirective* mUpgradeInsecDir;
     nsTArray<nsCSPDirective*>   mDirectives;
     bool                        mReportOnly;
-    nsString                    mReferrerPolicy;
 };
 
 #endif /* nsCSPUtils_h___ */

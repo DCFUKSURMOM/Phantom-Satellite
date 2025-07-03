@@ -107,8 +107,7 @@ treechildren.private-autocomplete-treebody::-moz-tree-cell-text(selected) {
 }
 
 %ifdef XP_WIN
-@media (-moz-os-version: windows-vista) and (-moz-windows-default-theme),
-       (-moz-os-version: windows-win7) and (-moz-windows-default-theme) {
+@media (-moz-os-version: windows-win7) and (-moz-windows-default-theme) {
   .private-autocomplete-richlistitem[selected="true"] {
     color: inherit;
     background-color: transparent;

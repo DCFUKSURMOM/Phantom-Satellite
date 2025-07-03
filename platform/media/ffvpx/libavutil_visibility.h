@@ -10,9 +10,11 @@
 
 #pragma GCC visibility push(default)
 #include "libavutil/cpu.h"
+#include "libavutil/mem.h"
 
 // We need av_log() to be visible so we can enable assertions in libavcodec.
 #include "libavutil/log.h"
+#include "libavcodec/packet.h"
 
 #pragma GCC visibility pop
 

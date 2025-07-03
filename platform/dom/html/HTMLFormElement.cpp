@@ -49,6 +49,7 @@
 #include "nsIInterfaceRequestorUtils.h"
 #include "nsIWebProgress.h"
 #include "nsIDocShell.h"
+#include "nsDocShell.h" // for ::Cast
 #include "nsIPrompt.h"
 #include "nsIStringBundle.h"
 
@@ -218,7 +219,9 @@ HTMLFormElement::BeforeSetAttr(int32_t aNamespaceID, nsIAtom* aName,
 nsresult
 HTMLFormElement::AfterSetAttr(int32_t aNameSpaceID, nsIAtom* aName,
                               const nsAttrValue* aValue,
-                              const nsAttrValue* aOldValue, bool aNotify)
+                              const nsAttrValue* aOldValue,
+                              nsIPrincipal* aSubjectPrincipal,
+                              bool aNotify)
 {
   if (aName == nsGkAtoms::novalidate && aNameSpaceID == kNameSpaceID_None) {
     // Update all form elements states because they might be [no longer]
@@ -235,7 +238,7 @@ HTMLFormElement::AfterSetAttr(int32_t aNameSpaceID, nsIAtom* aName,
   }
 
   return nsGenericHTMLElement::AfterSetAttr(aNameSpaceID, aName, aValue,
-                                            aOldValue, aNotify);
+                                            aOldValue, aSubjectPrincipal, aNotify);
 }
 
 NS_IMPL_STRING_ATTR(HTMLFormElement, AcceptCharset, acceptcharset)
@@ -774,9 +777,8 @@ HTMLFormElement::SubmitSubmission(HTMLFormSubmission* aFormSubmission)
 
   // If there is no link handler, then we won't actually be able to submit.
   nsIDocument* doc = GetComposedDoc();
-  nsCOMPtr<nsISupports> container = doc ? doc->GetContainer() : nullptr;
-  nsCOMPtr<nsILinkHandler> linkHandler(do_QueryInterface(container));
-  if (!linkHandler || IsEditable()) {
+  nsCOMPtr<nsIDocShell> container = doc ? doc->GetDocShell() : nullptr;
+  if (!container || IsEditable()) {
     mIsSubmitting = false;
     return NS_OK;
   }
@@ -855,12 +857,12 @@ HTMLFormElement::SubmitSubmission(HTMLFormSubmission* aFormSubmission)
                                                getter_AddRefs(postDataStream));
     NS_ENSURE_SUBMIT_SUCCESS(rv);
 
-    rv = linkHandler->OnLinkClickSync(this, actionURI,
-                                      target.get(),
-                                      NullString(),
-                                      postDataStream, nullptr,
-                                      getter_AddRefs(docShell),
-                                      getter_AddRefs(mSubmittingRequest));
+    rv = nsDocShell::Cast(container)->OnLinkClickSync(this, actionURI,
+                                                      target.get(),
+                                                      NullString(),
+                                                      postDataStream, nullptr,
+                                                      getter_AddRefs(docShell),
+                                                      getter_AddRefs(mSubmittingRequest));
     NS_ENSURE_SUBMIT_SUCCESS(rv);
   }
 

@@ -174,8 +174,7 @@
   margin: 0 0 2px;
 }
 
-@media (-moz-os-version: windows-vista),
-       (-moz-os-version: windows-win7) {
+@media (-moz-os-version: windows-win7) {
   #appmenu-button {
     border-radius: 0 0 4px 4px;
   }
@@ -1695,8 +1694,7 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
   padding: 0 3px;
 }
 
-@media not all and (-moz-os-version: windows-vista),
-       not all and (-moz-windows-default-theme) {
+@media not all and (-moz-windows-default-theme) {
   @media not all and (-moz-os-version: windows-win7),
          not all and (-moz-windows-default-theme) {
     richlistitem[type~="action"][actiontype$="tab"][selected="true"] > .ac-url-box > .ac-action-icon {
@@ -3124,8 +3122,7 @@ toolbar[brighttext] #addonbar-closebutton {
                       linear-gradient(var(--toolbar-custom-color), var(--toolbar-custom-color));
   }
   
-  @media (-moz-os-version: windows-vista),
-         (-moz-os-version: windows-win7) {
+  @media (-moz-os-version: windows-win7) {
     :root:not(:-moz-lwtheme) {
       --toolbox-after-color: #aabccf;
     }
@@ -3554,12 +3551,11 @@ toolbar[brighttext] #addonbar-closebutton {
     }    
   }
 
-/* ==== Windows Vista/7/8 styling ==== */
+/* ==== Windows 7/8 styling ==== */
 
-  @media (-moz-os-version: windows-vista),
-         (-moz-os-version: windows-win7),
+  @media (-moz-os-version: windows-win7),
          (-moz-os-version: windows-win8) {
-    /* Make sure the native margins are correct on Win Vista/7/8.
+    /* Make sure the native margins are correct on Win 7/8.
      * We can't use -moz-win-glass there because the border sizing would
      * not be correct. */
     #main-window {
@@ -3572,7 +3568,7 @@ toolbar[brighttext] #addonbar-closebutton {
     }
 
     /* The borders on the glass frame are ours, and inside #browser, and on
-     * vista and win7 we want to make sure they are "glassy", so we can't use
+     * win7 we want to make sure they are "glassy", so we can't use
      * #browser as the exclude-glass container. We use #appcontent instead. */
     #browser {
       -moz-appearance: none;
@@ -3610,10 +3606,9 @@ toolbar[brighttext] #addonbar-closebutton {
     
   }
 
-/* ==== Windows Vista/7 (true glass) styling ==== */
+/* ==== Windows 7 (true glass) styling ==== */
 
-  @media (-moz-os-version: windows-vista),
-         (-moz-os-version: windows-win7) {
+  @media (-moz-os-version: windows-win7) {
     #toolbar-menubar:not(:-moz-lwtheme),
     #TabsToolbar[tabsontop=true]:not(:-moz-lwtheme),
     #nav-bar[tabsontop=false]:not(:-moz-lwtheme),
@@ -3685,9 +3680,8 @@ toolbar[brighttext] #addonbar-closebutton {
     list-style-image: var(--toolbarbutton-glass-image);
   }
   
-/* Show toolbar borders on vista through win8, but not on win10 and later: */
-@media (-moz-os-version: windows-vista),
-       (-moz-os-version: windows-win7),
+/* Show toolbar borders on win7/win8, but not on win10 and later: */
+@media (-moz-os-version: windows-win7),
        (-moz-os-version: windows-win8) {
   /* Vertical toolbar border */
   #main-window[sizemode=normal] #navigator-toolbox::after,
@@ -3864,8 +3858,7 @@ toolbar[brighttext] #addonbar-closebutton {
 }
 
 /* ::::: splitmenu highlight style that imitates Windows 7 start menu ::::: */
-@media (-moz-os-version: windows-vista) and (-moz-windows-default-theme),
-       (-moz-os-version: windows-win7) and (-moz-windows-default-theme) {
+@media (-moz-os-version: windows-win7) and (-moz-windows-default-theme) {
   .splitmenu-menuitem,
   .splitmenu-menu {
     -moz-appearance: none;

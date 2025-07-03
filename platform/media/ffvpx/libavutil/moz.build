@@ -6,7 +6,13 @@
 # Due to duplicate file names, we compile libavutil/x86 in its own
 # moz.build file.
 if CONFIG['FFVPX_ASFLAGS']:
-    DIRS += ['x86']
+    if CONFIG['CPU_ARCH'].startswith('x86'):
+        DIRS += ['x86']
+    elif CONFIG['CPU_ARCH'].startswith('arm'):
+        DIRS += ['arm']
+
+if CONFIG['CPU_ARCH'] == 'aarch64':
+    DIRS += ['aarch64']
 
 SharedLibrary('mozavutil')
 SOURCES += [
@@ -17,11 +23,9 @@ SOURCES += [
     'bprint.c',
     'buffer.c',
     'channel_layout.c',
-    'color_utils.c',
     'cpu.c',
     'crc.c',
     'dict.c',
-    'dummy_funcs.c',
     'error.c',
     'eval.c',
     'fifo.c',
@@ -48,8 +52,16 @@ SOURCES += [
     'threadmessage.c',
     'time.c',
     'timecode.c',
+    'tx.c',
+    'tx_double.c',
+    'tx_float.c',
+    'tx_int32.c',
     'utils.c',
     'video_enc_params.c',
+]
+
+EXPORTS.ffvpx = [
+    "tx.h"
 ]
 
 SYMBOLS_FILE =  'avutil.symbols'

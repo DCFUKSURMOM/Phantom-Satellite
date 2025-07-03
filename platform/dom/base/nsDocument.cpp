@@ -1288,6 +1288,7 @@ nsIDocument::nsIDocument()
 
 nsDocument::nsDocument(const char* aContentType)
   : nsIDocument()
+  , mLinksEnabled(true)
   , mViewportType(Unknown)
 {
   SetContentTypeInternal(nsDependentCString(aContentType));
@@ -2424,16 +2425,6 @@ nsDocument::ApplySettingsFromCSP(bool aSpeculative)
     rv = NodePrincipal()->GetCsp(getter_AddRefs(csp));
     NS_ENSURE_SUCCESS_VOID(rv);
     if (csp) {
-      // Set up any Referrer Policy specified by CSP
-      bool hasReferrerPolicy = false;
-      uint32_t referrerPolicy = mozilla::net::RP_Default;
-      rv = csp->GetReferrerPolicy(&referrerPolicy, &hasReferrerPolicy);
-      NS_ENSURE_SUCCESS_VOID(rv);
-      if (hasReferrerPolicy) {
-        mReferrerPolicy = static_cast<ReferrerPolicy>(referrerPolicy);
-        mReferrerPolicySet = true;
-      }
-
       // Set up 'block-all-mixed-content' if not already inherited
       // from the parent context or set by any other CSP.
       if (!mBlockAllMixedContent) {

@@ -586,10 +586,6 @@ DecoderDoctorDocumentWatcher::SynthesizeAnalysis()
       if (!formatsRequiringFFMpeg.IsEmpty()) {
         switch (FFmpegRuntimeLinker::LinkStatusCode()) {
           case FFmpegRuntimeLinker::LinkStatus_INVALID_FFMPEG_CANDIDATE:
-          case FFmpegRuntimeLinker::LinkStatus_UNUSABLE_LIBAV57:
-          case FFmpegRuntimeLinker::LinkStatus_INVALID_LIBAV_CANDIDATE:
-          case FFmpegRuntimeLinker::LinkStatus_OBSOLETE_FFMPEG:
-          case FFmpegRuntimeLinker::LinkStatus_OBSOLETE_LIBAV:
           case FFmpegRuntimeLinker::LinkStatus_INVALID_CANDIDATE:
             DD_INFO("DecoderDoctorDocumentWatcher[%p, doc=%p]::SynthesizeAnalysis() - unplayable formats: %s -> Cannot play media because of unsupported %s (Reason: %s)",
                     this, mDocument,

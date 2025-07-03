@@ -43,65 +43,20 @@ FFmpegLibWrapper::Link()
   uint32_t macro = (version >> 16) & 0xFFu;
   mVersion = static_cast<int>(macro);
   uint32_t micro = version & 0xFFu;
-  // A micro version >= 100 indicates that it's FFmpeg (as opposed to LibAV).
-  bool isFFMpeg = micro >= 100;
-  if (!isFFMpeg) {
-    if (macro == 57) {
-      // Due to current AVCodecContext binary incompatibility we can only
-      // support FFmpeg 57 at this stage.
-      Unlink();
-      return LinkResult::CannotUseLibAV57;
-    }
-#ifdef MOZ_FFMPEG
-    if (version < (54u << 16 | 35u << 8 | 1u)
-        && !MediaPrefs::LibavcodecAllowObsolete()) {
-      // Refuse any libavcodec version prior to 54.35.1.
-      // (Unless media.libavcodec.allow-obsolete==true)
-      Unlink();
-      return LinkResult::BlockedOldLibAVVersion;
-    }
-#endif
-  }
 
   enum {
     AV_FUNC_AVUTIL_MASK = 1 << 8,
-    AV_FUNC_53 = 1 << 0,
-    AV_FUNC_54 = 1 << 1,
-    AV_FUNC_55 = 1 << 2,
-    AV_FUNC_56 = 1 << 3,
-    AV_FUNC_57 = 1 << 4,
-    AV_FUNC_58 = 1 << 5,
-    AV_FUNC_59 = 1 << 6,
-    AV_FUNC_60 = 1 << 7,
-    AV_FUNC_AVUTIL_53 = AV_FUNC_53 | AV_FUNC_AVUTIL_MASK,
-    AV_FUNC_AVUTIL_54 = AV_FUNC_54 | AV_FUNC_AVUTIL_MASK,
-    AV_FUNC_AVUTIL_55 = AV_FUNC_55 | AV_FUNC_AVUTIL_MASK,
-    AV_FUNC_AVUTIL_56 = AV_FUNC_56 | AV_FUNC_AVUTIL_MASK,
-    AV_FUNC_AVUTIL_57 = AV_FUNC_57 | AV_FUNC_AVUTIL_MASK,
+    AV_FUNC_58 = 1 << 0,
+    AV_FUNC_59 = 1 << 1,
+    AV_FUNC_60 = 1 << 2,
     AV_FUNC_AVUTIL_58 = AV_FUNC_58 | AV_FUNC_AVUTIL_MASK,
     AV_FUNC_AVUTIL_59 = AV_FUNC_59 | AV_FUNC_AVUTIL_MASK,
     AV_FUNC_AVUTIL_60 = AV_FUNC_60 | AV_FUNC_AVUTIL_MASK,
-    AV_FUNC_AVCODEC_ALL = AV_FUNC_53 | AV_FUNC_54 | AV_FUNC_55 | AV_FUNC_56 |
-                          AV_FUNC_57 | AV_FUNC_58 | AV_FUNC_59 | AV_FUNC_60,
+    AV_FUNC_AVCODEC_ALL = AV_FUNC_58 | AV_FUNC_59 | AV_FUNC_60,
     AV_FUNC_AVUTIL_ALL = AV_FUNC_AVCODEC_ALL | AV_FUNC_AVUTIL_MASK
   };
 
   switch (macro) {
-    case 53:
-      version = AV_FUNC_53;
-      break;
-    case 54:
-      version = AV_FUNC_54;
-      break;
-    case 55:
-      version = AV_FUNC_55;
-      break;
-    case 56:
-      version = AV_FUNC_56;
-      break;
-    case 57:
-      version = AV_FUNC_57;
-      break;
     case 58:
       version = AV_FUNC_58;
       break;
@@ -114,13 +69,7 @@ FFmpegLibWrapper::Link()
     default:
       FFMPEG_LOG("Unknown avcodec version: %d", macro);
       Unlink();
-      return isFFMpeg
-             ? ((macro > 57)
-                ? LinkResult::UnknownFutureFFMpegVersion
-                : LinkResult::UnknownOlderFFMpegVersion)
-             // All LibAV versions<54.35.1 are blocked, therefore we must be
-             // dealing with a later one.
-             : LinkResult::UnknownFutureLibAVVersion;
+      return LinkResult::UnknownFFMpegVersion;
   }
 
 #define AV_FUNC_OPTION(func, ver)                                              \
@@ -136,53 +85,34 @@ FFmpegLibWrapper::Link()
   AV_FUNC_OPTION(func, ver)                                                    \
   if ((ver) & version && !func) {                                              \
     Unlink();                                                                  \
-    return isFFMpeg ? LinkResult::MissingFFMpegFunction                        \
-                    : LinkResult::MissingLibAVFunction;                        \
+    return LinkResult::MissingFFMpegFunction;                                  \
   }
 
-  AV_FUNC(av_lockmgr_register, AV_FUNC_53 | AV_FUNC_54 | AV_FUNC_55 |
-                                   AV_FUNC_56 | AV_FUNC_57 | AV_FUNC_58)
+  AV_FUNC(av_lockmgr_register, AV_FUNC_58)
   AV_FUNC(avcodec_alloc_context3, AV_FUNC_AVCODEC_ALL)
   AV_FUNC(avcodec_close, AV_FUNC_AVCODEC_ALL)
-  AV_FUNC(avcodec_decode_audio4, AV_FUNC_53 | AV_FUNC_54 | AV_FUNC_55 |
-                                     AV_FUNC_56 | AV_FUNC_57 | AV_FUNC_58)
-  AV_FUNC(avcodec_decode_video2, AV_FUNC_53 | AV_FUNC_54 | AV_FUNC_55 |
-                                     AV_FUNC_56 | AV_FUNC_57 | AV_FUNC_58)
+  AV_FUNC(avcodec_decode_audio4, AV_FUNC_58)
+  AV_FUNC(avcodec_decode_video2, AV_FUNC_58)
   AV_FUNC(avcodec_find_decoder, AV_FUNC_AVCODEC_ALL)
   AV_FUNC(avcodec_flush_buffers, AV_FUNC_AVCODEC_ALL)
   AV_FUNC(avcodec_open2, AV_FUNC_AVCODEC_ALL)
-  AV_FUNC(avcodec_register_all, AV_FUNC_53 | AV_FUNC_54 | AV_FUNC_55 |
-                                    AV_FUNC_56 | AV_FUNC_57 | AV_FUNC_58)
+  AV_FUNC(avcodec_register_all, AV_FUNC_58)
   AV_FUNC(av_init_packet, AV_FUNC_AVCODEC_ALL)
   AV_FUNC(av_parser_init, AV_FUNC_AVCODEC_ALL)
   AV_FUNC(av_parser_close, AV_FUNC_AVCODEC_ALL)
   AV_FUNC(av_parser_parse2, AV_FUNC_AVCODEC_ALL)
-  AV_FUNC(avcodec_alloc_frame, (AV_FUNC_53 | AV_FUNC_54))
-  AV_FUNC(avcodec_get_frame_defaults, (AV_FUNC_53 | AV_FUNC_54))
-  AV_FUNC(avcodec_free_frame, AV_FUNC_54)
-  AV_FUNC(avcodec_send_packet, AV_FUNC_58 | AV_FUNC_59 | AV_FUNC_60)
-  AV_FUNC(avcodec_receive_frame, AV_FUNC_58 | AV_FUNC_59 | AV_FUNC_60)
-  AV_FUNC_OPTION(av_rdft_init, AV_FUNC_AVCODEC_ALL)
-  AV_FUNC_OPTION(av_rdft_calc, AV_FUNC_AVCODEC_ALL)
-  AV_FUNC_OPTION(av_rdft_end, AV_FUNC_AVCODEC_ALL)
+  AV_FUNC(avcodec_send_packet, AV_FUNC_AVCODEC_ALL)
+  AV_FUNC(avcodec_receive_frame, AV_FUNC_AVCODEC_ALL)
   AV_FUNC(av_log_set_level, AV_FUNC_AVUTIL_ALL)
   AV_FUNC(av_malloc, AV_FUNC_AVUTIL_ALL)
   AV_FUNC(av_freep, AV_FUNC_AVUTIL_ALL)
-  AV_FUNC(av_frame_alloc,
-          (AV_FUNC_AVUTIL_55 | AV_FUNC_AVUTIL_56 | AV_FUNC_AVUTIL_57 |
-           AV_FUNC_AVUTIL_58 | AV_FUNC_AVUTIL_59 | AV_FUNC_AVUTIL_60))
-  AV_FUNC(av_frame_free,
-          (AV_FUNC_AVUTIL_55 | AV_FUNC_AVUTIL_56 | AV_FUNC_AVUTIL_57 |
-           AV_FUNC_AVUTIL_58 | AV_FUNC_AVUTIL_59 | AV_FUNC_AVUTIL_60))
-  AV_FUNC(av_frame_unref,
-          (AV_FUNC_AVUTIL_55 | AV_FUNC_AVUTIL_56 | AV_FUNC_AVUTIL_57 |
-           AV_FUNC_AVUTIL_58 | AV_FUNC_AVUTIL_59 | AV_FUNC_AVUTIL_60))
-  AV_FUNC_OPTION(av_frame_get_colorspace,
-          (AV_FUNC_AVUTIL_55 | AV_FUNC_AVUTIL_56 | AV_FUNC_AVUTIL_57 |
-           AV_FUNC_AVUTIL_58))
-  AV_FUNC_OPTION(av_frame_get_color_range,
-          (AV_FUNC_AVUTIL_55 | AV_FUNC_AVUTIL_56 | AV_FUNC_AVUTIL_57 |
-           AV_FUNC_AVUTIL_58))
+  AV_FUNC(av_frame_alloc, AV_FUNC_AVUTIL_ALL)
+  AV_FUNC(av_frame_free, AV_FUNC_AVUTIL_ALL)
+  AV_FUNC(av_frame_unref, AV_FUNC_AVUTIL_ALL)
+  AV_FUNC_OPTION(av_frame_get_colorspace, AV_FUNC_AVUTIL_58)
+  AV_FUNC_OPTION(av_frame_get_color_range, AV_FUNC_AVUTIL_58)
+  AV_FUNC_OPTION(av_tx_init, AV_FUNC_AVUTIL_ALL)
+  AV_FUNC_OPTION(av_tx_uninit, AV_FUNC_AVUTIL_ALL)
 #undef AV_FUNC
 #undef AV_FUNC_OPTION
 

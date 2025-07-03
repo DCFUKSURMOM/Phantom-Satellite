@@ -19,14 +19,6 @@
 #include "prsystem.h" // for PR_GetNumberOfProcessors
 
 #include "libavutil/pixfmt.h"
-#if LIBAVCODEC_VERSION_MAJOR < 54
-#define AVPixelFormat PixelFormat
-#define AV_PIX_FMT_YUV420P PIX_FMT_YUV420P
-#define AV_PIX_FMT_YUVJ420P PIX_FMT_YUVJ420P
-#define AV_PIX_FMT_YUV444P PIX_FMT_YUV444P
-#define AV_PIX_FMT_GBRP PIX_FMT_GBRP
-#define AV_PIX_FMT_NONE PIX_FMT_NONE
-#endif
 
 typedef mozilla::layers::Image Image;
 typedef mozilla::layers::PlanarYCbCrImage PlanarYCbCrImage;
@@ -180,14 +172,6 @@ FFmpegVideoDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample, bool* aGotFrame)
   uint8_t* inputData = const_cast<uint8_t*>(aSample->Data());
   size_t inputSize = aSample->Size();
 
-#if LIBAVCODEC_VERSION_MAJOR >= 54 && LIBAVCODEC_VERSION_MAJOR < 58
-  if (inputSize && mCodecParser && (mCodecID == AV_CODEC_ID_VP8
-#if LIBAVCODEC_VERSION_MAJOR >= 55 && LIBAVCODEC_VERSION_MAJOR < 58
-      || mCodecID == AV_CODEC_ID_VP9
-#endif
-      ))
-#endif
-#if LIBAVCODEC_VERSION_MAJOR >= 54
   {
     while (inputSize) {
       uint8_t* data = inputData;
@@ -214,15 +198,14 @@ FFmpegVideoDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample, bool* aGotFrame)
     }
     return NS_OK;
   }
-#endif
   return DoDecode(aSample, inputData, inputSize, aGotFrame);
 }
 
 static int64_t GetFramePts(AVFrame* aFrame) {
-#if LIBAVCODEC_VERSION_MAJOR > 58
-  return aFrame->pts;
-#else
+#if LIBAVCODEC_VERSION_MAJOR == 58
   return aFrame->pkt_pts;
+#else
+  return aFrame->pts;
 #endif
 }
 
@@ -241,7 +224,6 @@ FFmpegVideoDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample,
   packet.flags = aSample->mKeyframe ? AV_PKT_FLAG_KEY : 0;
   packet.pos = aSample->mOffset;
 
-#if LIBAVCODEC_VERSION_MAJOR >= 58
   packet.duration = aSample->mDuration;
   int res = mLib->avcodec_send_packet(mCodecContext, &packet);
   if (res < 0) {
@@ -282,66 +264,6 @@ FFmpegVideoDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample,
       *aGotFrame = true;
     }
   } while (true);
-#else
-  // LibAV provides no API to retrieve the decoded sample's duration.
-  // (FFmpeg >= 1.0 provides av_frame_get_pkt_duration)
-  // As such we instead use a map using the dts as key that we will retrieve
-  // later.
-  // The map will have a typical size of 16 entry.
-  mDurationMap.Insert(aSample->mTimecode, aSample->mDuration);
-
-  if (!PrepareFrame()) {
-    NS_WARNING("FFmpeg h264 decoder failed to allocate frame.");
-    return MediaResult(NS_ERROR_OUT_OF_MEMORY, __func__);
-  }
-
-  // Required with old version of FFmpeg/LibAV
-  mFrame->reordered_opaque = AV_NOPTS_VALUE;
-
-  int decoded;
-  int bytesConsumed =
-    mLib->avcodec_decode_video2(mCodecContext, mFrame, &decoded, &packet);
-
-  FFMPEG_LOG("DoDecodeFrame:decode_video: rv=%d decoded=%d "
-             "(Input: pts(%lld) dts(%lld) Output: pts(%lld) "
-             "opaque(%lld) pts(%lld) pkt_dts(%lld))",
-             bytesConsumed, decoded, packet.pts, packet.dts, mFrame->pts,
-             mFrame->reordered_opaque, mFrame->pts, mFrame->pkt_dts);
-
-  if (bytesConsumed < 0) {
-    return MediaResult(NS_ERROR_DOM_MEDIA_DECODE_ERR,
-                       RESULT_DETAIL("FFmpeg video error:%d", bytesConsumed));
-  }
-
-  if (!decoded) {
-    if (aGotFrame) {
-      *aGotFrame = false;
-    }
-    return NS_OK;
-  }
-
-  // If we've decoded a frame then we need to output it
-  int64_t pts = mPtsContext.GuessCorrectPts(GetFramePts(mFrame), mFrame->pkt_dts);
-  // Retrieve duration from dts.
-  // We use the first entry found matching this dts (this is done to
-  // handle damaged file with multiple frames with the same dts)
-
-  int64_t duration;
-  if (!mDurationMap.Find(mFrame->pkt_dts, duration)) {
-    NS_WARNING("Unable to retrieve duration from map");
-    duration = aSample->mDuration;
-    // dts are probably incorrectly reported ; so clear the map as we're
-    // unlikely to find them in the future anyway. This also guards
-    // against the map becoming extremely big.
-    mDurationMap.Clear();
-  }
-
-  MediaResult rv = CreateImage(aSample->mOffset, pts, duration);
-  if (NS_SUCCEEDED(rv) && aGotFrame) {
-    *aGotFrame = true;
-  }
-  return rv;
-#endif
 }
 
 MediaResult
@@ -376,12 +298,12 @@ FFmpegVideoDecoder<LIBAV_VER>::CreateImage(int64_t aOffset, int64_t aPts,
   }
 
   AVColorSpace colorSpace = AVCOL_SPC_UNSPECIFIED;
-#if LIBAVCODEC_VERSION_MAJOR > 58
-  colorSpace = mFrame->colorspace;
-#else
+#if LIBAVCODEC_VERSION_MAJOR == 58
   if (mLib->av_frame_get_colorspace) {
     colorSpace = (AVColorSpace)mLib->av_frame_get_colorspace(mFrame);
   }
+#else
+  colorSpace = mFrame->colorspace;
 #endif
   switch (colorSpace) {
     case AVCOL_SPC_BT709:
@@ -399,12 +321,12 @@ FFmpegVideoDecoder<LIBAV_VER>::CreateImage(int64_t aOffset, int64_t aPts,
   }
 
   AVColorRange range = AVCOL_RANGE_UNSPECIFIED;
-#if LIBAVCODEC_VERSION_MAJOR > 58
-  range = mFrame->color_range;
-#else
+#if LIBAVCODEC_VERSION_MAJOR == 58
   if (mLib->av_frame_get_color_range) {
 	range = (AVColorRange)mLib->av_frame_get_color_range(mFrame);
   }
+#else
+  range = mFrame->color_range;
 #endif
   b.mColorRange = range == AVCOL_RANGE_JPEG ? ColorRange::FULL : ColorRange::LIMITED;
 
@@ -467,17 +389,13 @@ FFmpegVideoDecoder<LIBAV_VER>::GetCodecId(const nsACString& aMimeType)
     return AV_CODEC_ID_VP6F;
   }
 
-#if LIBAVCODEC_VERSION_MAJOR >= 54
   if (VPXDecoder::IsVP8(aMimeType)) {
     return AV_CODEC_ID_VP8;
   }
-#endif
 
-#if LIBAVCODEC_VERSION_MAJOR >= 55
   if (VPXDecoder::IsVP9(aMimeType)) {
     return AV_CODEC_ID_VP9;
   }
-#endif
 
   return AV_CODEC_ID_NONE;
 }

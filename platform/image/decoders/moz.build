@@ -24,14 +24,10 @@ UNIFIED_SOURCES += [
     'nsICODecoder.cpp',
     'nsIconDecoder.cpp',
     'nsJPEGDecoder.cpp',
+    'nsJXLDecoder.cpp',
     'nsPNGDecoder.cpp',
     'nsWebPDecoder.cpp',
 ]
-
-if CONFIG["MOZ_JXL"]:
-    UNIFIED_SOURCES += [
-        "nsJXLDecoder.cpp",
-    ]
 
 include('/ipc/chromium/chromium-config.mozbuild')
 

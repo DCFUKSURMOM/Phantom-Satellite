@@ -10,7 +10,7 @@
 #define OS_NAME linux
 #define av_restrict restrict
 #define EXTERN_PREFIX ""
-#define EXTERN_ASM 
+#define EXTERN_ASM
 #define BUILDSUF ""
 #define SLIBSUF ".so"
 #define HAVE_MMX2 HAVE_MMXEXT
@@ -336,6 +336,7 @@
 #define HAVE_WGLGETPROCADDRESS 0
 #define HAVE_BCRYPT 0
 #define HAVE_VAAPI_DRM 0
+#define HAVE_VAAPI_WIN32 0
 #define HAVE_VAAPI_X11 0
 #define HAVE_VDPAU_X11 0
 #define HAVE_PTHREADS 1
@@ -606,12 +607,12 @@
 #define CONFIG_ERROR_RESILIENCE 0
 #define CONFIG_FAAN 1
 #define CONFIG_FAST_UNALIGNED 0
-#define CONFIG_FFT 0
+#define CONFIG_FFT 1
 #define CONFIG_LSP 0
 #define CONFIG_MDCT 0
 #define CONFIG_PIXELUTILS 0
 #define CONFIG_NETWORK 0
-#define CONFIG_RDFT 1
+#define CONFIG_RDFT 0
 #define CONFIG_AUTODETECT 0
 #define CONFIG_FONTCONFIG 0
 #define CONFIG_LARGE_TESTS 1

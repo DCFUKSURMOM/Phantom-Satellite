@@ -25,7 +25,7 @@ pref("general.useragent.locale", "chrome://global/locale/intl.properties");
 // Platform User-agent compatibility mode default settings
 pref("general.useragent.compatMode.gecko", false);
 pref("general.useragent.compatMode.firefox", false);
-pref("general.useragent.compatMode.version", "115.0");
+pref("general.useragent.compatMode.version", "128.0");
 pref("general.useragent.appVersionIsBuildID", false);
 
 // In order to disable all overrides by default, don't initialize
@@ -399,7 +399,6 @@ pref("media.ffmpeg.enabled", false);
 #else
 pref("media.ffmpeg.enabled", true);
 #endif
-pref("media.libavcodec.allow-obsolete", false);
 #endif
 #if defined(MOZ_FFVPX)
 pref("media.ffvpx.enabled", true);
@@ -787,7 +786,6 @@ pref("gfx.canvas.skiagl.dynamic-cache", true);
 pref("gfx.text.disable-aa", false);
 
 pref("gfx.work-around-driver-bugs", true);
-pref("gfx.prefer-mesa-llvmpipe", false);
 
 pref("gfx.draw-color-bars", false);
 
@@ -1467,8 +1465,10 @@ pref("network.http.request.max-attempts", 10);
 
 // Headers
 pref("network.http.accept.default", "*/*");
-pref("network.http.accept.navigation", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-pref("network.http.accept.image", "image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5");
+// Top-level navigation should include all non-ubiquitous mime types in front of */*
+// including image and video/audio types that are handled top-level.
+pref("network.http.accept.navigation", "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/webp,image/apng,video/x-matroska,video/webm,*/*;q=0.8");
+pref("network.http.accept.image", "image/jxl,image/webp,image/apng,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5");
 pref("network.http.accept.style", "text/css,*/*;q=0.1");
 
 // Prefs allowing granular control of referers
@@ -2685,18 +2685,6 @@ pref("layout.frame_rate", -1);
 // pref to dump the display list to the log. Useful for debugging drawing.
 pref("layout.display-list.dump", false);
 pref("layout.display-list.dump-content", false);
-
-// pref to control precision of the frame rate timer. When true,
-// we use a "precise" timer, which means each notification fires
-// Nms after the start of the last notification. That means if the
-// processing of the notification is slow, the timer can fire immediately
-// after we've just finished processing the last notification, which might
-// lead to starvation problems.
-// When false, we use a "slack" timer which fires Nms after the *end*
-// of the last notification. This can give less tight frame rates
-// but provides more time for other operations when the browser is
-// heavily loaded.
-pref("layout.frame_rate.precise", false);
 
 // pref to control whether layout warnings that are hit quite often are enabled
 pref("layout.spammy_warnings.enabled", false);
@@ -4742,41 +4730,6 @@ pref("dom.browserElement.maxScreenshotDelayMS", 2000);
 
 // Whether we should show the placeholder when the element is focused but empty.
 pref("dom.placeholder.show_on_focus", true);
-
-// MMS UA Profile settings
-pref("wap.UAProf.url", "");
-pref("wap.UAProf.tagname", "x-wap-profile");
-
-// MMS version 1.1 = 0x11 (or decimal 17)
-// MMS version 1.3 = 0x13 (or decimal 19)
-// @see OMA-TS-MMS_ENC-V1_3-20110913-A clause 7.3.34
-pref("dom.mms.version", 19);
-
-pref("dom.mms.requestStatusReport", true);
-
-// Retrieval mode for MMS
-// manual: Manual retrieval mode.
-// automatic: Automatic retrieval mode even in roaming.
-// automatic-home: Automatic retrieval mode in home network.
-// never: Never retrieval mode.
-pref("dom.mms.retrieval_mode", "manual");
-
-pref("dom.mms.sendRetryCount", 3);
-pref("dom.mms.sendRetryInterval", "10000,60000,180000");
-
-pref("dom.mms.retrievalRetryCount", 4);
-pref("dom.mms.retrievalRetryIntervals", "60000,300000,600000,1800000");
-// Numeric default service id for MMS API calls with |serviceId| parameter
-// omitted.
-pref("dom.mms.defaultServiceId", 0);
-// Debug enabler for MMS.
-pref("mms.debugging.enabled", false);
-
-// Request read report while sending MMS.
-pref("dom.mms.requestReadReport", true);
-
-// Number of RadioInterface instances to create.
-pref("ril.numRadioInterfaces", 0);
 
 // If the user puts a finger down on an element and we think the user
 // might be executing a pan gesture, how long do we wait before

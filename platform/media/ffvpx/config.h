@@ -12,10 +12,14 @@
 #undef HAVE_DIRENT_H
 #undef HAVE_UNISTD_H
 #endif
+#if defined(_ARM64_)
+#include "config_win64_aarch64.h"
+#else
 #if defined(HAVE_64BIT_BUILD)
 #include "config_win64.h"
 #else
 #include "config_win32.h"
+#endif
 #endif
 // Adjust configure defines for GCC
 #if !defined(_MSC_VER)
@@ -27,12 +31,20 @@
 #define HAVE_LIBC_MSVCRT 0
 #endif
 #elif defined(XP_DARWIN)
+#if defined(__aarch64__)
+#include "config_darwin_aarch64.h"
+#else
 #include "config_darwin64.h"
+#endif
 #elif defined(XP_UNIX)
+#if defined(__aarch64__)
+#include "config_unix_aarch64.h"
+#else
 #if defined(HAVE_64BIT_BUILD)
 #include "config_unix64.h"
 #else
 #include "config_unix32.h"
+#endif
 #endif
 #endif
 

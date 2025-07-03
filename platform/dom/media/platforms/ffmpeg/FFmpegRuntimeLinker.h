@@ -23,10 +23,6 @@ public:
     // The following error statuses are sorted from most to least preferred
     // (i.e., if more than one happens, the top one is chosen.)
     LinkStatus_INVALID_FFMPEG_CANDIDATE, // Found ffmpeg with unexpected contents.
-    LinkStatus_UNUSABLE_LIBAV57, // Found LibAV 57, which we cannot use.
-    LinkStatus_INVALID_LIBAV_CANDIDATE, // Found libav with unexpected contents.
-    LinkStatus_OBSOLETE_FFMPEG,
-    LinkStatus_OBSOLETE_LIBAV,
     LinkStatus_INVALID_CANDIDATE, // Found some lib with unexpected contents.
     LinkStatus_NOT_FOUND, // Haven't found any library with an expected name.
   };

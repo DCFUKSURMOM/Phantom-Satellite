@@ -1,6 +1,6 @@
 This directory contains files used in Goanna builds from FFmpeg
 (http://ffmpeg.org). The current files are from FFmpeg as of
-Release n6.0.1
+Release n6.1.2
 
 All source files match their path from the library's source archive.
 The FFmpeg project recommends to use the branch tip, however we
@@ -60,7 +60,3 @@ header, causing all sorts of issues.
 
 There are going to be a lot of changes in terms of symbols exported. Adjust libavutil/avutil.symbols and
 libavcodec/avcodec.symbols by removing and adding symbols until the build passes.
-
-All new decoders/muxers/encoders/... should be added in the list of dummy functions found in libavcodec/dummy_funcs.c
-otherwise linkage will fail on Windows. On other platforms they are optimised out and aren't necessary.
-The GNU comm utility is a useful tool to compare and extract only the changes.

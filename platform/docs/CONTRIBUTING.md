@@ -59,12 +59,12 @@ Because our software encompasses many components of which a good portion is thir
 
 Important when editing/adding code:
 
-1. Stick to the style of surrounding code. If you're editing code in a module that deviates from our generally-used code style, don't mix in generally-used code style with the deviating code style. E.g. if a source file uses tabs everywhere, and you edit this code, also use tabs. If you feel code style should be rewritten to improve legibility, preferably create a separate issue to change it and do not roll it in with functional code changes!
-2. Use the following guideline where there's no clear deviating style in use:
+1. **Stick to the style of surrounding code.** If you're editing code in a module that deviates from our generally-used code style, don't mix in generally-used code style with the deviating code style. E.g. if a source file uses tabs everywhere, and you edit this code, also use tabs. If you feel code style should be rewritten to improve legibility, preferably create a separate issue to change it and do not roll it in with functional code changes!
+2. Use the following rough guideline where there's no clear deviating style in use:
     - Put opening function/scope braces at the end of the line.
     - Align closing braces with the indentation of the first character of the function/scope
-    - Use a line cap of 80 characters. Put continuations on the next line if it overflows.
-    - Use spaces for indentation, and indent scopes 2 spaces.  
+    - Use a line cap of 120 characters. Put continuations on the next line if it overflows.
+    - Use **spaces** for indentation, and indent scopes **2** spaces.  
     Example:
     ```C++
     nsSVGFilterFrame*
@@ -83,7 +83,9 @@ Important when editing/adding code:
     }
     ```
 3. Comment your code where prudent! Documenting what you're doing, especially in a complex piece of code, is very important to keep it easy to debug.
-4. Try not to write "as compact as possible" source code. Many languages have facilities to write very compact source code by gluing a lot of statements together on single lines, but you should avoid this to keep it readable. Other people than yourself will be looking at and trying to understand your code, and it's important to keep proper paragraphing, whitespace and above all logical names for variables and functions.
+4. **Try not to write "as compact as possible" source code.** Many languages have facilities to write very compact source code by gluing a lot of statements together on single lines, but you should avoid this to keep it readable. Other people than yourself will be looking at and trying to understand your code, and it's important to keep proper paragraphing, whitespace and above all logical names for variables and functions.
+
+**For more detail, see the separate document detailing UXP code style!**
 
 ## Commit Message Style
 

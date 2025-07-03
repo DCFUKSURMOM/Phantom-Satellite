@@ -6,22 +6,26 @@
 # Due to duplicate file names, we compile libavcodec/x86 in its own
 # moz.build file.
 if CONFIG['FFVPX_ASFLAGS']:
-    DIRS += ['x86']
+    if CONFIG['CPU_ARCH'].startswith('x86'):
+        DIRS += ['x86']
+    elif CONFIG['CPU_ARCH'].startswith('arm'):
+        DIRS += ['arm']
+
+if CONFIG['CPU_ARCH'] == 'aarch64':
+    DIRS += ['aarch64']
 
 SharedLibrary('mozavcodec')
 SOURCES += [
     'allcodecs.c',
     'avcodec.c',
+    'avfft.c',
     'avpacket.c',
-    'avpicture.c',
     'bitstream.c',
-    'bitstream_filter.c',
     'bitstream_filters.c',
     'bsf.c',
     'codec_desc.c',
     'codec_par.c',
     'decode.c',
-    'dummy_funcs.c',
     'encode.c',
     'flac.c',
     'flac_parser.c',
@@ -44,6 +48,7 @@ SOURCES += [
     'pthread_slice.c',
     'qsv_api.c',
     'raw.c',
+    'refstruct.c',
     'reverse.c',
     'utils.c',
     'version.c',
@@ -52,6 +57,7 @@ SOURCES += [
     'vorbis_parser.c',
     'vp8.c',
     'vp8_parser.c',
+    'vp8data.c',
     'vp8dsp.c',
     'vp9.c',
     'vp9_parser.c',
@@ -70,11 +76,12 @@ SOURCES += [
     'xiph.c'
 ]
 
-if CONFIG['MOZ_LIBAV_FFT']:
+# When building debug, there's a linker symbol inclusion issue, requiring us to
+# include dummy function definitions to have symbols exposed.
+# See discussion in UXP issue #2725
+if CONFIG['MOZ_DEBUG']:
     SOURCES += [
-        'avfft.c',
-        'fft_float.c',
-        'rdft.c',
+        'dummy_funcs.c',
     ]
 
 SYMBOLS_FILE = 'avcodec.symbols'

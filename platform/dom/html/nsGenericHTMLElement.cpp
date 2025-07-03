@@ -581,27 +581,14 @@ nsGenericHTMLElement::FindAncestorForm(HTMLFormElement* aCurrentForm)
 }
 
 bool
-nsGenericHTMLElement::CheckHandleEventForAnchorsPreconditions(
-                        EventChainVisitor& aVisitor)
+nsGenericHTMLElement::CheckHandleEventForAnchorsPreconditions(EventChainVisitor& aVisitor)
 {
   NS_PRECONDITION(nsCOMPtr<Link>(do_QueryObject(this)),
                   "should be called only when |this| implements |Link|");
-
-  if (!aVisitor.mPresContext) {
-    // We need a pres context to do link stuff. Some events (e.g. mutation
-    // events) don't have one.
-    // XXX: ideally, shouldn't we be able to do what we need without one?
-    return false; 
-  }
-
-  //Need to check if we hit an imagemap area and if so see if we're handling
-  //the event on that map or on a link farther up the tree.  If we're on a
-  //link farther up, do nothing.
-  nsCOMPtr<nsIContent> target = aVisitor.mPresContext->EventStateManager()->
-    GetEventTargetContent(aVisitor.mEvent);
-
-  return !target || !target->IsHTMLElement(nsGkAtoms::area) ||
-         IsHTMLElement(nsGkAtoms::area);
+  // When not in the composed document DOM, only <a> should navigate away per
+  // the exception in https://html.spec.whatwg.org/#cannot-navigate
+  // Thanks, Google, for another ugly one. :|
+  return IsInComposedDoc() || IsHTMLElement(nsGkAtoms::a); 
 }
 
 nsresult
@@ -692,7 +679,9 @@ nsGenericHTMLElement::BeforeSetAttr(int32_t aNamespaceID, nsIAtom* aName,
 nsresult
 nsGenericHTMLElement::AfterSetAttr(int32_t aNamespaceID, nsIAtom* aName,
                                    const nsAttrValue* aValue,
-                                   const nsAttrValue* aOldValue, bool aNotify)
+                                   const nsAttrValue* aOldValue,
+                                   nsIPrincipal* aMaybeScriptedPrincipal,
+                                   bool aNotify)
 {
   if (aNamespaceID == kNameSpaceID_None) {
     if (IsEventAttributeName(aName) && aValue) {
@@ -782,7 +771,9 @@ nsGenericHTMLElement::AfterSetAttr(int32_t aNamespaceID, nsIAtom* aName,
   }
 
   return nsGenericHTMLElementBase::AfterSetAttr(aNamespaceID, aName,
-                                                aValue, aOldValue, aNotify);
+                                                aValue, aOldValue,
+                                                aMaybeScriptedPrincipal,
+                                                aNotify);
 }
 
 EventListenerManager*
@@ -2042,7 +2033,9 @@ nsGenericHTMLFormElement::BeforeSetAttr(int32_t aNameSpaceID, nsIAtom* aName,
 nsresult
 nsGenericHTMLFormElement::AfterSetAttr(int32_t aNameSpaceID, nsIAtom* aName,
                                        const nsAttrValue* aValue,
-                                       const nsAttrValue* aOldValue, bool aNotify)
+                                       const nsAttrValue* aOldValue,
+                                       nsIPrincipal* aMaybeScriptedPrincipal,
+                                       bool aNotify)
 {
   if (aNameSpaceID == kNameSpaceID_None) {
     // add the control to the hashtable as needed
@@ -2091,7 +2084,9 @@ nsGenericHTMLFormElement::AfterSetAttr(int32_t aNameSpaceID, nsIAtom* aName,
   }
 
   return nsGenericHTMLElement::AfterSetAttr(aNameSpaceID, aName,
-                                            aValue, aOldValue, aNotify);
+                                            aValue, aOldValue,
+                                            aMaybeScriptedPrincipal,
+                                            aNotify);
 }
 
 nsresult

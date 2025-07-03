@@ -324,8 +324,4 @@ user_pref("startup.homepage_welcome_url.additional", "");
 // not, so we keep testing the non-Flash pathways
 user_pref("plugin.load_flash_only", false);
 
-// Don't block old libavcodec libraries when testing, because our test systems
-// cannot easily be upgraded.
-user_pref("media.libavcodec.allow-obsolete", true);
-
 user_pref("media.openUnsupportedTypeWithExternalApp", false);

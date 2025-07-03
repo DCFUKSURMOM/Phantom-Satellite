@@ -1,6 +1,6 @@
 ﻿# UXP Coding Style Guide
-While our source tree is currently in a number of different Coding Styles and the general rule applies to adhere to style of surrounding code when you are making changes, it is our goal to unify the style of our source tree and making it adhere to a single style.
-This document describes the preferred style for new source code files and the preferred style to convert existing files to.
+While our source tree is currently in a number of different Coding Styles and **the general rule applies to adhere to style of surrounding code when you are making changes**, it is our long-term goal to unify the style of our source tree and making it adhere to a single style.
+This document describes the preferred style for **new** source code files and the preferred style to convert existing files to.
 
 This style guide will not apply to 3rd party libraries that are imported verbatim to our code (e.g. NSS, NSPR, SQLite, various media libs, etc.).
 
@@ -17,7 +17,7 @@ The following formatting rules apply to all code:
 - Indentation of scopes is 2 spaces.
 - Indentation of long lines is variable-aligned or expression-aligned (see "long line wrapping")
 - Conditional defines are always placed on column 1. This is also true for nested defines.
-- Maximum line length is 120 characters. This departs from the often-used 80-character limit which is rooted in the archaic use of 80-column text terminals and should no longer apply in this day. Github, our chief web VCS, has no issues dealing with 120 character lines either.
+- Maximum line length is 120 characters. This departs from the often-used 80-character limit which is rooted in the archaic use of 80-column text terminals and should no longer apply in this day. Gitea, our chief web VCS, has no issues dealing with 120 character lines either.
 - Variables passed to functions are passed on one line unless the line would exceed the maximum length, in which case variables will be passed 1-per-line, expression-aligned (see "long line wrapping").
 - Avoid trailing commas.
 - Comment blocks are line-quoted if they appear within functions.

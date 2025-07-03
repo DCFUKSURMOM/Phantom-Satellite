@@ -29,24 +29,11 @@ static const char* sLibs[] = {
   "libavcodec.60.dylib",
   "libavcodec.59.dylib",
   "libavcodec.58.dylib",
-  "libavcodec.57.dylib",
-  "libavcodec.56.dylib",
-  "libavcodec.55.dylib",
-  "libavcodec.54.dylib",
-  "libavcodec.53.dylib",
 #else
   "libavcodec.so.60",
   "libavcodec.so.59",
   "libavcodec.so.58",
-  "libavcodec-ffmpeg.so.59",
   "libavcodec-ffmpeg.so.58",
-  "libavcodec-ffmpeg.so.57",
-  "libavcodec-ffmpeg.so.56",
-  "libavcodec.so.57",
-  "libavcodec.so.56",
-  "libavcodec.so.55",
-  "libavcodec.so.54",
-  "libavcodec.so.53",
 #endif
 };
 
@@ -83,35 +70,10 @@ FFmpegRuntimeLinker::Init()
             sLinkStatusLibraryName = lib;
           }
           break;
-        case FFmpegLibWrapper::LinkResult::CannotUseLibAV57:
-          if (sLinkStatus > LinkStatus_UNUSABLE_LIBAV57) {
-            sLinkStatus = LinkStatus_UNUSABLE_LIBAV57;
-            sLinkStatusLibraryName = lib;
-          }
-          break;
-        case FFmpegLibWrapper::LinkResult::BlockedOldLibAVVersion:
-          if (sLinkStatus > LinkStatus_OBSOLETE_LIBAV) {
-            sLinkStatus = LinkStatus_OBSOLETE_LIBAV;
-            sLinkStatusLibraryName = lib;
-          }
-          break;
-        case FFmpegLibWrapper::LinkResult::UnknownFutureLibAVVersion:
-        case FFmpegLibWrapper::LinkResult::MissingLibAVFunction:
-          if (sLinkStatus > LinkStatus_INVALID_LIBAV_CANDIDATE) {
-            sLinkStatus = LinkStatus_INVALID_LIBAV_CANDIDATE;
-            sLinkStatusLibraryName = lib;
-          }
-          break;
-        case FFmpegLibWrapper::LinkResult::UnknownFutureFFMpegVersion:
+        case FFmpegLibWrapper::LinkResult::UnknownFFMpegVersion:
         case FFmpegLibWrapper::LinkResult::MissingFFMpegFunction:
           if (sLinkStatus > LinkStatus_INVALID_FFMPEG_CANDIDATE) {
             sLinkStatus = LinkStatus_INVALID_FFMPEG_CANDIDATE;
-            sLinkStatusLibraryName = lib;
-          }
-          break;
-        case FFmpegLibWrapper::LinkResult::UnknownOlderFFMpegVersion:
-          if (sLinkStatus > LinkStatus_OBSOLETE_FFMPEG) {
-            sLinkStatus = LinkStatus_OBSOLETE_FFMPEG;
             sLinkStatusLibraryName = lib;
           }
           break;
@@ -136,11 +98,6 @@ FFmpegRuntimeLinker::CreateDecoderModule()
   }
   RefPtr<PlatformDecoderModule> module;
   switch (sLibAV.mVersion) {
-    case 53: module = FFmpegDecoderModule<53>::Create(&sLibAV); break;
-    case 54: module = FFmpegDecoderModule<54>::Create(&sLibAV); break;
-    case 55:
-    case 56: module = FFmpegDecoderModule<55>::Create(&sLibAV); break;
-    case 57: module = FFmpegDecoderModule<57>::Create(&sLibAV); break;
     case 58: module = FFmpegDecoderModule<58>::Create(&sLibAV); break;
     case 59: module = FFmpegDecoderModule<59>::Create(&sLibAV); break;
     case 60: module = FFmpegDecoderModule<60>::Create(&sLibAV); break;
@@ -159,14 +116,6 @@ FFmpegRuntimeLinker::LinkStatusString()
       return "Libavcodec linking succeeded";
     case LinkStatus_INVALID_FFMPEG_CANDIDATE:
       return "Invalid FFMpeg libavcodec candidate";
-    case LinkStatus_UNUSABLE_LIBAV57:
-      return "Unusable LibAV's libavcodec 57";
-    case LinkStatus_INVALID_LIBAV_CANDIDATE:
-      return "Invalid LibAV libavcodec candidate";
-    case LinkStatus_OBSOLETE_FFMPEG:
-      return "Obsolete FFMpeg libavcodec candidate";
-    case LinkStatus_OBSOLETE_LIBAV:
-      return "Obsolete LibAV libavcodec candidate";
     case LinkStatus_INVALID_CANDIDATE:
       return "Invalid libavcodec candidate";
     case LinkStatus_NOT_FOUND:

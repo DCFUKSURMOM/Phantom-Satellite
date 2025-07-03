@@ -199,16 +199,9 @@ HTMLAnchorElement::IsHTMLFocusable(bool aWithMouse,
   }
 
   // cannot focus links if there is no link handler
-  nsIDocument* doc = GetComposedDoc();
-  if (doc) {
-    nsIPresShell* presShell = doc->GetShell();
-    if (presShell) {
-      nsPresContext* presContext = presShell->GetPresContext();
-      if (presContext && !presContext->GetLinkHandler()) {
-        *aIsFocusable = false;
-        return false;
-      }
-    }
+  if (!OwnerDoc()->LinkHandlingEnabled()) {
+    *aIsFocusable = false;
+    return false;
   }
 
   // Links that are in an editable region should never be focusable, even if
@@ -386,7 +379,9 @@ HTMLAnchorElement::BeforeSetAttr(int32_t aNamespaceID, nsIAtom* aName,
 nsresult
 HTMLAnchorElement::AfterSetAttr(int32_t aNamespaceID, nsIAtom* aName,
                                 const nsAttrValue* aValue,
-                                const nsAttrValue* aOldValue, bool aNotify)
+                                const nsAttrValue* aOldValue,
+                                nsIPrincipal* aSubjectPrincipal,
+                                bool aNotify)
 {
   if (aNamespaceID == kNameSpaceID_None) {
     if (aName == nsGkAtoms::href) {
@@ -398,7 +393,8 @@ HTMLAnchorElement::AfterSetAttr(int32_t aNamespaceID, nsIAtom* aName,
   }
 
   return nsGenericHTMLElement::AfterSetAttr(aNamespaceID, aName,
-                                            aValue, aOldValue, aNotify);
+                                            aValue, aOldValue,
+                                            aSubjectPrincipal, aNotify);
 }
 
 EventStates

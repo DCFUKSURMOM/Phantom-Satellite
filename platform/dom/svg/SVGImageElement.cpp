@@ -150,7 +150,9 @@ SVGImageElement::AsyncEventRunning(AsyncEventDispatcher* aEvent)
 nsresult
 SVGImageElement::AfterSetAttr(int32_t aNamespaceID, nsIAtom* aName,
                               const nsAttrValue* aValue,
-                              const nsAttrValue* aOldValue, bool aNotify)
+                              const nsAttrValue* aOldValue,
+                              nsIPrincipal* aSubjectPrincipal,
+                              bool aNotify)
 {
   if (aName == nsGkAtoms::href &&
       (aNamespaceID == kNameSpaceID_None ||
@@ -169,7 +171,9 @@ SVGImageElement::AfterSetAttr(int32_t aNamespaceID, nsIAtom* aName,
     }
   }
   return SVGImageElementBase::AfterSetAttr(aNamespaceID, aName,
-                                           aValue, aOldValue, aNotify);
+                                           aValue, aOldValue,
+                                           aSubjectPrincipal,
+                                           aNotify);
 }
 
 void
@@ -235,7 +239,7 @@ SVGImageElement::IsAttributeMapped(const nsIAtom* name) const
 }
 
 //----------------------------------------------------------------------
-// nsSVGPathGeometryElement methods
+// SVGGeometryElement methods
 
 /* For the purposes of the update/invalidation logic pretend to
    be a rectangle. */

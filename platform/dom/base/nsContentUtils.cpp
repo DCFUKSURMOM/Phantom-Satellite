@@ -91,6 +91,7 @@
 #include "nsCycleCollectionParticipant.h"
 #include "nsCycleCollector.h"
 #include "nsDataHashtable.h"
+#include "nsDocShell.h"
 #include "nsDocShellCID.h"
 #include "nsDocument.h"
 #include "nsDOMCID.h"
@@ -201,6 +202,7 @@
 #include "nsThreadUtils.h"
 #include "nsUnicharUtilCIID.h"
 #include "nsUnicodeProperties.h"
+#include "nsURLHelper.h"
 #include "nsViewManager.h"
 #include "nsViewportInfo.h"
 #include "nsWidgetsCID.h"
@@ -2120,6 +2122,54 @@ nsContentUtils::CanCallerAccess(nsPIDOMWindowInner* aWindow)
   return CanCallerAccess(SubjectPrincipal(), scriptObject->GetPrincipal());
 }
 
+// static
+nsIPrincipal*
+nsContentUtils::GetAttrTriggeringPrincipal(nsIContent* aContent, const nsAString& aAttrValue,
+                                           nsIPrincipal* aSubjectPrincipal)
+{
+  nsIPrincipal* contentPrin = aContent ? aContent->NodePrincipal() : nullptr;
+
+  // If the subject principal is the same as the content principal, or no
+  // explicit subject principal was provided, we don't need to do any further
+  // checks. Just return the content principal.
+  if (contentPrin == aSubjectPrincipal || !aSubjectPrincipal) {
+    return contentPrin;
+  }
+
+  // If the attribute value is empty, it's not an absolute URL, so don't bother
+  // with more expensive checks.
+  if (!aAttrValue.IsEmpty() &&
+      IsAbsoluteURL(NS_ConvertUTF16toUTF8(aAttrValue))) {
+    return aSubjectPrincipal;
+  }
+
+  return contentPrin;
+}
+
+// static
+bool
+nsContentUtils::IsAbsoluteURL(const nsACString& aURL)
+{
+  nsAutoCString scheme;
+  if (NS_FAILED(net_ExtractURLScheme(aURL, scheme))) {
+    // If we can't extract a scheme, it's not an absolute URL.
+    return false;
+  }
+
+  // If it parses as an absolute StandardURL, it's definitely an absolute URL,
+  // so no need to check with the IO service.
+  if (net_IsAbsoluteURL(aURL)) {
+    return true;
+  }
+
+  uint32_t flags;
+  if (NS_SUCCEEDED(sIOService->GetProtocolFlags(scheme.get(), &flags))) {
+    return flags & nsIProtocolHandler::URI_NORELATIVE;
+  }
+
+  return false;
+}
+
 //static
 bool
 nsContentUtils::InProlog(nsINode *aNode)
@@ -3291,6 +3341,7 @@ nsContentUtils::CanLoadImage(nsIURI* aURI, nsISupports* aContext,
   rv = NS_CheckContentLoadPolicy(aContentType,
                                  aURI,
                                  aLoadingPrincipal,
+                                 aLoadingPrincipal, // triggering principal
                                  aContext,
                                  EmptyCString(), //mime guess
                                  nullptr,         //extra
@@ -5288,25 +5339,24 @@ nsContentUtils::CombineResourcePrincipals(nsCOMPtr<nsIPrincipal>* aResourcePrinc
 
 /* static */
 void
-nsContentUtils::TriggerLink(nsIContent *aContent, nsPresContext *aPresContext,
+nsContentUtils::TriggerLink(nsIContent *aContent,
                             nsIURI *aLinkURI, const nsString &aTargetSpec,
                             bool aClick, bool aIsUserTriggered,
                             bool aIsTrusted)
 {
-  NS_ASSERTION(aPresContext, "Need a nsPresContext");
   NS_PRECONDITION(aLinkURI, "No link URI");
 
-  if (aContent->IsEditable()) {
+  if (aContent->IsEditable() || !aContent->OwnerDoc()->LinkHandlingEnabled()) {
     return;
   }
 
-  nsILinkHandler *handler = aPresContext->GetLinkHandler();
-  if (!handler) {
+  nsCOMPtr<nsIDocShell> docShell = aContent->OwnerDoc()->GetDocShell();
+  if (!docShell) {
     return;
   }
 
   if (!aClick) {
-    handler->OnOverLink(aContent, aLinkURI, aTargetSpec.get());
+    nsDocShell::Cast(docShell)->OnOverLink(aContent, aLinkURI, aTargetSpec.get());
     return;
   }
 
@@ -5349,9 +5399,9 @@ nsContentUtils::TriggerLink(nsIContent *aContent, nsPresContext *aPresContext,
       }
     }
 
-    handler->OnLinkClick(aContent, aLinkURI,
-                         fileName.IsVoid() ? aTargetSpec.get() : EmptyString().get(),
-                         fileName, nullptr, nullptr, aIsTrusted, aContent->NodePrincipal());
+    nsDocShell::Cast(docShell)->OnLinkClick(aContent, aLinkURI,
+                                            fileName.IsVoid() ? aTargetSpec.get() : EmptyString().get(),
+                                            fileName, nullptr, nullptr, aIsTrusted, aContent->NodePrincipal());
   }
 }
 
@@ -8932,6 +8982,25 @@ nsContentUtils::StreamsEnabled(JSContext* aCx, JSObject* aObj)
 
 // static
 bool
+nsContentUtils::CSPEnabled(JSContext* aCx, JSObject* aObj)
+{
+  if (NS_IsMainThread()) {
+    return Preferences::GetBool("security.csp.enabled", true);
+  }
+
+  using namespace workers;
+
+  // Otherwise, check the pref via the WorkerPrivate
+  WorkerPrivate* workerPrivate = GetWorkerPrivateFromContext(aCx);
+  if (!workerPrivate) {
+    return false;
+  }
+
+  return workerPrivate->CSPEnabled();
+}
+
+// static
+bool
 nsContentUtils::IsNonSubresourceRequest(nsIChannel* aChannel)
 {
   nsLoadFlags loadFlags = 0;
@@ -9290,6 +9359,12 @@ private:
       case 0x00A0:
         aOut.AppendLiteral("&nbsp;");
         break;
+      case '<':
+        aOut.AppendLiteral("&lt;");
+        break;
+      case '>':
+        aOut.AppendLiteral("&gt;");
+        break;
       default:
         aOut.Append(*c);
         break;
@@ -9430,6 +9505,12 @@ AppendEncodedAttributeValue(nsAutoString* aValue, StringBuilder& aBuilder)
         break;
       case 0x00A0:
         extraSpaceNeeded += ArrayLength("&nbsp;") - 2;
+        break;
+      case '<':
+        extraSpaceNeeded += ArrayLength("&lt;") - 2;
+        break;
+      case '>':
+        extraSpaceNeeded += ArrayLength("&gt;") - 2;
         break;
       default:
         break;

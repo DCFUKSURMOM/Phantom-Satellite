@@ -45,7 +45,7 @@ FFmpegDataDecoder<LIBAV_VER>::~FFmpegDataDecoder()
 nsresult
 FFmpegDataDecoder<LIBAV_VER>::InitDecoder()
 {
-  FFMPEG_LOG("Initialising FFmpeg decoder.");
+  FFMPEG_LOG("Initializing FFmpeg decoder.");
 
   AVCodec* codec = FindAVCodec(mLib, mCodecID);
   if (!codec) {
@@ -69,11 +69,7 @@ FFmpegDataDecoder<LIBAV_VER>::InitDecoder()
     // FFmpeg may use SIMD instructions to access the data which reads the
     // data in 32 bytes block. Must ensure we have enough data to read.
     uint32_t padding_size =
-#if LIBAVCODEC_VERSION_MAJOR >= 58
       AV_INPUT_BUFFER_PADDING_SIZE;
-#else
-      FF_INPUT_BUFFER_PADDING_SIZE;
-#endif
     mCodecContext->extradata = static_cast<uint8_t*>(
       mLib->av_malloc(mExtraData->Length() + padding_size));
     if (!mCodecContext->extradata) {
@@ -87,14 +83,8 @@ FFmpegDataDecoder<LIBAV_VER>::InitDecoder()
     mCodecContext->extradata_size = 0;
   }
 
-#if LIBAVCODEC_VERSION_MAJOR < 57
-  if (codec->capabilities & CODEC_CAP_DR1) {
-    mCodecContext->flags |= CODEC_FLAG_EMU_EDGE;
-  }
-#endif
-
   if (mLib->avcodec_open2(mCodecContext, codec, nullptr) < 0) {
-    NS_WARNING("Couldn't initialise ffmpeg decoder");
+    NS_WARNING("Couldn't initialize ffmpeg decoder");
     mLib->avcodec_close(mCodecContext);
     mLib->av_freep(&mCodecContext);
     return NS_ERROR_FAILURE;
@@ -178,13 +168,7 @@ FFmpegDataDecoder<LIBAV_VER>::ProcessShutdown()
     }
     mLib->avcodec_close(mCodecContext);
     mLib->av_freep(&mCodecContext);
-#if LIBAVCODEC_VERSION_MAJOR >= 55
     mLib->av_frame_free(&mFrame);
-#elif LIBAVCODEC_VERSION_MAJOR == 54
-    mLib->avcodec_free_frame(&mFrame);
-#else
-    mLib->av_freep(&mFrame);
-#endif
   }
 }
 
@@ -192,22 +176,11 @@ AVFrame*
 FFmpegDataDecoder<LIBAV_VER>::PrepareFrame()
 {
   MOZ_ASSERT(mTaskQueue->IsCurrentThreadIn());
-#if LIBAVCODEC_VERSION_MAJOR >= 55
   if (mFrame) {
     mLib->av_frame_unref(mFrame);
   } else {
     mFrame = mLib->av_frame_alloc();
   }
-#elif LIBAVCODEC_VERSION_MAJOR == 54
-  if (mFrame) {
-    mLib->avcodec_get_frame_defaults(mFrame);
-  } else {
-    mFrame = mLib->avcodec_alloc_frame();
-  }
-#else
-  mLib->av_freep(&mFrame);
-  mFrame = mLib->avcodec_alloc_frame();
-#endif
   return mFrame;
 }
 

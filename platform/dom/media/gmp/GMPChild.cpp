@@ -174,34 +174,7 @@ GMPChild::GetAPI(const char* aAPIName,
 bool
 GMPChild::RecvPreloadLibs(const nsCString& aLibs)
 {
-#ifdef XP_WIN
-  // Pre-load DLLs that need to be used by the EME plugin but that can't be
-  // loaded after the sandbox has started
-  // Items in this must be lowercase!
-  static const char* whitelist[] = {
-    "d3d9.dll", // Create an `IDirect3D9` to get adapter information
-    "dxva2.dll", // Get monitor information
-    "evr.dll", // MFGetStrideForBitmapInfoHeader
-    "mfh264dec.dll", // H.264 decoder (on Windows Vista)
-    "mfheaacdec.dll", // AAC decoder (on Windows Vista)
-    "mfplat.dll", // MFCreateSample, MFCreateAlignedMemoryBuffer, MFCreateMediaType
-    "msauddecmft.dll", // AAC decoder (on Windows 8)
-    "msmpeg2adec.dll", // AAC decoder (on Windows 7)
-    "msmpeg2vdec.dll", // H.264 decoder
-  };
-
-  nsTArray<nsCString> libs;
-  SplitAt(", ", aLibs, libs);
-  for (nsCString lib : libs) {
-    ToLowerCase(lib);
-    for (const char* whiteListedLib : whitelist) {
-      if (lib.EqualsASCII(whiteListedLib)) {
-        LoadLibraryA(lib.get());
-        break;
-      }
-    }
-  }
-#endif
+  /* STUB */
   return true;
 }
 

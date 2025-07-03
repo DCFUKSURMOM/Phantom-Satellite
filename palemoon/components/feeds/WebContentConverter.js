@@ -35,9 +35,7 @@ const TYPE_BLACKLIST = [
         "image/png",
         "image/x-png",
         "image/webp",
-#ifdef MOZ_JXL
         "image/jxl",
-#endif
         "image/svg+xml",
         "image/bmp",
         "image/x-ms-bmp",

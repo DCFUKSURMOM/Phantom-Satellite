@@ -180,8 +180,7 @@
 }
 
 %ifdef XP_WIN
-@media (-moz-os-version: windows-vista),
-       (-moz-os-version: windows-win7) {
+@media (-moz-os-version: windows-win7) {
 %endif
   .category:-moz-locale-dir(ltr) {
     border-top-left-radius: 5px;
@@ -309,8 +308,7 @@
   }
 
 %ifdef XP_WIN
-@media (-moz-os-version: windows-vista),
-       (-moz-os-version: windows-win7) {
+@media (-moz-os-version: windows-win7) {
 %endif
   #header-search {
     border-radius: 2.5px;
@@ -1170,8 +1168,7 @@ button.button-link:not([disabled="true"]):active:hover {
 }
 
 %ifdef XP_WIN
-@media (-moz-os-version: windows-vista),
-       (-moz-os-version: windows-win7) {
+@media (-moz-os-version: windows-win7) {
 %endif
   .header-button {
     border-radius: 2.5px;

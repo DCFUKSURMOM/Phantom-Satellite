@@ -1033,9 +1033,6 @@ X11/Xutil.h
 zmouse.h
 soundtouch/SoundTouch.h
 soundtouch/SoundTouchFactory.h
-#if MOZ_LIBAV_FFT==1
-libavcodec/avfft.h
-#endif
 #if MOZ_SYSTEM_ZLIB==1
 zlib.h
 #endif
