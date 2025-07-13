@@ -41,6 +41,6 @@ ac_add_options --enable-system-pixman
 ac_add_options --with-system-jpeg
 ac_add_options --enable-system-cairo
 
-# Optimize for generic PPC64, ensure altivec is enabled, remove unused data sections
-export CFLAGS="-mcpu=powerpc64 -mtune=powerpc64 -maltivec -mabi=altivec -fdata-sections"
-export LDFLAGS="-mcpu=powerpc64 -mtune=powerpc64 -maltivec -mabi=altivec -fdata-sections"
+# Optimize for generic PPC64, ensure altivec is enabled, remove unused data sections, disable mcrypto
+export CFLAGS="-mcpu=powerpc64 -mtune=powerpc64 -maltivec -mabi=altivec -fdata-sections -mno-crypto"
+export LDFLAGS="-mcpu=powerpc64 -mtune=powerpc64 -maltivec -mabi=altivec -fdata-sections -mno-crypto"
