@@ -13,6 +13,8 @@ if CONFIG['FFVPX_ASFLAGS']:
 
 if CONFIG['CPU_ARCH'] == 'aarch64':
     DIRS += ['aarch64']
+elif CONFIG['CPU_ARCH'].startswith('ppc'):
+    DIRS += ['ppc']
 
 SharedLibrary('mozavutil')
 SOURCES += [

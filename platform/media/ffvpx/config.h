@@ -39,6 +39,8 @@
 #elif defined(XP_UNIX)
 #if defined(__aarch64__)
 #include "config_unix_aarch64.h"
+#elif defined(__powerpc__)
+#include "config_unix_ppc.h"
 #else
 #if defined(HAVE_64BIT_BUILD)
 #include "config_unix64.h"
