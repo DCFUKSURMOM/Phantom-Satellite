@@ -8,8 +8,9 @@ The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon 
 
 Key differences:
 * Custom Branding (Obviously, work in progress)
-* Custom theme (WORK IN PROGRESS, recommended to use a dark theme on your system or a 3rd party theme on the browser itself for now)
+* Custom theme (MASSIVE WORK IN PROGRESS, it is recommended to use a dark theme on your system or a 3rd party theme on the browser itself for now)
 * Working PPC64 support (a little rough around the edges but is usable)
+* -mcrypto is no longer hard coded on PPC64, and is instead set in the CFLAGS in the config file. This allows the browser to work on PPC64 chips older than 2013, while still being able to have -mcrypto reenabled on chips that support (or require) it
 
 I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
 
@@ -19,9 +20,9 @@ Features I would like to have (but arent currently planned because I have no ide
 
 There are some Pale Moon forks that support Windows XP and Vista, but they are based on older Pale Moon versions
 
-* Support for x86 CPUs that do not support SSE2 (This would allow the browser to run on a Pentium 3)
+* Support for x86 CPUs that do not support SSE2 (This would allow the browser to run on a Pentium 3. Someome was able to get this working somewhat, but I don't know what all they did)
 
-* Support for x86 CPUs that do not supprt SSE (This would allow the browser to run on a Pentium 2, and potentially the Pentium Pro and Pentium MMX)
+* Support for x86 CPUs that do not supprt SSE (This would allow the browser to run on a Pentium 2, and potentially the Pentium Pro and Pentium MMX. Maybe the same steps for non-sse2 cpus could be adapted for this?)
 
 * Proper support for Android (depends on working ARM support)
 
