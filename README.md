@@ -36,11 +36,13 @@ Stock Pale Moon had Android support for a while, but it was removed, I thought t
 Since modern Mac OS support is already here, this probably isnt that far fetched
 
 Known issues:
-* 32 bit ARM does not build at all (this issue is also present in upstream Pale Moon), it's possible im doing something wrong, 64 bit ARM is untested
-* Builds on systems with musl, but does not run, something is broken in XPCOM (this issue is also present in upstream Pale Moon)
-* Hardware acceleration is broken on PowerPC, causes rendering issues
+* 32 bit ARM does not build at all, this issue is also present in upstream Pale Moon, it's possible im doing something wrong. 64 bit ARM was able to be built by a friend
+* Builds on systems with musl, but does not run, something is broken in XPCOM, this issue is also present in upstream Pale Moon
+* Hardware acceleration is broken on PowerPC, causes rendering issues, this issue is also present in upstream Pale Moon
 * 32 bit Windows builds fail if optimized for size, something in mozavcodec, builds fine otherwise
-* Replacing -mcrypto with -nmo-crypto fixed older PPC64 chips but broke modern ones, should be possible to make this a config option (cflags probably) so both can work
+* JS heavy sites can be slow or even unusable at times, seems to be hit or miss, this issue is also present in upstream Pale Moon, possible config issue
+* JS performance is severely lacking on PowerPC due to the lack of jit support, this issue is also present in upstream Pale Moon
+* Support for end-to-end encryption is either missing or incomplete, this issue is also present in upstream Pale Moon and breaks stuff like encrypted messages on Facebook, possible config issue
 
 If you are intested in applying some of the changes from this browser to your own fork, you can find patches in the [patches](https://github.com/DCFUKSURMOM/Phantom-Satellite/tree/patches) branch
 
