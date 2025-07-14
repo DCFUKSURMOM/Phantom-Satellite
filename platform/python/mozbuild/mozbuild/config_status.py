@@ -113,33 +113,22 @@ def config_status(topobjdir='.', topsrcdir='.', defines=None,
     log_manager.add_terminal_logging(level=log_level)
     log_manager.enable_unstructured()
 
+#status messages with #orig are the original status messages, status messages with #cust are the custom ones
     STATUS_MESSAGES = [
-        'Walking the dog',
-        'Feeding the hatchlings',
-        'Inserting floppy disk',
-        'Initializing Stacker volume',
-        'Spinning yarn',
-        'Adjusting flux capacitor',
-        'Granting wishes',
-        'Auditing the taxes',
-        'Twiddling thumbs',
-        'Consulting the manual',
-        'Brewing coffee',
-        'Inserting coin',
-        'Deriving optimal formula',
-        'Deleting junk mail',
-        'Warming caches',
-        'Popping bubble wrap',
-        'Pausing for fika',
-        'Oiling the hamster wheel',
-        'Ordering a pizza',
-        'Unclogging the Internet tubes',
-        'Testing your patience',
-        'Watching cat videos',
-        'Rescuing dragon from princess',
-        'Judging things by the spoon',
-        'Nailing down the files',
-        'Whistling in the dark',
+        'Inserting floppy disk', #orig
+        'Adjusting flux capacitor', #orig
+        'Commiting tax fraud', #cust
+        'Questioning my life choices', #cust
+        'Consulting the manual', #orig
+        'Inserting coin', #orig
+        'Warming caches', #orig
+        'Calling your mother', #cust
+        'Calling the police', #cust, requested by TheLibrarian on Discord
+        'Summoning a demon', #cust
+        'Testing your patience', #orig
+        'Watching cat videos', #orig
+        'Rescuing dragon from princess', #orig
+        'Judging your hardware', #cust
     ]
 
     print('{0}...'.format(random.choice(STATUS_MESSAGES)), file=sys.stderr)
