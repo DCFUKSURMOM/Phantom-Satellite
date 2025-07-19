@@ -123,12 +123,24 @@ def config_status(topobjdir='.', topsrcdir='.', defines=None,
         'Inserting coin', #orig
         'Warming caches', #orig
         'Calling your mother', #cust
-        'Calling the police', #cust, requested by TheLibrarian on Discord
+        'Calling the police', #cust, requested by TheLibrarian in the ArchPOWER Discord
         'Summoning a demon', #cust
         'Testing your patience', #orig
         'Watching cat videos', #orig
         'Rescuing dragon from princess', #orig
         'Judging your hardware', #cust
+        'Hiring a hitman', #cust, requested by Selim in the Wii-Linux Discord
+        'Linuxing your Wii', #cust, requested by Selim in the Wii-Linux Discord
+        'Linuxing your Wii-U', #cust, requested by Selim in the Wii-Linux Discord
+        'Linuxing your GameCube', #cust
+        'Linuxing your PS2', #cust
+        'Linuxing your PS3', #cust
+        'Deleting Filesystem', #cust, requested by Tech64 in the Wii-Linux Discord
+        'Causing a Resonance Cascade', #cust, requested by Tech64 in the Wii-Linux Discord
+        'Making memes', #cust, requested by Tech64 in the Wii-Linux Discord
+        'Installing Haiku', #cust, requested by Tech64 in the Wii-Linux Discord
+        'Boiling water for tea', #cust, requested by waterpear in the Wii-Linux Discord
+        'Reticulating splines', #cust, requested by waterpear in the Wii-Linux Discord
     ]
 
     print('{0}...'.format(random.choice(STATUS_MESSAGES)), file=sys.stderr)
