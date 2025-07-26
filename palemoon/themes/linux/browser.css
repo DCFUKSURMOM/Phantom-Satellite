@@ -11,8 +11,8 @@
 
 %include ../shared/browser.inc
 %filter substitution
-%define toolbarHighlight rgb(0,0,0)
-%define selectedTabHighlight rgb(0,150,150) 0.3px
+%define toolbarHighlight rgba(255,255,255,.3)
+%define selectedTabHighlight rgba(255,255,255,.8) 1px, rgba(255,255,255,.5) 3px
 %define forwardTransitionLength 150ms
 %define conditionalForwardWithUrlbar       window:not([chromehidden~=toolbar]) :-moz-any(#nav-bar[currentset*="unified-back-forward-button,urlbar-container"][mode=icons],                #nav-bar:not([currentset])[mode=icons])                 > #unified-back-forward-button
 %define conditionalForwardWithUrlbar_small window:not([chromehidden~=toolbar]) :-moz-any(#nav-bar[currentset*="unified-back-forward-button,urlbar-container"][mode=icons][iconsize=small],#nav-bar:not([currentset])[mode=icons][iconsize=small]) > #unified-back-forward-button
@@ -27,7 +27,7 @@
 
 #navigator-toolbox {
   -moz-appearance: none;
-  background-color: #000000;
+  background-color: transparent;
   border-top: none;
 }
 
@@ -39,7 +39,7 @@
 #navigator-toolbox[tabsontop=false] > toolbar:not(:-moz-lwtheme):not(#toolbar-menubar) {
   -moz-appearance: none;
   border-style: none;
-  background-color: #000000;
+  background-color: -moz-Dialog;
 }
 
 #navigator-toolbox > toolbar:not(#toolbar-menubar):not(#TabsToolbar) {
@@ -53,13 +53,13 @@
 #nav-bar[tabsontop=true],
 #nav-bar[tabsontop=true][collapsed=true]:not([customizing]) + toolbar,
 #nav-bar[tabsontop=true][collapsed=true]:not([customizing]) + #customToolbars + #PersonalToolbar {
-  background-image: linear-gradient(@toolbarHighlight@, rgb(0,0,0));
+  background-image: linear-gradient(@toolbarHighlight@, rgba(255,255,255,0));
 }
 
 #nav-bar[tabsontop=true]:-moz-lwtheme,
 #nav-bar[tabsontop=true][collapsed=true]:not([customizing]):-moz-lwtheme + toolbar,
 #nav-bar[tabsontop=true][collapsed=true]:not([customizing]):-moz-lwtheme + #customToolbars + #PersonalToolbar {
-  background-image: linear-gradient(rgb(0,0,0), rgba(0,0,0));
+  background-image: linear-gradient(rgba(255,255,255,.8), rgba(255,255,255,0));
 }
 
 #nav-bar[tabsontop=true]:-moz-lwtheme-brighttext,
@@ -74,7 +74,7 @@
 
 #browser-bottombox {
   /* opaque for layers optimization */
-  background-color: -moz-Dialog; /* wtf does this even do */
+  background-color: -moz-Dialog;
 }
 
 #urlbar:-moz-lwtheme:not([focused="true"]),
@@ -129,7 +129,6 @@ menu.bookmark-item,
 menuitem.bookmark-item {
   min-width: 0;
   max-width: 32em;
-  color: #000000; /* bookmark dropdown text */
 }
 
 .bookmark-item > .menu-iconic-left {
@@ -914,9 +913,8 @@ toolbar[iconsize="small"] #webrtc-status-button {
 /* Location bar */
 #urlbar {
   width: 7em;
+  -moz-appearance: textfield;
   padding: 0;
-  color: #00ffff; /* url text color */
-  background: #000000; /* url background color */
 }
 
 .urlbar-textbox-container {
@@ -956,7 +954,6 @@ toolbar[iconsize="small"] #webrtc-status-button {
 #urlbar-search-splitter + #urlbar-container > #urlbar ,
 #urlbar-search-splitter + #search-container > #searchbar > .searchbar-textbox {
   margin-inline-start: 0;
-  color: #000000; /* top search bar text color */
 }
 
 #urlbar-display-box {
@@ -1257,7 +1254,7 @@ toolbar[iconsize="small"] #webrtc-status-button {
 /* Notification icon box */
 #notification-popup-box {
   position: relative;
-  background-color: #000000;
+  background-color: #fff;
   background-clip: padding-box;
   padding-left: 4px;
   border-radius: 2.5px 0 0 2.5px;
@@ -1579,7 +1576,7 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 
 /* Content area */
 #sidebar {
-  background-color: #000000;
+  background-color: Window;
 }
 
 /* Throbber */
@@ -1634,12 +1631,12 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 .tabs-newtab-button {
   position: static;
   -moz-appearance: none;
-  background: #000000;
+  background: linear-gradient(hsla(0,0%,100%,.2), hsla(0,0%,45%,.2) 2px, hsla(0,0%,32%,.2) 80%);
   background-origin: border-box;
   background-position: 1px 2px;
   background-size: 100% calc(100% - 2px);
   background-repeat: no-repeat;
-  color: #00ffff;
+  color: inherit;
   margin: 0;
   padding: 0;
   border-width: 4px 5px 3px 6px;
@@ -1660,7 +1657,7 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 }
 
 .tabbrowser-tab[selected="true"]:not(:-moz-lwtheme) {
-  color: #00ffff;
+  color: -moz-dialogtext;
 }
 
 #main-window[tabsontop=false]:not([disablechrome]) .tabbrowser-tab[selected=true]:not(:-moz-lwtheme) {
@@ -2018,7 +2015,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 .ctrlTab-favicon[src],
 .allTabs-favicon[src] {
-  background-color: #000000;
+  background-color: white;
   width: 20px;
   height: 20px;
   padding: 2px;
@@ -2028,7 +2025,6 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 #ctrlTab-panel {
   padding: 10px;
-  background: #000000;
 }
 
 .ctrlTab-preview:not(#ctrlTab-showAll) .tabPreview-canvas {
@@ -2050,7 +2046,6 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 #allTabs-meta {
   padding: 5px;
-  background: #000000;
 }
 
 #allTabs-filter {
@@ -2110,8 +2105,8 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 #status-bar {
   min-height: 0;
-  -moz-appearance: none; 
-  background-color: #000000;
+  -moz-appearance: none;
+  background-color: transparent;
   border: none;
 }
 
@@ -2137,7 +2132,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 .statuspanel-label {
   margin: 0;
   padding: 2px 4px;
-  background: linear-gradient(#000, #000);
+  background: linear-gradient(#fff, #ddd);
   border: 1px none #ccc;
   border-top-style: solid;
   color: #333;

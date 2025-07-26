@@ -6,7 +6,7 @@
   min-height: 22px;
   width: 6em;
   min-width: 6em;
-  background-color: #000000;
+  background-color: -moz-field;
 }
 
 .autocomplete-textbox-container {

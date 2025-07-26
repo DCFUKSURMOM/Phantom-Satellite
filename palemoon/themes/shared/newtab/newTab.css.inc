@@ -5,11 +5,11 @@
 :root {
   -moz-appearance: none;
   font-size: 75%;
-  background-color: rgba(000,000,000,255);
+  background-color: transparent;
 }
 
 body {
-  background: #000;
+  background: #eee;
 }
 
 /* SCROLLBOX */
@@ -76,16 +76,16 @@ body {
 /* CELLS */
 .newtab-cell {
   -moz-margin-end: 20px;
-  background-color: rgba(0,0,0,1);
+  background-color: rgba(255,255,255,.3);
   border: 1px solid;
-  border-color: rgba(0,255,255,1) rgba(0,255,255,1) rgba(0,255,255,1);
+  border-color: rgba(8,22,37,.12) rgba(8,22,37,.14) rgba(8,22,37,.16);
   border-radius: 3.5px;
   transition: border-color 100ms ease-out;
 }
 
 .newtab-cell:empty {
-  border: 1px solid;
-  border-color: rgba(0,255,255,1) rgba(0,255,255,1) rgba(0,255,255,1);
+  border: 1px dashed;
+  border-color: rgba(8,22,37,.15) rgba(8,22,37,.17) rgba(8,22,37,.19);
 }
 
 .newtab-cell:last-child {
@@ -111,7 +111,7 @@ body {
 
 .newtab-site[dragged] {
   transition-property: box-shadow, background-color;
-  background-color: rgb(0,0,0);
+  background-color: rgb(242,242,242);
 }
 
 /* THUMBNAILS */
@@ -125,8 +125,8 @@ body {
 /* TITLES */
 .newtab-title {
   padding: 0 8px 1px;
-  background: linear-gradient(to bottom, rgba(0, 30, 30, 1), rgba(0, 30, 30, 1));
-  color: #00ffff;
+  background: linear-gradient(to bottom, rgba(245, 245, 245, .95), rgba(225, 225, 225, .95));
+  color: #303030;
   line-height: 24px;
 }
 
@@ -202,58 +202,3 @@ body {
   background-position: -192px 0;
 }
 
-/* SEARCH */
-#searchEngineLogo {
-  /* remove the default DDG image - it looks really bad on our dark b/g */
-  opacity: 0;
-}
-
-#searchText {
-  -moz-box-flex: 1;
-  color: #00ffff;
-  padding: 6px 8px;
-  background-color: rgb(0, 0, 0);
-  border: 1px solid;
-  border-color: rgb(0, 255, 255);
-  border-radius: 5px 0 0 5px;
-  box-shadow: none;
-}
-
-#searchText:-moz-dir(rtl) {
-  border-radius: 0 5px 5px 0;
-}
-
-#searchText:focus,
-#searchText[autofocus] {
-  border-color: rgb(0, 255, 255);
-}
-
-#searchSubmit {
-  margin-inline-start: -1px;
-  padding: 0 9px;
-  color: #fff;
-  background-color: rgb(0, 0, 0);
-  border: 1px solid;
-  border-color: rgb(0, 255,255);
-  border-radius: 0 5px 5px 0;
-  cursor: pointer;
-  transition-property: background-color, border-color, box-shadow;
-  transition-duration: 150ms;
-  box-shadow: none;
-}
-
-#searchSubmit:-moz-dir(rtl) {
-  border-radius: 5px 0 0 5px;
-}
-
-#searchText:focus + #searchSubmit,
-#searchText + #searchSubmit:hover,
-#searchText[autofocus] + #searchSubmit {
-  border-color: rgb(0, 255, 255);
-  background-color: rgb(0, 0, 0);
-}
-
-#searchText + #searchSubmit:hover:active {
-  border-color: rgb(0,255, 255);
-  background-color: rgb(0, 0, 0);
-}
