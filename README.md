@@ -8,7 +8,7 @@ The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon 
 
 Key differences:
 * Custom Branding (Obviously, work in progress)
-* Custom theme (MASSIVE WORK IN PROGRESS, it is recommended to use a dark theme on your system or a 3rd party theme on the browser itself for now)
+* Custom theme (MASSIVE WORK IN PROGRESS, disabled and placed in a separate dirctory by default, I did not find a way to make this a config option yet)
 * Working PPC64 support (a little rough around the edges but is usable)
 * -mcrypto is no longer hard coded on PPC64, and is instead set in the CFLAGS in the config file. This allows the browser to work on PPC64 chips older than 2013, while still being able to have -mcrypto reenabled on chips that support (or require) it
 
