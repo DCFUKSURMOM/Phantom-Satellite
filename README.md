@@ -38,7 +38,6 @@ Since modern Mac OS support is already here, this probably isnt that far fetched
 
 Known issues:
 * 32 bit ARM does not build at all, this issue is also present in upstream Pale Moon, it's possible im doing something wrong. 64 bit ARM was able to be built by a friend
-* Builds on systems with musl, but does not run, something is broken in XPCOM, this issue is also present in upstream Pale Moon
 * Hardware acceleration is broken on PowerPC, causes rendering issues, this issue is also present in upstream Pale Moon
 * 32 bit Windows builds fail if optimized for size, something in mozavcodec, builds fine otherwise
 * JS heavy sites can be slow or even unusable at times, seems to be hit or miss, this issue is also present in upstream Pale Moon, possible config issue
