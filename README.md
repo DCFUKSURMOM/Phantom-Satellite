@@ -17,23 +17,15 @@ Key differences:
 I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
 
 Features I would like to have (but arent currently planned because I have no idea where to start with them):
-
 * Support for Windows XP and Windows Vista, I may be able to pull stuff from [here](https://github.com/roytam1/UXP), but no guarantees.
-
-There are some Pale Moon forks that support Windows XP and Vista, but they are based on older Pale Moon versions
-
-* Proper support for Android (depends on working ARM support)
-
-Stock Pale Moon had Android support for a while, but it was removed, I thought there was still some traces in the code but I was apparently wrong.
-
-* Support for Classic Mac OS X versions, including PowerPC Macs 
-
-[Whitestar](https://github.com/dbsoft/White-Star), a PM fork with some experimental Mac stuff, does seem to be able to be built for Classic Mac OS, but its currently [broken](https://github.com/dbsoft/White-Star/issues/2)
+There are some Pale Moon forks that support Windows XP and Vista, but they are based on older Pale Moon versions.
+* Proper support for Android (depends on working ARM support).
+Stock Pale Moon had experimental Android support for a while, but it was removed, I thought there was still some traces in the code but I was apparently wrong.
+* Support for Classic Mac OS X versions, including PowerPC Macs.
+[Whitestar](https://github.com/dbsoft/White-Star), a PM fork with some experimental Mac stuff, does seem to be able to be built for Classic Mac OS, but its currently [broken](https://github.com/dbsoft/White-Star/issues/2).
 The Whitestar dev seemingly wants to get his changes merged with upstream UXP once everything is working, so this feature may end up adding itself...
-
-* Proper support for iOS (depends on working ARM support)
-
-Since modern Mac OS support is already here, this probably isnt that far fetched
+* Proper support for iOS.
+Since modern Mac OS support is already here, this probably isnt that far fetched.
 
 Known issues:
 * 32 bit ARM does not build at all, this issue is also present in upstream Pale Moon, it's possible im doing something wrong. 64 bit ARM was able to be built by a friend
