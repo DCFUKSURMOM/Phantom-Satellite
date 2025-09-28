@@ -10,8 +10,10 @@ Key differences:
 * Custom Branding (Obviously, work in progress)
 * Custom theme (MASSIVE WORK IN PROGRESS, disabled and placed in a separate dirctory by default, I did not find a way to make this a config option yet)
 * Working PPC64 support (a little rough around the edges but is usable)
-* -mcrypto is no longer hard coded on PPC64, and is instead set in the CFLAGS in the config file. This allows the browser to work on PPC64 chips older than 2013, while still being able to have -mcrypto reenabled on chips that support (or require) it
-
+* -mcrypto is no longer hard coded on PPC64, and is instead set in the compiler flags in the config file. This allows the browser to work on PPC64 chips older than 2013, while still being able to have -mcrypto reenabled on chips that support (or require) it
+* Support for x86 CPUs that do not support SSE via compiler flag shenanigans (only tested on Linux, config is at mozconfigs/Linux/i586-nosse-gtk2.mozconfig, requires at least a Pentium MMX)
+* Support for x86 CPUs that do not support SSE2 via compiler flag shenanigans (only tested on Linux, config is at mozconfigs/Linux/i686-nosse2-gtk2.mozconfig, requires a least a Pentium 3)
+* The Linux nosse/nosse2 configs should work for stock PaleMoon as well
 I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
 
 Features I would like to have (but arent currently planned because I have no idea where to start with them):
@@ -20,10 +22,6 @@ Features I would like to have (but arent currently planned because I have no ide
 
 There are some Pale Moon forks that support Windows XP and Vista, but they are based on older Pale Moon versions
 
-* Support for x86 CPUs that do not support SSE2 (This would allow the browser to run on a Pentium 3. Someome was able to get this working somewhat, but I don't know what all they did)
-
-* Support for x86 CPUs that do not supprt SSE (This would allow the browser to run on a Pentium 2, and potentially the Pentium Pro and Pentium MMX. Maybe the same steps for non-sse2 cpus could be adapted for this?)
-
 * Proper support for Android (depends on working ARM support)
 
 Stock Pale Moon had Android support for a while, but it was removed, I thought there was still some traces in the code but I was apparently wrong.
@@ -31,6 +29,7 @@ Stock Pale Moon had Android support for a while, but it was removed, I thought t
 * Support for Classic Mac OS X versions, including PowerPC Macs 
 
 [Whitestar](https://github.com/dbsoft/White-Star), a PM fork with some experimental Mac stuff, does seem to be able to be built for Classic Mac OS, but its currently [broken](https://github.com/dbsoft/White-Star/issues/2)
+The Whitestar dev seemingly wants to get his changes merged with upstream UXP once everything is working, so this feature may end up adding itself...
 
 * Proper support for iOS (depends on working ARM support)
 
