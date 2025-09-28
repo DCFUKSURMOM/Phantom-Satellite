@@ -13,7 +13,8 @@ Key differences:
 * -mcrypto is no longer hard coded on PPC64, and is instead set in the compiler flags in the config file. This allows the browser to work on PPC64 chips older than 2013, while still being able to have -mcrypto reenabled on chips that support (or require) it
 * Support for x86 CPUs that do not support SSE via compiler flag shenanigans (only tested on Linux, config is at mozconfigs/Linux/i586-nosse-gtk2.mozconfig, requires at least a Pentium MMX)
 * Support for x86 CPUs that do not support SSE2 via compiler flag shenanigans (only tested on Linux, config is at mozconfigs/Linux/i686-nosse2-gtk2.mozconfig, requires a least a Pentium 3)
-* The Linux nosse/nosse2 configs should work for stock PaleMoon as well
+* The Linux nosse/nosse2 configs should work for stock PaleMoon as well.
+
 I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
 
 Features I would like to have (but arent currently planned because I have no idea where to start with them):
