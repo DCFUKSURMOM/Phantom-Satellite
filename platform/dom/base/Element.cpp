@@ -105,7 +105,7 @@
 #include "nsIScrollableFrame.h"
 #include "mozilla/css/StyleRule.h" /* For nsCSSSelectorList */
 #include "mozilla/css/Declaration.h"
-#include "nsCSSRuleProcessor.h"
+#include "nsCSSRuleUtils.h"
 #include "nsRuleProcessorData.h"
 #include "nsTextNode.h"
 
@@ -197,8 +197,7 @@ Element::QueryInterface(REFNSIID aIID, void** aInstancePtr)
 EventStates
 Element::IntrinsicState() const
 {
-  return IsEditable() ? NS_EVENT_STATE_MOZ_READWRITE :
-                        NS_EVENT_STATE_MOZ_READONLY;
+  return IsEditable() ? NS_EVENT_STATE_READWRITE : NS_EVENT_STATE_READONLY;
 }
 
 void
@@ -284,11 +283,11 @@ Element::UpdateEditableState(bool aNotify)
     // insertion into the document and UpdateState can be slow for
     // some kinds of elements even when not notifying.
     if (IsEditable()) {
-      RemoveStatesSilently(NS_EVENT_STATE_MOZ_READONLY);
-      AddStatesSilently(NS_EVENT_STATE_MOZ_READWRITE);
+      RemoveStatesSilently(NS_EVENT_STATE_READONLY);
+      AddStatesSilently(NS_EVENT_STATE_READWRITE);
     } else {
-      RemoveStatesSilently(NS_EVENT_STATE_MOZ_READWRITE);
-      AddStatesSilently(NS_EVENT_STATE_MOZ_READONLY);
+      RemoveStatesSilently(NS_EVENT_STATE_READWRITE);
+      AddStatesSilently(NS_EVENT_STATE_READONLY);
     }
   }
 }
@@ -3425,9 +3424,9 @@ Element::Closest(const nsAString& aSelector, ErrorResult& aResult)
   matchingContext.AddScopeElement(this);
   for (nsINode* node = this; node; node = node->GetParentNode()) {
     if (node->IsElement() &&
-        nsCSSRuleProcessor::RestrictedSelectorListMatches(node->AsElement(),
-                                                          matchingContext,
-                                                          selectorList)) {
+        nsCSSRuleUtils::RestrictedSelectorListMatches(node->AsElement(),
+                                                      matchingContext,
+                                                      selectorList)) {
       return node->AsElement();
     }
   }
@@ -3451,9 +3450,9 @@ Element::Matches(const nsAString& aSelector, ErrorResult& aError)
                                    TreeMatchContext::eNeverMatchVisited);
   matchingContext.SetHasSpecifiedScope();
   matchingContext.AddScopeElement(this);
-  return nsCSSRuleProcessor::RestrictedSelectorListMatches(this,
-                                                           matchingContext,
-                                                           selectorList);
+  return nsCSSRuleUtils::RestrictedSelectorListMatches(this,
+                                                       matchingContext,
+                                                       selectorList);
 }
 
 static const nsAttrValue::EnumTable kCORSAttributeTable[] = {

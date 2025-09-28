@@ -205,11 +205,10 @@ private:
 #define NS_EVENT_STATE_INRANGE       NS_DEFINE_EVENT_STATE_MACRO(15)
 // Content value is out-of-range.
 #define NS_EVENT_STATE_OUTOFRANGE    NS_DEFINE_EVENT_STATE_MACRO(16)
-// These two are temporary (see bug 302188)
 // Content is read-only.
-#define NS_EVENT_STATE_MOZ_READONLY  NS_DEFINE_EVENT_STATE_MACRO(17)
+#define NS_EVENT_STATE_READONLY      NS_DEFINE_EVENT_STATE_MACRO(17)
 // Content is editable.
-#define NS_EVENT_STATE_MOZ_READWRITE NS_DEFINE_EVENT_STATE_MACRO(18)
+#define NS_EVENT_STATE_READWRITE     NS_DEFINE_EVENT_STATE_MACRO(18)
 // Content is the default one (meaning depends of the context).
 #define NS_EVENT_STATE_DEFAULT       NS_DEFINE_EVENT_STATE_MACRO(19)
 // Content could not be rendered (image/object/etc).
@@ -293,6 +292,9 @@ private:
 #define NS_EVENT_STATE_FOCUS_WITHIN NS_DEFINE_EVENT_STATE_MACRO(53)
 // Modal <dialog> element
 #define NS_EVENT_STATE_MODAL_DIALOG NS_DEFINE_EVENT_STATE_MACRO(54)
+
+// Autofilled input element (for :autofill pseudo-class)
+#define NS_EVENT_STATE_AUTOFILL NS_DEFINE_EVENT_STATE_MACRO(55)
 
 #define DIR_ATTR_STATES (NS_EVENT_STATE_HAS_DIR_ATTR |          \
                          NS_EVENT_STATE_DIR_ATTR_LTR |          \

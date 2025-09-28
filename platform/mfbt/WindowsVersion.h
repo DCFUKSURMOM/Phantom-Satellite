@@ -53,40 +53,11 @@ IsWindowsVersionOrLater(uint32_t aVersion)
   return false;
 }
 
-inline bool
-IsWindowsBuildOrLater(uint32_t aBuild)
-{
-  static Atomic<uint32_t> minBuild(0);
-  static Atomic<uint32_t> maxBuild(UINT32_MAX);
-
-  if (minBuild >= aBuild) {
-    return true;
-  }
-
-  if (aBuild >= maxBuild) {
-    return false;
-  }
-
-  OSVERSIONINFOEX info;
-  ZeroMemory(&info, sizeof(OSVERSIONINFOEX));
-  info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-  info.dwBuildNumber = aBuild;
-
-  DWORDLONG conditionMask = 0;
-  VER_SET_CONDITION(conditionMask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
-
-  if (VerifyVersionInfo(&info, VER_BUILDNUMBER, conditionMask)) {
-    minBuild = aBuild;
-    return true;
-  }
-
-  maxBuild = aBuild;
-  return false;
-}
-
+// Check for specific build number
 inline bool
 IsWindows10BuildOrLater(uint32_t aBuild)
 {
+  // Cache found builds to prevent unnecessary syscalls.
   static Atomic<uint32_t> minBuild(0);
   static Atomic<uint32_t> maxBuild(UINT32_MAX);
 
@@ -101,7 +72,7 @@ IsWindows10BuildOrLater(uint32_t aBuild)
   OSVERSIONINFOEX info;
   ZeroMemory(&info, sizeof(OSVERSIONINFOEX));
   info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-  info.dwMajorVersion = 10;
+  info.dwMajorVersion = 10; // Note: Windows 11 still uses 10 as milestone build number
   info.dwBuildNumber = aBuild;
 
   DWORDLONG conditionMask = 0;
@@ -121,6 +92,35 @@ IsWindows10BuildOrLater(uint32_t aBuild)
 
   maxBuild = aBuild;
   return false;
+}
+
+enum class WinBuild : uint32_t {
+  Win10RTM = 10240,
+  Win10v1511 = 10586,
+  Win10v1607 = 14393,
+  Win10v1703 = 15063,
+  Win10v1709 = 16299,
+  Win10v1803 = 17134,
+  Win10v1809 = 17763,
+  Win10v1903 = 18362,
+  Win10v19H2 = 18363,
+  Win10v20H1 = 19041,
+  Win10v20H2 = 19042,
+  Win10v21H1 = 19043,
+  Win10v21H2 = 19044,
+  Win10v22H2 = 19045,
+  Win11RTM = 22000,
+  Win11v22H2 = 22621,
+  Win11v23H2 = 22631,
+  Win11v24H2 = 26100,
+  Win11v25H2 = 26200
+};
+  
+// Check for at least named build aBuild taken from WinBuild enum above.
+inline bool
+IsWindowsBuildOrLater(WinBuild aBuild) {
+  uint32_t build = static_cast<uint32_t>(aBuild);
+  return IsWindows10BuildOrLater(build);
 }
 
 // Windows 7
@@ -151,126 +151,11 @@ IsWin10OrLater()
   return IsWindowsVersionOrLater(0x0a000000ul);
 }
 
-// Windows 10 - RTM
-MOZ_ALWAYS_INLINE bool
-IsWin10v1507OrLater()
-{
-  return IsWindows10BuildOrLater(10240);
-}
-
-// Windows 10 - November Update
-MOZ_ALWAYS_INLINE bool
-IsWin10November2015UpdateOrLater()
-{
-  return IsWindows10BuildOrLater(10586);
-}
-
-// Windows 10 - Redstone 1 - Anniversary Update
-MOZ_ALWAYS_INLINE bool
-IsWin10AnniversaryUpdateOrLater()
-{
-  return IsWindows10BuildOrLater(14393);
-}
-
-// Windows 10 - Redstone 2 - Creators Update
-MOZ_ALWAYS_INLINE bool
-IsWin10CreatorsUpdateOrLater()
-{
-  return IsWindows10BuildOrLater(15063);
-}
-
-// Windows 10 - Redstone 3 - Fall Creators Update
-MOZ_ALWAYS_INLINE bool
-IsWin10FallCreatorsUpdateOrLater()
-{
-  return IsWindows10BuildOrLater(16299);
-}
-
-// Windows 10 - Redstone 4 - April 2018 Update
-MOZ_ALWAYS_INLINE bool
-IsWin10April2018UpdateOrLater()
-{
-  return IsWindows10BuildOrLater(17134);
-}
-
-// Windows 10 - Redstone 5 - September 2018 Update
-MOZ_ALWAYS_INLINE bool
-IsWin10Sep2018UpdateOrLater()
-{
-  return IsWindows10BuildOrLater(17763);
-}
-
-// Windows 10 - 19H1 - May 2019 Update
-MOZ_ALWAYS_INLINE bool
-IsWin10May2019UpdateOrLater()
-{
-  return IsWindows10BuildOrLater(18362);
-}
-
 // Windows 11 RTM
 MOZ_ALWAYS_INLINE bool
 IsWin11OrLater()
 {
-  // Windows 11 still identifies itself as NT 10.
-  return IsWindows10BuildOrLater(22000);
-}
-
-// Compatibility version checks for the above for GRE porting.
-// XXXMC: Needs cleanup. We shouldn't be using these.
-MOZ_ALWAYS_INLINE bool IsWin10v1511OrLater() { return IsWin10November2015UpdateOrLater(); }
-MOZ_ALWAYS_INLINE bool IsWin10v1607OrLater() { return IsWin10AnniversaryUpdateOrLater(); }
-MOZ_ALWAYS_INLINE bool IsWin10v1703OrLater() { return IsWin10CreatorsUpdateOrLater(); }
-MOZ_ALWAYS_INLINE bool IsWin10v1709OrLater() { return IsWin10FallCreatorsUpdateOrLater(); }
-MOZ_ALWAYS_INLINE bool IsWin10v1803OrLater() { return IsWin10April2018UpdateOrLater(); }
-MOZ_ALWAYS_INLINE bool IsWin10v1809OrLater() { return IsWin10Sep2018UpdateOrLater(); }
-MOZ_ALWAYS_INLINE bool IsWin10v1903OrLater() { return IsWin10May2019UpdateOrLater(); }
-
-// --- Additional granular version checks.
-// XXXMC: Not sure why we can't just use IsWindows10BuildOrLater(build) directly, or at least
-// a helper function taking an enum or something if build numbers are too difficult to remember.
-// Unnecessary indirection and function declaration inflation. Kept for now, needs cleanup.
-
-// Windows 10 - 19H2 - November 2019 Update
-MOZ_ALWAYS_INLINE bool
-IsWin10v1909OrLater()
-{
-  return IsWindows10BuildOrLater(18363);
-}
-
-// Windows 10 - 20H1 - May 2020 Update
-MOZ_ALWAYS_INLINE bool
-IsWin10v2004OrLater()
-{
-  return IsWindows10BuildOrLater(19041);
-}
-
-// Windows 10 - 20H2 - October 2020 Update
-MOZ_ALWAYS_INLINE bool
-IsWin10v20H2OrLater()
-{
-  return IsWindows10BuildOrLater(19042);
-}
-
-// Windows 10 - 21H1 - May 2021 Update
-MOZ_ALWAYS_INLINE bool
-IsWin10v21H1OrLater()
-{
-  return IsWindows10BuildOrLater(19043);
-}
-
-// Windows 10 - 21H2 - November 2021 Update
-MOZ_ALWAYS_INLINE bool
-IsWin10v21H2OrLater()
-{
-  return IsWindows10BuildOrLater(19044);
-}
-
-// --- End additional granular version checks.
-
-MOZ_ALWAYS_INLINE bool
-IsNotWin7PreRTM()
-{
-  return IsWin7SP1OrLater() || IsWindowsBuildOrLater(7600);
+  return IsWindowsBuildOrLater(WinBuild::Win11RTM);
 }
 
 // Compatibility Mode
@@ -287,11 +172,11 @@ IsWin7AndPre2000Compatible()
    * If the compatibility mode is in effect, the GetVersionEx function will
    * report the OS as it identifies itself, which may not be the OS that is
    * installed.
-   * Note : 1) We only target for Win7 build number greater than 7600.
+   * Note : 1) We only target for Win7 SP1 and later.
    *        2) GetVersionEx may be altered or unavailable for release after
    *           Win8.1. Set pragma to avoid build warning as error.
    */
-  bool isWin7 = IsNotWin7PreRTM() && !IsWin8OrLater();
+  bool isWin7 = IsWin7SP1OrLater() && !IsWin8OrLater();
   if (!isWin7) {
     return false;
   }

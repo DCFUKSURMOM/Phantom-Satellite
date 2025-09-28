@@ -9325,3 +9325,25 @@ nsLayoutUtils::ComputeGeometryBox(nsIFrame* aFrame,
 
   return r;
 }
+
+/* static */ already_AddRefed<nsStyleContext>
+nsLayoutUtils::GetNonAnonymousStyleContext(nsIFrame* aFrame)
+{
+  nsIContent* node = aFrame->GetContent();
+  MOZ_ASSERT(node, "No content for the given frame?");
+  while (node && node->IsInNativeAnonymousSubtree()) {
+    node = node->GetParent();
+  }
+  MOZ_ASSERT(node, "Native anonymous element with no originating node?");
+  if (nsIFrame* primaryFrame = node->GetPrimaryFrame()) {
+    RefPtr<nsStyleContext> context = primaryFrame->StyleContext();
+    return context.forget();
+  }
+  // If the element doesn't have primary frame, get the computed style
+  // from the element directly.
+  nsPresContext* pc = aFrame->PresContext();
+  MOZ_ASSERT(node == pc->Document()->GetRootElement(),
+             "Root element is the only case for this fallback "
+             "path to be triggered");
+  return pc->StyleSet()->ResolveStyleFor(node->AsElement(), nullptr);
+}

@@ -292,8 +292,7 @@ ToInteger(JSContext* cx, HandleValue v, double* dp)
 template<typename T>
 [[nodiscard]] bool ToLengthClamped(T* cx, HandleValue v, uint32_t* out, bool* overflow);
 
-/* Convert and range check an index value as for DataView, SIMD, and Atomics
- * operations, eg ES7 24.2.1.1, DataView's GetViewValue():
+/* Convert and range check an index value for Atomics
  *
  *   1. numericIndex = ToNumber(argument)            (may throw TypeError)
  *   2. intIndex = ToInteger(numericIndex)
@@ -310,7 +309,7 @@ template<typename T>
  *
  * The returned index will always be in the range 0 <= *index <= 2^53.
  */
-[[nodiscard]] bool ToIntegerIndex(JSContext* cx, JS::HandleValue v, uint64_t* index);
+[[nodiscard]] bool NonStandardToIndex(JSContext* cx, JS::HandleValue v, uint64_t* index);
 
 /* ES2017 draft 7.1.17 ToIndex
  *
@@ -319,6 +318,7 @@ template<typename T>
  *
  * The returned index will always be in the range 0 <= *index <= 2^53-1.
  */
+[[nodiscard]] bool ToIndex(JSContext* cx, JS::HandleValue v, const unsigned errorNumber, uint64_t* index);
 [[nodiscard]] bool ToIndex(JSContext* cx, JS::HandleValue v, uint64_t* index);
 
 [[nodiscard]] inline bool

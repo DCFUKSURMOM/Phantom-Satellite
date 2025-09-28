@@ -248,7 +248,6 @@ pref("browser.sessionhistory.max_total_viewers", -1);
 // See https://github.com/MoonchildProductions/UXP/issues/719
 pref("browser.newtabpage.add_to_session_history", false);
 
-
 // Determines whether the browser's current theme should be light or dark.
 // 0 = feature disabled
 // 1 = default: light theme
@@ -256,6 +255,11 @@ pref("browser.newtabpage.add_to_session_history", false);
 pref("ui.color_scheme", 1);
 
 pref("ui.use_native_colors", true);
+
+// Whether websites should use reduced animation styles.
+// Used for CSS @media query.
+pref("ui.prefersReducedMotion", 0);
+
 #ifdef MOZ_WIDGET_GTK
 // Determines whether the menubar is shown in the global menubar or not.
 pref("ui.use_global_menubar", false);
@@ -2662,6 +2666,12 @@ pref("layout.css.resizeobserver.enabled", true);
 // Is support for cascade layers enabled?
 pref("layout.css.cascade-layers.enabled", true);
 
+// Should rules in imported style sheets be added based on the order
+// of appearance of their respective @import rules in the parent
+// style sheet? Otherwise, they are added before rules preceding
+// @import are processed, which is problematic for cascade layers.
+pref("layout.css.load-imported-sheets-in-order", true);
+
 // pref for which side vertical scrollbars should be on
 // 0 = end-side in UI direction
 // 1 = end-side in document/content direction
@@ -4862,6 +4872,9 @@ pref("intl.allow-insecure-text-input", false);
 
 // Enable meta-viewport support in remote APZ-enabled frames.
 pref("dom.meta-viewport.enabled", false);
+
+// Enable the Visual Viewport API?
+pref("dom.visualviewport.enabled", true);
 
 // Disable <meta http-equiv=set-cookie> support. See m-c bug 1457503 / UXP #1102.
 pref("dom.meta-set-cookie.enabled", false);

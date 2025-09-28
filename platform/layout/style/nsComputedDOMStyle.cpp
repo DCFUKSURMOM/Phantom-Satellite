@@ -3302,7 +3302,7 @@ nsComputedDOMStyle::DoGetScrollbarWidth()
 {
   RefPtr<nsROCSSPrimitiveValue> val = new nsROCSSPrimitiveValue;
   val->SetIdent(
-    nsCSSProps::ValueToKeywordEnum(StyleUserInterface()->mScrollbarWidth,
+    nsCSSProps::ValueToKeywordEnum(StyleUIReset()->mScrollbarWidth,
                                    nsCSSProps::kScrollbarWidthKTable));
   return val.forget();
 }
@@ -4745,20 +4745,39 @@ nsComputedDOMStyle::DoGetWillChange()
   return valueList.forget();
 }
 
+// Helper for overflow computed value remapping according to CSS Overflow-3 spec.
+static nsCSSKeyword ComputeOverflowKeyword(int32_t selfEnum, int32_t otherEnum, const KTableEntry* table) {
+  nsCSSKeyword selfKw = nsCSSProps::ValueToKeywordEnum(selfEnum, table);
+  nsCSSKeyword otherKw = nsCSSProps::ValueToKeywordEnum(otherEnum, table);
+  // The visible/clip values of overflow compute to auto/hidden (respectively)
+  // if one of overflow-x or overflow-y is neither visible nor clip.
+  if (selfKw == eCSSKeyword_visible && otherKw != eCSSKeyword_visible && otherKw != eCSSKeyword_clip) {
+    selfKw = eCSSKeyword_auto;
+  }
+  if (selfKw == eCSSKeyword_clip && otherKw != eCSSKeyword_visible && otherKw != eCSSKeyword_clip) {
+    selfKw = eCSSKeyword_hidden;
+  }
+  return selfKw;
+}
+
 already_AddRefed<CSSValue>
 nsComputedDOMStyle::DoGetOverflow()
 {
   const nsStyleDisplay* display = StyleDisplay();
 
-  if (display->mOverflowX != display->mOverflowY) {
-    // No value to return.  We can't express this combination of
-    // values as a shorthand.
-    return nullptr;
-  }
+  nsCSSKeyword xKeyword = ComputeOverflowKeyword(display->mOverflowX, display->mOverflowY, nsCSSProps::kOverflowKTable);
+  nsCSSKeyword yKeyword = ComputeOverflowKeyword(display->mOverflowY, display->mOverflowX, nsCSSProps::kOverflowKTable);
 
   RefPtr<nsROCSSPrimitiveValue> val = new nsROCSSPrimitiveValue;
-  val->SetIdent(nsCSSProps::ValueToKeywordEnum(display->mOverflowX,
-                                               nsCSSProps::kOverflowKTable));
+  if (xKeyword == yKeyword) {
+    val->SetIdent(xKeyword);
+    return val.forget();
+  }
+  nsAutoString result;
+  result.AppendASCII(nsCSSKeywords::GetStringValue(xKeyword).get());
+  result.Append(char16_t(' '));
+  result.AppendASCII(nsCSSKeywords::GetStringValue(yKeyword).get());
+  val->SetString(result);
   return val.forget();
 }
 
@@ -4766,9 +4785,9 @@ already_AddRefed<CSSValue>
 nsComputedDOMStyle::DoGetOverflowX()
 {
   RefPtr<nsROCSSPrimitiveValue> val = new nsROCSSPrimitiveValue;
-  val->SetIdent(
-    nsCSSProps::ValueToKeywordEnum(StyleDisplay()->mOverflowX,
-                                   nsCSSProps::kOverflowSubKTable));
+  const nsStyleDisplay* display = StyleDisplay();
+  nsCSSKeyword kw = ComputeOverflowKeyword(display->mOverflowX, display->mOverflowY, nsCSSProps::kOverflowSubKTable);
+  val->SetIdent(kw);
   return val.forget();
 }
 
@@ -4776,9 +4795,9 @@ already_AddRefed<CSSValue>
 nsComputedDOMStyle::DoGetOverflowY()
 {
   RefPtr<nsROCSSPrimitiveValue> val = new nsROCSSPrimitiveValue;
-  val->SetIdent(
-    nsCSSProps::ValueToKeywordEnum(StyleDisplay()->mOverflowY,
-                                   nsCSSProps::kOverflowSubKTable));
+  const nsStyleDisplay* display = StyleDisplay();
+  nsCSSKeyword kw = ComputeOverflowKeyword(display->mOverflowY, display->mOverflowX, nsCSSProps::kOverflowSubKTable);
+  val->SetIdent(kw);
   return val.forget();
 }
 
@@ -6771,3 +6790,57 @@ nsComputedDOMStyle::UnregisterPrefChangeCallbacks()
 #undef CSS_PROP
 #undef UNREGISTER_CALLBACK
 }
+
+already_AddRefed<CSSValue>
+nsComputedDOMStyle::DoGetOverflowBlock()
+{
+  RefPtr<nsROCSSPrimitiveValue> val = new nsROCSSPrimitiveValue;
+  uint8_t writingMode = StyleVisibility()->mWritingMode;
+  bool isVertical = writingMode == NS_STYLE_WRITING_MODE_VERTICAL_LR ||
+                    writingMode == NS_STYLE_WRITING_MODE_VERTICAL_RL ||
+                    writingMode == NS_STYLE_WRITING_MODE_SIDEWAYS_LR ||
+                    writingMode == NS_STYLE_WRITING_MODE_SIDEWAYS_RL;
+  auto overflow = isVertical ? StyleDisplay()->mOverflowX : StyleDisplay()->mOverflowY;
+  val->SetIdent(nsCSSProps::ValueToKeywordEnum(overflow, nsCSSProps::kOverflowSubKTable));
+  return val.forget();
+}
+
+already_AddRefed<CSSValue>
+nsComputedDOMStyle::DoGetOverflowInline()
+{
+  RefPtr<nsROCSSPrimitiveValue> val = new nsROCSSPrimitiveValue;
+  uint8_t writingMode = StyleVisibility()->mWritingMode;
+  bool isVertical = writingMode == NS_STYLE_WRITING_MODE_VERTICAL_LR ||
+                    writingMode == NS_STYLE_WRITING_MODE_VERTICAL_RL ||
+                    writingMode == NS_STYLE_WRITING_MODE_SIDEWAYS_LR ||
+                    writingMode == NS_STYLE_WRITING_MODE_SIDEWAYS_RL;
+  auto overflow = isVertical ? StyleDisplay()->mOverflowY : StyleDisplay()->mOverflowX;
+  val->SetIdent(nsCSSProps::ValueToKeywordEnum(overflow, nsCSSProps::kOverflowSubKTable));
+  return val.forget();
+}
+
+already_AddRefed<CSSValue>
+nsComputedDOMStyle::DoGetOverflowInlineStart()
+{
+  return DoGetOverflowInline();
+}
+
+already_AddRefed<CSSValue>
+nsComputedDOMStyle::DoGetOverflowInlineEnd()
+{
+  return DoGetOverflowInline();
+}
+
+already_AddRefed<CSSValue>
+nsComputedDOMStyle::DoGetOverflowBlockStart()
+{
+  return DoGetOverflowBlock();
+}
+
+already_AddRefed<CSSValue>
+nsComputedDOMStyle::DoGetOverflowBlockEnd()
+{
+  return DoGetOverflowBlock();
+}
+
+

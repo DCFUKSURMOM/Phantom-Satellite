@@ -101,9 +101,17 @@ input {
   cursor: text;
   -moz-binding: url("chrome://global/content/platformHTMLBindings.xml#inputFields");
   text-indent: 0;
-  -moz-user-select: text;
+  user-select: text;
   text-shadow: none;
   overflow-clip-box: content-box;
+}
+
+/* Autofill highlight - placed immediately after base input styles */
+input:-moz-autofill-highlight,
+select:-moz-autofill-highlight,
+textarea:-moz-autofill-highlight {
+  background-color: #fffcd0 !important;
+  color: #090909 !important;
 }
 
 input > .anonymous-div,
@@ -148,7 +156,7 @@ textarea {
   -moz-binding: url("chrome://global/content/platformHTMLBindings.xml#textAreas");
   -moz-appearance: textfield-multiline;
   text-indent: 0;
-  -moz-user-select: text;
+  user-select: text;
   text-shadow: none;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -217,8 +225,8 @@ textarea::placeholder {
   white-space: pre-wrap !important;
 }
 
-input:-moz-read-write,
-textarea:-moz-read-write {
+input:read-write,
+textarea:read-write {
   -moz-user-modify: read-write !important;
 }
 
@@ -240,12 +248,12 @@ select {
   text-align: start;
   cursor: default;
   box-sizing: border-box;
-  -moz-user-select: none;
+  user-select: none;
   -moz-appearance: menulist;
   border-width: 2px;
   border-style: inset;
   text-indent: 0;
-  overflow: -moz-hidden-unscrollable;
+  overflow: clip;
   text-shadow: none;
   /* No text-decoration reaching inside, by default */
   display: inline-block;
@@ -326,13 +334,13 @@ select:empty {
 }
 
 *|*::-moz-display-comboboxcontrol-frame {
-  overflow: -moz-hidden-unscrollable;
+  overflow: clip;
   padding-inline-start: 4px;
   padding-inline-end: 0;
   color: inherit;
   white-space: nowrap;
   text-align: inherit;
-  -moz-user-select: none;
+  user-select: none;
   /* Make sure to size correctly if the combobox has a non-auto block-size. */
   block-size: 100% ! important;
   box-sizing: border-box ! important;
@@ -345,7 +353,7 @@ option {
   position: static !important;
   min-block-size: 1em;
   line-height: normal !important;
-  -moz-user-select: none;
+  user-select: none;
   text-indent: 0;
   white-space: nowrap !important;
   word-wrap: normal !important;
@@ -379,7 +387,7 @@ optgroup {
   font-style: italic;
   font-weight: bold;
   font-size: inherit;
-  -moz-user-select: none;
+  user-select: none;
   text-indent: 0;
   white-space: nowrap !important;
   word-wrap: normal !important;
@@ -399,7 +407,7 @@ optgroup:before {
 *|*::-moz-dropdown-list {
   z-index: 2147483647;
   background-color: inherit;
-  -moz-user-select: none;
+  user-select: none;
   position: static !important;
   float: none !important;
 
@@ -633,7 +641,7 @@ input[type="submit"] {
   background-color: ButtonFace;
   cursor: default;
   box-sizing: border-box;
-  -moz-user-select: none;
+  user-select: none;
   -moz-binding: none;
 }
 
@@ -933,7 +941,7 @@ input[type=range] {
   border: none;
   -moz-binding: none; /* we don't want any of platformHTMLBindings.xml#inputFields */
   /* Prevent nsFrame::HandlePress setting mouse capture to this element. */
-  -moz-user-select: none ! important;
+  user-select: none ! important;
 }
 
 input[type=range][orient=block] {
@@ -986,7 +994,7 @@ input[type=range]::-moz-range-track {
   inline-size: 100%;
   block-size: 0.2em;
   /* Prevent nsFrame::HandlePress setting mouse capture to this element. */
-  -moz-user-select: none ! important;
+  user-select: none ! important;
 }
 
 input[type=range][orient=block]::-moz-range-track {
@@ -1023,7 +1031,7 @@ input[type=range]::-moz-range-progress {
   width: 0.2em;
   height: 0.2em;
   /* Prevent nsFrame::HandlePress setting mouse capture to this element. */
-  -moz-user-select: none ! important;
+  user-select: none ! important;
 }
 
 /**
@@ -1047,7 +1055,7 @@ input[type=range]::-moz-range-thumb {
   border-radius: 0.5em;
   background-color: #F0F0F0;
   /* Prevent nsFrame::HandlePress setting mouse capture to this element. */
-  -moz-user-select: none ! important;
+  user-select: none ! important;
 }
 
 /* As a temporary workaround until bug 677302 the rule for input[type=number]

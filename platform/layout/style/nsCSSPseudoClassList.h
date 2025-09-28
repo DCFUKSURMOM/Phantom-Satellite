@@ -195,6 +195,9 @@ CSS_STATE_PSEUDO_CLASS(mozFullScreen, ":-moz-full-screen", 0, "", NS_EVENT_STATE
 CSS_STATE_PSEUDO_CLASS(modal, ":modal", 0, "", NS_EVENT_STATE_MODAL_DIALOG)
 CSS_STATE_PSEUDO_CLASS(mozModalDialog, ":-moz-modal-dialog", 0, "", NS_EVENT_STATE_MODAL_DIALOG)
 
+// Matches autofilled input elements
+CSS_STATE_PSEUDO_CLASS(autofill, ":autofill", 0, "", NS_EVENT_STATE_AUTOFILL)
+
 // Matches if the element is focused and should show a focus ring
 CSS_STATE_PSEUDO_CLASS(mozFocusRing, ":-moz-focusring", 0, "", NS_EVENT_STATE_FOCUSRING)
 
@@ -255,10 +258,10 @@ CSS_STATE_PSEUDO_CLASS(outOfRange, ":out-of-range", 0, "", NS_EVENT_STATE_OUTOFR
 CSS_STATE_PSEUDO_CLASS(defaultPseudo, ":default", 0, "", NS_EVENT_STATE_DEFAULT)
 CSS_STATE_PSEUDO_CLASS(placeholderShown, ":placeholder-shown", 0, "",
                        NS_EVENT_STATE_PLACEHOLDERSHOWN)
-CSS_STATE_PSEUDO_CLASS(mozReadOnly, ":-moz-read-only", 0, "",
-                       NS_EVENT_STATE_MOZ_READONLY)
-CSS_STATE_PSEUDO_CLASS(mozReadWrite, ":-moz-read-write", 0, "",
-                       NS_EVENT_STATE_MOZ_READWRITE)
+CSS_STATE_PSEUDO_CLASS(readOnly, ":read-only", 0, "",
+                       NS_EVENT_STATE_READONLY)
+CSS_STATE_PSEUDO_CLASS(readWrite, ":read-write", 0, "",
+                       NS_EVENT_STATE_READWRITE)
 CSS_STATE_PSEUDO_CLASS(mozSubmitInvalid, ":-moz-submit-invalid", 0, "",
                        NS_EVENT_STATE_MOZ_SUBMITINVALID)
 CSS_STATE_PSEUDO_CLASS(mozUIInvalid, ":-moz-ui-invalid", 0, "",
@@ -274,6 +277,9 @@ CSS_STATE_PSEUDO_CLASS(mozMeterSubSubOptimum, ":-moz-meter-sub-sub-optimum", 0, 
 
 // Those values should be parsed but do nothing.
 CSS_STATE_PSEUDO_CLASS(mozPlaceholder, ":-moz-placeholder", 0, "", NS_EVENT_STATE_IGNORE)
+
+// Internal-only pseudo-class for autofill highlight
+CSS_STATE_PSEUDO_CLASS(mozAutofillHighlight, ":-moz-autofill-highlight", CSS_PSEUDO_CLASS_ENABLED_IN_UA_SHEETS, "", NS_EVENT_STATE_AUTOFILL)
 
 #ifdef DEFINED_CSS_STATE_PSEUDO_CLASS
 #undef DEFINED_CSS_STATE_PSEUDO_CLASS

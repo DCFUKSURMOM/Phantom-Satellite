@@ -166,6 +166,13 @@ nsCSSValue::nsCSSValue(const nsCSSValue& aCopy)
     mValue.mComplexColor = aCopy.mValue.mComplexColor;
     mValue.mComplexColor->AddRef();
   }
+  else if (eCSSUnit_ColorMix == mUnit) {
+    mValue.mColorMix = aCopy.mValue.mColorMix;
+    mValue.mColorMix->AddRef();
+  }
+  else if (eCSSUnit_Revert == mUnit) {
+    mValue.mCascadeOrigin = aCopy.mValue.mCascadeOrigin;
+  }
   else if (UnitHasArrayValue()) {
     mValue.mArray = aCopy.mValue.mArray;
     mValue.mArray->AddRef();
@@ -278,6 +285,17 @@ bool nsCSSValue::operator==(const nsCSSValue& aOther) const
     }
     else if (eCSSUnit_ComplexColor == mUnit) {
       return *mValue.mComplexColor == *aOther.mValue.mComplexColor;
+    }
+    else if (eCSSUnit_ColorMix == mUnit) {
+      return mValue.mColorMix == aOther.mValue.mColorMix ||
+             (mValue.mColorMix->mColorSpace == aOther.mValue.mColorMix->mColorSpace &&
+              mValue.mColorMix->mColor1 == aOther.mValue.mColorMix->mColor1 &&
+              mValue.mColorMix->mColor2 == aOther.mValue.mColorMix->mColor2 &&
+              mValue.mColorMix->mWeight1 == aOther.mValue.mColorMix->mWeight1 &&
+              mValue.mColorMix->mWeight2 == aOther.mValue.mColorMix->mWeight2);
+    }
+    else if (eCSSUnit_Revert == mUnit) {
+      return mValue.mCascadeOrigin == aOther.mValue.mCascadeOrigin;
     }
     else if (UnitHasArrayValue()) {
       return *mValue.mArray == *aOther.mValue.mArray;
@@ -415,6 +433,8 @@ void nsCSSValue::DoReset()
     mValue.mFloatColor->Release();
   } else if (eCSSUnit_ComplexColor == mUnit) {
     mValue.mComplexColor->Release();
+  } else if (eCSSUnit_ColorMix == mUnit) {
+    mValue.mColorMix->Release();
   } else if (UnitHasArrayValue()) {
     mValue.mArray->Release();
   } else if (eCSSUnit_URL == mUnit) {
@@ -539,6 +559,23 @@ nsCSSValue::SetComplexColorValue(already_AddRefed<ComplexColorValue> aValue)
   mValue.mComplexColor = aValue.take();
 }
 
+void
+nsCSSValue::SetColorMixValue(already_AddRefed<ColorMixValue> aValue)
+{
+  Reset();
+  mUnit = eCSSUnit_ColorMix;
+  mValue.mColorMix = aValue.take();
+}
+
+void
+nsCSSValue::SetCascadeOriginValue(mozilla::SheetType aValue, nsCSSUnit aUnit)
+{
+  MOZ_ASSERT(aUnit == eCSSUnit_Revert, "bad unit");
+  Reset();
+  mUnit = aUnit;
+  mValue.mCascadeOrigin = aValue;
+}
+
 void nsCSSValue::SetArrayValue(nsCSSValue::Array* aValue, nsCSSUnit aUnit)
 {
   Reset();
@@ -598,7 +635,7 @@ void nsCSSValue::SetFontFamilyListValue(css::FontFamilyListRefCnt* aValue)
 
 void nsCSSValue::SetPairValue(const nsCSSValuePair* aValue)
 {
-  // pairs should not be used for null/inherit/initial values
+  // pairs should not be used for null/inherit/initial/unset/revert values
   MOZ_ASSERT(aValue &&
              aValue->mXValue.GetUnit() != eCSSUnit_Null &&
              aValue->mYValue.GetUnit() != eCSSUnit_Null &&
@@ -607,7 +644,9 @@ void nsCSSValue::SetPairValue(const nsCSSValuePair* aValue)
              aValue->mXValue.GetUnit() != eCSSUnit_Initial &&
              aValue->mYValue.GetUnit() != eCSSUnit_Initial &&
              aValue->mXValue.GetUnit() != eCSSUnit_Unset &&
-             aValue->mYValue.GetUnit() != eCSSUnit_Unset,
+             aValue->mYValue.GetUnit() != eCSSUnit_Unset &&
+             aValue->mXValue.GetUnit() != eCSSUnit_Revert &&
+             aValue->mYValue.GetUnit() != eCSSUnit_Revert,
              "missing or inappropriate pair value");
   Reset();
   mUnit = eCSSUnit_Pair;
@@ -625,7 +664,9 @@ void nsCSSValue::SetPairValue(const nsCSSValue& xValue,
              xValue.GetUnit() != eCSSUnit_Initial &&
              yValue.GetUnit() != eCSSUnit_Initial &&
              xValue.GetUnit() != eCSSUnit_Unset &&
-             yValue.GetUnit() != eCSSUnit_Unset,
+             yValue.GetUnit() != eCSSUnit_Unset &&
+             xValue.GetUnit() != eCSSUnit_Revert &&
+             yValue.GetUnit() != eCSSUnit_Revert,
              "inappropriate pair value");
   Reset();
   mUnit = eCSSUnit_Pair;
@@ -635,7 +676,7 @@ void nsCSSValue::SetPairValue(const nsCSSValue& xValue,
 
 void nsCSSValue::SetTripletValue(const nsCSSValueTriplet* aValue)
 {
-  // triplet should not be used for null/inherit/initial values
+  // triplet should not be used for null/inherit/initial/unset/revert values
   MOZ_ASSERT(aValue &&
              aValue->mXValue.GetUnit() != eCSSUnit_Null &&
              aValue->mYValue.GetUnit() != eCSSUnit_Null &&
@@ -648,7 +689,10 @@ void nsCSSValue::SetTripletValue(const nsCSSValueTriplet* aValue)
              aValue->mZValue.GetUnit() != eCSSUnit_Initial &&
              aValue->mXValue.GetUnit() != eCSSUnit_Unset &&
              aValue->mYValue.GetUnit() != eCSSUnit_Unset &&
-             aValue->mZValue.GetUnit() != eCSSUnit_Unset,
+             aValue->mZValue.GetUnit() != eCSSUnit_Unset &&
+             aValue->mXValue.GetUnit() != eCSSUnit_Revert &&
+             aValue->mYValue.GetUnit() != eCSSUnit_Revert &&
+             aValue->mZValue.GetUnit() != eCSSUnit_Revert,
              "missing or inappropriate triplet value");
   Reset();
   mUnit = eCSSUnit_Triplet;
@@ -671,7 +715,10 @@ void nsCSSValue::SetTripletValue(const nsCSSValue& xValue,
              zValue.GetUnit() != eCSSUnit_Initial &&
              xValue.GetUnit() != eCSSUnit_Unset &&
              yValue.GetUnit() != eCSSUnit_Unset &&
-             zValue.GetUnit() != eCSSUnit_Unset,
+             zValue.GetUnit() != eCSSUnit_Unset &&
+             xValue.GetUnit() != eCSSUnit_Revert &&
+             yValue.GetUnit() != eCSSUnit_Revert &&
+             zValue.GetUnit() != eCSSUnit_Revert,
              "inappropriate triplet value");
   Reset();
   mUnit = eCSSUnit_Triplet;
@@ -779,6 +826,12 @@ void nsCSSValue::SetUnsetValue()
 {
   Reset();
   mUnit = eCSSUnit_Unset;
+}
+
+void
+nsCSSValue::SetRevertValue(mozilla::SheetType aValue)
+{
+  SetCascadeOriginValue(aValue, eCSSUnit_Revert);
 }
 
 void nsCSSValue::SetNoneValue()
@@ -1678,6 +1731,28 @@ nsCSSValue::AppendToString(nsCSSPropertyID aProperty, nsAString& aResult,
     }
     serializable.AppendToString(aProperty, aResult, aSerialization);
   }
+  else if (eCSSUnit_ColorMix == unit) {
+    const ColorMixValue* colorMix = GetColorMixValue();
+    aResult.AppendLiteral("color-mix(in ");
+    
+    // append color space
+    switch (colorMix->mColorSpace) {
+      case mozilla::css::ColorMixColorSpace::sRGB:
+        aResult.AppendLiteral("srgb");
+        break;
+      case mozilla::css::ColorMixColorSpace::HSL:
+        aResult.AppendLiteral("hsl");
+        break;
+    }
+    
+    // append color1 and color2
+    aResult.AppendLiteral(", ");
+    colorMix->mColor1.AppendToString(aProperty, aResult, aSerialization);
+    aResult.AppendLiteral(", ");
+    colorMix->mColor2.AppendToString(aProperty, aResult, aSerialization);
+    
+    aResult.Append(')');
+  }
   else if (eCSSUnit_URL == unit || eCSSUnit_Image == unit) {
     aResult.AppendLiteral("url(");
     nsStyleUtil::AppendEscapedCSSString(
@@ -1930,6 +2005,7 @@ nsCSSValue::AppendToString(nsCSSPropertyID aProperty, nsAString& aResult,
     case eCSSUnit_Inherit:      aResult.AppendLiteral("inherit");  break;
     case eCSSUnit_Initial:      aResult.AppendLiteral("initial");  break;
     case eCSSUnit_Unset:        aResult.AppendLiteral("unset");    break;
+    case eCSSUnit_Revert:       aResult.AppendLiteral("revert");   break;
     case eCSSUnit_None:         aResult.AppendLiteral("none");     break;
     case eCSSUnit_Normal:       aResult.AppendLiteral("normal");   break;
     case eCSSUnit_System_Font:  aResult.AppendLiteral("-moz-use-system-font"); break;
@@ -1975,6 +2051,7 @@ nsCSSValue::AppendToString(nsCSSPropertyID aProperty, nsAString& aResult,
     case eCSSUnit_HSLColor:              break;
     case eCSSUnit_HSLAColor:             break;
     case eCSSUnit_ComplexColor:          break;
+    case eCSSUnit_ColorMix:              break;
     case eCSSUnit_Percent:      aResult.Append(char16_t('%'));    break;
     case eCSSUnit_Number:       break;
     case eCSSUnit_Gradient:     break;
@@ -2187,6 +2264,15 @@ nsCSSValue::SizeOfExcludingThis(mozilla::MallocSizeOf aMallocSizeOf) const
     // Complex Color
     case eCSSUnit_ComplexColor:
       n += mValue.mComplexColor->SizeOfIncludingThis(aMallocSizeOf);
+      break;
+
+    // Color Mix
+    case eCSSUnit_ColorMix:
+      n += mValue.mColorMix->SizeOfIncludingThis(aMallocSizeOf);
+      break;
+
+    // Cascade Origin: nothing extra to measure.
+    case eCSSUnit_Revert:
       break;
 
     // Float: nothing extra to measure.
@@ -2511,7 +2597,8 @@ nsCSSRect::AppendToString(nsCSSPropertyID aProperty, nsAString& aResult,
   MOZ_ASSERT(mTop.GetUnit() != eCSSUnit_Null &&
              mTop.GetUnit() != eCSSUnit_Inherit &&
              mTop.GetUnit() != eCSSUnit_Initial &&
-             mTop.GetUnit() != eCSSUnit_Unset,
+             mTop.GetUnit() != eCSSUnit_Unset &&
+             mTop.GetUnit() != eCSSUnit_Revert,
              "parser should have used a bare value");
 
   if (eCSSProperty_border_image_slice == aProperty ||
@@ -2681,6 +2768,7 @@ nsCSSValuePairList::AppendToString(nsCSSPropertyID aProperty,
     if (item->mXValue.GetUnit() != eCSSUnit_Inherit &&
         item->mXValue.GetUnit() != eCSSUnit_Initial &&
         item->mXValue.GetUnit() != eCSSUnit_Unset &&
+        item->mXValue.GetUnit() != eCSSUnit_Revert &&
         item->mYValue.GetUnit() != eCSSUnit_Null) {
       aResult.Append(char16_t(' '));
       item->mYValue.AppendToString(aProperty, aResult, aSerialization);
@@ -3037,6 +3125,18 @@ css::ComplexColorValue::SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const
   return n;
 }
 
+size_t
+css::ColorMixValue::SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const
+{
+  // Only measure it if it's unshared, to avoid double-counting.
+  size_t n = 0;
+  if (mRefCnt <= 1) {
+    n += aMallocSizeOf(this);
+    n += mColor1.SizeOfExcludingThis(aMallocSizeOf);
+    n += mColor2.SizeOfExcludingThis(aMallocSizeOf);
+  }
+  return n;
+}
 nsCSSValueGradientStop::nsCSSValueGradientStop()
   : mLocation(eCSSUnit_None),
     mColor(eCSSUnit_Null),

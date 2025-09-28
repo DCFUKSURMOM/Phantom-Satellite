@@ -8,13 +8,13 @@
 #include <unistd.h>
 #include <time.h>
 #include <asl.h>
+#include "nsCocoaDebugUtils.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/Sprintf.h"
 #if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
 #include <dispatch/dispatch.h>
 #include <notify.h>
 #endif
-#include "nsCocoaDebugUtils.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/Sprintf.h"
 
 int nsSandboxViolationSink::mNotifyToken = 0;
 uint64_t nsSandboxViolationSink::mLastMsgReceived = 0;

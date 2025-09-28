@@ -677,7 +677,7 @@ img[usemap], object[usemap] {
 
 frameset {
   display: block ! important;
-  overflow: -moz-hidden-unscrollable;
+  overflow: clip;
   position: static ! important;
   float: none ! important;
   border: none ! important;
@@ -705,7 +705,7 @@ spacer {
 }
 
 canvas {
-  -moz-user-select: none;
+  user-select: none;
 }
 
 /* focusable content: anything w/ tabindex >=0 is focusable, but we
@@ -719,12 +719,12 @@ canvas {
 /* hidden elements */
 base, basefont, datalist, head, meta, script, style, title,
 noembed, param, template {
-   display: none !important;
+   display: none;
 }
 
 area {
   /* Don't give it frames other than its imageframe */
-  display: none !important;
+  display: none ! important;
 }
 
 iframe:fullscreen {

@@ -3343,18 +3343,20 @@ if test -n "$MOZ_FFVPX" -a -n "$COMPILE_ENVIRONMENT"; then
   esac
 fi
 
-if test -n "$FFVPX_ASFLAGS" -a "${CPU_ARCH}" = "x86" -a "${CPU_ARCH}" = "x86_64"; then
-  dnl If we're on a platform that supports ffvpx's asm routines check for Yasm.
-  if test -z "$YASM" ; then
-    AC_MSG_ERROR([Yasm is required to build with ffvpx's optimized assembly routines, but you do not appear to have Yasm installed.])
+if test -n "$FFVPX_ASFLAGS"; then
+  if test "${CPU_ARCH}" = "x86" -o "${CPU_ARCH}" = "x86_64"; then
+    dnl If we're on a platform that supports ffvpx's asm routines and uses Yasm, check for it.
+    if test -z "$YASM" ; then
+      AC_MSG_ERROR([Yasm is required to build with ffvpx's optimized assembly routines, but you do not appear to have Yasm installed.])
+    fi
+    dnl Check that we have the right yasm version. We require 1.2.0 or newer.
+    if test "$_YASM_MAJOR_VERSION" -lt "1" -o \( "$_YASM_MAJOR_VERSION" -eq "1" -a "$_YASM_MINOR_VERSION" -lt "2" \) ; then
+      AC_MSG_ERROR([Yasm 1.2.0 or greater is required to build with ffvpx's optimized assembly routines, but you do not appear to have the correct version of Yasm installed.])
+    fi
   fi
-  dnl Check that we have the right yasm version. We require 1.2.0 or newer.
-  if test "$_YASM_MAJOR_VERSION" -lt "1" -o \( "$_YASM_MAJOR_VERSION" -eq "1" -a "$_YASM_MINOR_VERSION" -lt "2" \) ; then
-    AC_MSG_ERROR([Yasm 1.2.0 or greater is required to build with ffvpx's optimized assembly routines, but you do not appear to have the correct version of Yasm installed.])
-  fi
-elif test -n "$MOZ_FFVPX" -a "${CPU_ARCH}" != "arm"; then
+elif test -n "$MOZ_FFVPX"; then
   dnl Warn if we're not building ffpvx optimized routines.
-  AC_MSG_WARN([No assembler or assembly support for ffvpx.  Using unoptimized C routines.])
+  AC_MSG_WARN([No assembler or assembly support for ffvpx on your platform. Using unoptimized C routines.])
 fi
 
 dnl ========================================================

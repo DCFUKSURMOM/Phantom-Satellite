@@ -15,6 +15,7 @@
 
 #include "FFmpegVideoDecoder.h"
 #include "FFmpegLog.h"
+#include "FFmpegUtils.h"
 #include "mozilla/PodOperations.h"
 #include "prsystem.h" // for PR_GetNumberOfProcessors
 
@@ -214,18 +215,28 @@ FFmpegVideoDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample,
                                         uint8_t* aData, int aSize,
                                         bool* aGotFrame)
 {
-  AVPacket packet;
-  mLib->av_init_packet(&packet);
+  AVPacket* packet;
 
-  packet.data = aData;
-  packet.size = aSize;
-  packet.dts = mLastInputDts = aSample->mTimecode;
-  packet.pts = aSample->mTime;
-  packet.flags = aSample->mKeyframe ? AV_PKT_FLAG_KEY : 0;
-  packet.pos = aSample->mOffset;
+#if LIBAVCODEC_VERSION_MAJOR >= 61
+  packet = mLib->av_packet_alloc();
+  auto raii = MakeScopeExit([&]() {
+    mLib->av_packet_free(&packet);
+  });
+#else
+  AVPacket packet_mem;
+  packet = &packet_mem;
+  mLib->av_init_packet(packet);
+#endif
 
-  packet.duration = aSample->mDuration;
-  int res = mLib->avcodec_send_packet(mCodecContext, &packet);
+  packet->data = aData;
+  packet->size = aSize;
+  packet->dts = mLastInputDts = aSample->mTimecode;
+  packet->pts = aSample->mTime;
+  packet->flags = aSample->mKeyframe ? AV_PKT_FLAG_KEY : 0;
+  packet->pos = aSample->mOffset;
+
+  packet->duration = aSample->mDuration;
+  int res = mLib->avcodec_send_packet(mCodecContext, packet);
   if (res < 0) {
     // In theory, avcodec_send_packet could sent -EAGAIN should its internal
     // buffers be full. In practice this can't happen as we only feed one frame
@@ -256,7 +267,7 @@ FFmpegVideoDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample,
                          RESULT_DETAIL("avcodec_receive_frame error: %d", res));
     }
     MediaResult rv = CreateImage(mFrame->pkt_pos, GetFramePts(mFrame),
-                                 mFrame->pkt_duration);
+                                 Duration(mFrame));
     if (NS_FAILED(rv)) {
       return rv;
     }
@@ -270,8 +281,8 @@ MediaResult
 FFmpegVideoDecoder<LIBAV_VER>::CreateImage(int64_t aOffset, int64_t aPts,
                                            int64_t aDuration)
 {
-  FFMPEG_LOG("Got one frame output with pts=%lld dts=%lld duration=%lld opaque=%lld",
-              aPts, mFrame->pkt_dts, aDuration, mCodecContext->reordered_opaque);
+  FFMPEG_LOG("Got one frame output with pts=%lld dts=%lld duration=%lld",
+              aPts, mFrame->pkt_dts, aDuration);
 
   VideoData::YCbCrBuffer b;
   b.mPlanes[0].mData = mFrame->data[0];

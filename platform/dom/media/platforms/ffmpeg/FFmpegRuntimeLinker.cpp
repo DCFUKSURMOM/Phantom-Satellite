@@ -26,10 +26,12 @@ static FFmpegLibWrapper sLibAV;
 
 static const char* sLibs[] = {
 #if defined(XP_DARWIN)
+  "libavcodec.61.dylib",
   "libavcodec.60.dylib",
   "libavcodec.59.dylib",
   "libavcodec.58.dylib",
 #else
+  "libavcodec.so.61",
   "libavcodec.so.60",
   "libavcodec.so.59",
   "libavcodec.so.58",
@@ -101,6 +103,7 @@ FFmpegRuntimeLinker::CreateDecoderModule()
     case 58: module = FFmpegDecoderModule<58>::Create(&sLibAV); break;
     case 59: module = FFmpegDecoderModule<59>::Create(&sLibAV); break;
     case 60: module = FFmpegDecoderModule<60>::Create(&sLibAV); break;
+    case 61: module = FFmpegDecoderModule<61>::Create(&sLibAV); break;
     default: module = nullptr;
   }
   return module.forget();

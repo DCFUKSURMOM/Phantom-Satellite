@@ -513,9 +513,9 @@ gfxWindowsPlatform::CreatePlatformFontList()
 {
     gfxPlatformFontList *pfl;
 
-    // bug 630201 - older pre-RTM versions of Direct2D/DirectWrite cause odd
-    // crashers so blacklist them altogether
-    if (IsNotWin7PreRTM() && GetDWriteFactory()) {
+    // bug 630201 - older versions of Direct2D/DirectWrite cause odd
+    // crashers so blacklist them altogether.
+    if (IsWin7SP1OrLater() && GetDWriteFactory()) {
         pfl = new gfxDWriteFontList();
         if (NS_SUCCEEDED(pfl->InitFontList())) {
             return pfl;
@@ -527,6 +527,9 @@ gfxWindowsPlatform::CreatePlatformFontList()
         DisableD2D(FeatureStatus::Failed, "Failed to initialize fonts",
                    NS_LITERAL_CSTRING("FEATURE_FAILURE_FONT_FAIL"));
     }
+    
+    // Windows is too old (pre Win 7 SP1), we don't have DirectWrite, or its font
+    // init failed for some reason. Fall back to using GDI fonts instead.
 
     pfl = new gfxGDIFontList();
 

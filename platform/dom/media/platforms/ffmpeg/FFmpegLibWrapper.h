@@ -62,6 +62,9 @@ struct FFmpegLibWrapper
   int (*av_parser_parse2)(AVCodecParserContext* s, AVCodecContext* avctx, uint8_t** poutbuf, int* poutbuf_size, const uint8_t* buf, int buf_size, int64_t pts, int64_t dts, int64_t pos);
   int (*avcodec_send_packet)(AVCodecContext* avctx, const AVPacket* avpkt);
   int (*avcodec_receive_frame)(AVCodecContext* avctx, AVFrame* frame);
+  // libavcodec >= 61
+  AVPacket* (*av_packet_alloc)();
+  void (*av_packet_free)(AVPacket** pkt);
 
   // libavutil
   void (*av_log_set_level)(int level);

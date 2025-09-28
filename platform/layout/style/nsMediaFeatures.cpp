@@ -14,7 +14,7 @@
 #ifdef XP_WIN
 #include "mozilla/LookAndFeel.h"
 #endif
-#include "nsCSSRuleProcessor.h"
+#include "nsCSSRuleUtils.h"
 #include "nsDeviceContext.h"
 #include "nsIBaseWindow.h"
 #include "nsIDocument.h"
@@ -47,9 +47,15 @@ static const nsCSSProps::KTableEntry kDisplayModeKeywords[] = {
 };
 
 static const nsCSSProps::KTableEntry kPrefersColorSchemeKeywords[] = {
-  { eCSSKeyword_light,			 NS_STYLE_PREFERS_COLOR_SCHEME_LIGHT },
-  { eCSSKeyword_dark,			 NS_STYLE_PREFERS_COLOR_SCHEME_DARK },
-  { eCSSKeyword_UNKNOWN,		 -1 },
+  { eCSSKeyword_light,                   NS_STYLE_PREFERS_COLOR_SCHEME_LIGHT },
+  { eCSSKeyword_dark,                    NS_STYLE_PREFERS_COLOR_SCHEME_DARK },
+  { eCSSKeyword_UNKNOWN,                 -1 },
+};
+
+static const nsCSSProps::KTableEntry kPrefersMotionKeywords[] = {
+  { eCSSKeyword_no_preference,           NS_STYLE_PREFERS_FULL_MOTION },
+  { eCSSKeyword_reduce,                  NS_STYLE_PREFERS_REDUCED_MOTION },
+  { eCSSKeyword_UNKNOWN,                 -1 },
 };
 
 #ifdef XP_WIN
@@ -397,7 +403,7 @@ GetSystemMetric(nsPresContext* aPresContext, const nsMediaFeature* aFeature,
   MOZ_ASSERT(aFeature->mValueType == nsMediaFeature::eBoolInteger,
              "unexpected type");
   nsIAtom *metricAtom = *aFeature->mData.mMetric;
-  bool hasMetric = nsCSSRuleProcessor::HasSystemMetric(metricAtom);
+  bool hasMetric = nsCSSRuleUtils::HasSystemMetric(metricAtom);
   aResult.SetIntValue(hasMetric ? 1 : 0, eCSSUnit_Integer);
   return NS_OK;
 }
@@ -413,7 +419,7 @@ GetWindowsTheme(nsPresContext* aPresContext, const nsMediaFeature* aFeature,
 
 #ifdef XP_WIN
   uint8_t windowsThemeId =
-    nsCSSRuleProcessor::GetWindowsThemeIdentifier();
+    nsCSSRuleUtils::GetWindowsThemeIdentifier();
 
   // Classic mode should fail to match.
   if (windowsThemeId == LookAndFeel::eWindowsTheme_Classic)
@@ -489,6 +495,22 @@ GetPrefersColorScheme(nsPresContext* aPresContext, const nsMediaFeature* aFeatur
 
   return NS_OK;
 }
+
+static nsresult
+GetPrefersMotion(nsPresContext* aPresContext, const nsMediaFeature* aFeature,
+          nsCSSValue& aResult)
+{
+  switch(Preferences::GetInt("ui.prefersReducedMotion", 0)) {
+    case 1:
+      aResult.SetIntValue(NS_STYLE_PREFERS_REDUCED_MOTION, 
+                          eCSSUnit_Enumerated);
+      break;
+    default:
+      aResult.Reset();
+  }
+  return NS_OK;
+}
+
 
 static nsresult
 GetDarkTheme(nsPresContext* aPresContext, const nsMediaFeature* aFeature,
@@ -622,6 +644,14 @@ nsMediaFeatures::features[] = {
     nsMediaFeature::eNoRequirements,
     { kPrefersColorSchemeKeywords },
     GetPrefersColorScheme
+  },
+  {
+    &nsGkAtoms::prefers_reduced_motion,
+    nsMediaFeature::eMinMaxNotAllowed,
+    nsMediaFeature::eEnumerated,
+    nsMediaFeature::eNoRequirements,
+    { kPrefersMotionKeywords },
+    GetPrefersMotion
   },
   {
     &nsGkAtoms::resolution,
