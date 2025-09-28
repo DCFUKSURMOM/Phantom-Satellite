@@ -8,7 +8,7 @@ The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon 
 
 Key differences:
 * Custom Branding (Obviously, work in progress)
-* Custom theme (MASSIVE WORK IN PROGRESS, disabled and placed in a separate dirctory by default, I did not find a way to make this a config option yet)
+* [Custom Theme](https://github.com/DCFUKSURMOM/cyanmoon)
 * Working PPC64 support (a little rough around the edges but is usable)
 * -mcrypto is no longer hard coded on PPC64, and is instead set in the compiler flags in the config file. This allows the browser to work on PPC64 chips older than 2013, while still being able to have -mcrypto reenabled on chips that support (or require) it
 * Support for x86 CPUs that do not support SSE via compiler flag shenanigans (only tested on Linux, config is at mozconfigs/Linux/i586-nosse-gtk2.mozconfig, requires at least a Pentium MMX)
