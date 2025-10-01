@@ -24,7 +24,7 @@
     </em:targetApplication>
 
     <!-- Front End MetaData -->
-    <em:name>Default (WIP)</em:name>
+    <em:name>Default</em:name>
     <em:description>The default theme.</em:description>
 
     <!-- Front End Integration Hooks (used by Theme Manager)-->
