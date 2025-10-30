@@ -105,7 +105,7 @@
 #include "nsIScrollableFrame.h"
 #include "mozilla/css/StyleRule.h" /* For nsCSSSelectorList */
 #include "mozilla/css/Declaration.h"
-#include "nsCSSRuleUtils.h"
+#include "nsCSSRuleProcessor.h"
 #include "nsRuleProcessorData.h"
 #include "nsTextNode.h"
 
@@ -3424,9 +3424,9 @@ Element::Closest(const nsAString& aSelector, ErrorResult& aResult)
   matchingContext.AddScopeElement(this);
   for (nsINode* node = this; node; node = node->GetParentNode()) {
     if (node->IsElement() &&
-        nsCSSRuleUtils::RestrictedSelectorListMatches(node->AsElement(),
-                                                      matchingContext,
-                                                      selectorList)) {
+        nsCSSRuleProcessor::RestrictedSelectorListMatches(node->AsElement(),
+                                                          matchingContext,
+                                                          selectorList)) {
       return node->AsElement();
     }
   }
@@ -3450,9 +3450,9 @@ Element::Matches(const nsAString& aSelector, ErrorResult& aError)
                                    TreeMatchContext::eNeverMatchVisited);
   matchingContext.SetHasSpecifiedScope();
   matchingContext.AddScopeElement(this);
-  return nsCSSRuleUtils::RestrictedSelectorListMatches(this,
-                                                       matchingContext,
-                                                       selectorList);
+  return nsCSSRuleProcessor::RestrictedSelectorListMatches(this,
+                                                           matchingContext,
+                                                           selectorList);
 }
 
 static const nsAttrValue::EnumTable kCORSAttributeTable[] = {

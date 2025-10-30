@@ -1594,7 +1594,7 @@ CSSStyleSheet::ClearRuleCascades()
         RuleProcessorCache::RemoveSheet(this);
         removedSheetFromRuleProcessorCache = true;
       }
-      (*iter)->ClearGroup();
+      (*iter)->ClearRuleCascades();
     }
   }
   if (mParent) {

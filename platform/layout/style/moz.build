@@ -23,7 +23,6 @@ TEST_DIRS += ['test']
 EXPORTS += [
     '!nsStyleStructList.h',
     'AnimationCommon.h',
-    'CascadeLayerRuleProcessor.h',
     'CounterStyleManager.h',
     'nsAnimationManager.h',
     'nsComputedDOMStylePropertyList.h',
@@ -45,7 +44,6 @@ EXPORTS += [
     'nsCSSPseudoElementList.h',
     'nsCSSPseudoElements.h',
     'nsCSSRuleProcessor.h',
-    'nsCSSRuleUtils.h',
     'nsCSSScanner.h',
     'nsCSSValue.h',
     'nsDOMCSSAttrDeclaration.h',
@@ -71,8 +69,6 @@ EXPORTS += [
     'nsStyleStructInlines.h',
     'nsStyleTransformMatrix.h',
     'nsStyleUtil.h',
-    'RuleCascadeData.h',
-    'RuleProcessorGroup.h',
 ]
 
 EXPORTS.mozilla += [
@@ -122,7 +118,6 @@ EXPORTS.mozilla.css += [
 UNIFIED_SOURCES += [
     'AnimationCollection.cpp',
     'AnimationCommon.cpp',
-    'CascadeLayerRuleProcessor.cpp',
     'CounterStyleManager.cpp',
     'CSS.cpp',
     'CSSLexer.cpp',
@@ -150,9 +145,7 @@ UNIFIED_SOURCES += [
     'nsCSSProps.cpp',
     'nsCSSPseudoClasses.cpp',
     'nsCSSPseudoElements.cpp',
-    'nsCSSRuleProcessor.cpp',
     'nsCSSRules.cpp',
-    'nsCSSRuleUtils.cpp',
     'nsCSSScanner.cpp',
     'nsCSSValue.cpp',
     'nsDOMCSSAttrDeclaration.cpp',
@@ -178,7 +171,6 @@ UNIFIED_SOURCES += [
     'nsTransitionManager.cpp',
     'RuleNodeCacheConditions.cpp',
     'RuleProcessorCache.cpp',
-    'RuleProcessorGroup.cpp',
     'StyleAnimationValue.cpp',
     'StyleRule.cpp',
     'StyleSheet.cpp',
@@ -191,14 +183,14 @@ UNIFIED_SOURCES += [
 # includes, via nsStyleCoord.h, <type_traits>, which ends up including
 # <xutility>, which fails in much the way described in
 # <https://bugzilla.mozilla.org/show_bug.cgi?id=1331102>.
-# - RuleCascadeData.cpp needs to be built separately because it uses
+# - nsCSSRuleProcessor.cpp needs to be built separately because it uses
 # plarena.h.
 # - nsLayoutStylesheetCache.cpp needs to be built separately because it uses
 # nsExceptionHandler.h, which includes windows.h.
 SOURCES += [
     'BindingStyleRule.cpp',
+    'nsCSSRuleProcessor.cpp',
     'nsLayoutStylesheetCache.cpp',
-    'RuleCascadeData.cpp',
 ]
 
 include('/ipc/chromium/chromium-config.mozbuild')

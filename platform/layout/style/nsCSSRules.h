@@ -746,7 +746,6 @@ class CSSLayerStatementRule final : public css::Rule,
 {
 public:
   CSSLayerStatementRule(const nsTArray<nsString>& aNameList,
-                        const nsTArray<nsTArray<nsString>>& aPathList,
                         uint32_t aLineNumber, uint32_t aColumnNumber);
   CSSLayerStatementRule(const CSSLayerStatementRule& aCopy);
 
@@ -769,7 +768,6 @@ public:
   uint16_t Type() const override;
   void GetCssTextImpl(nsAString& aCssText) const override;
   void GetNameList(nsTArray<nsString>& aResult);
-  void GetPathList(nsTArray<nsTArray<nsString>>& aResult);
 
   virtual size_t SizeOfIncludingThis(mozilla::MallocSizeOf aMallocSizeOf) const override;
 
@@ -779,7 +777,6 @@ protected:
   virtual ~CSSLayerStatementRule();
 
   nsTArray<nsString> mNameList;
-  nsTArray<nsTArray<nsString>> mPathList;
 };
 
 class CSSLayerBlockRule final : public css::GroupRule,
@@ -787,7 +784,6 @@ class CSSLayerBlockRule final : public css::GroupRule,
 {
 public:
   CSSLayerBlockRule(const nsString& aName,
-                    const nsTArray<nsString>& aPath,
                     uint32_t aLineNumber, uint32_t aColumnNumber);
   CSSLayerBlockRule(const CSSLayerBlockRule& aCopy);
 
@@ -800,9 +796,7 @@ public:
   virtual already_AddRefed<mozilla::css::Rule> Clone() const override;
   virtual bool UseForPresentation(nsPresContext* aPresContext,
                                   nsMediaQueryResultCacheKey& aKey) override;
-  void GetPath(nsTArray<nsString>& aResult);
 
-  NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(CSSLayerBlockRule, GroupRule)
   NS_DECL_ISUPPORTS_INHERITED
 
   // nsIDOMCSSGroupingRule interface
@@ -824,7 +818,6 @@ protected:
   virtual ~CSSLayerBlockRule();
 
   nsString mName;
-  nsTArray<nsString> mPath;
 };
 
 } // namespace mozilla

@@ -75,12 +75,6 @@ SVGAttrAnimationRuleProcessor::MediumFeaturesChanged(nsPresContext* aPresContext
   return false;
 }
 
-/* virtual */ nsTArray<nsCOMPtr<nsIStyleRuleProcessor>>*
-SVGAttrAnimationRuleProcessor::GetChildRuleProcessors()
-{
-  return nullptr;
-}
-
 /* virtual */ void
 SVGAttrAnimationRuleProcessor::RulesMatching(PseudoElementRuleProcessorData* aData)
 {
