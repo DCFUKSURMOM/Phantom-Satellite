@@ -1,8 +1,6 @@
 # Phantom Satellite web browser
 
-This is the source code for the Phantom Satellite web browser, it was originally started as a rebranded fork of Pale Moon to get around their branding drama.
-
-It is slowly becoming something more
+This is the source code for the Phantom Satellite web browser, a fork of Pale Moon that aims to support older/niche platforms, without sacrificing support for more common/modern platforms.
 
 The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon (the moon is a natural satellite)
 
@@ -44,4 +42,5 @@ You can build Phantom Satellite the same way you build stock Pale Moon using the
 
 * [Build for Windows](https://developer.palemoon.org/build/windows/)
 * [Build for Linux](https://developer.palemoon.org/build/linux/)
+* [Build for Mac OS (I did not test this personally, but a friend was able to build it)](https://www.dbsoft.org/whitestar-build-mac.php)
 * [Pale Moon home page](http://www.palemoon.org/)
