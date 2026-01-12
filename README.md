@@ -13,6 +13,11 @@ Key differences:
 * Support for x86 CPUs that do not support SSE2 via compiler flag shenanigans (only tested on Linux, config is at mozconfigs/Linux/i686-nosse2-gtk2.mozconfig, requires a least a Pentium 3)
 * The Linux nosse/nosse2 configs should work for stock PaleMoon as well.
 
+Minimum Requirements:
+* Windows: Windows 7 or newer running on a Pentium 4 or newer (I have not figured out the compiler flags for older chips on Windows yet)
+* Linux: Any reasonably up to date distro, running on a Pentium MMX or newer (depending on the config), the releases are currently built against Artix Linux and may not run on distros with older packages, this can be fixed by updating those packages or recompiling the browser.
+* Mac OS: Mac OS 10.7 on x86_64 or 11.0 on ARM64, according to the Pale Moon download page anyways, it may or may not work on older. I do not currently do builds for Mac OS. PowerPC Mac OS is not currently supported (see the "Features I would like to have" section)
+
 I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
 
 Features I would like to have (but arent currently planned because I have no idea where to start with them):
