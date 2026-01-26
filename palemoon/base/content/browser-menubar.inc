@@ -12,7 +12,7 @@
 #endif
                                   this.setAttribute('openedwithkey',
                                                     event.target.parentNode.openedWithKey);"
-                style="border:0px;padding:0px;margin:0px;-moz-appearance:none">
+                style="border:0px;padding:0px;margin:0px;appearance:none">
             <menu id="file-menu" label="&fileMenu.label;"
                   accesskey="&fileMenu.accesskey;">
               <menupopup id="menu_FilePopup">
@@ -182,7 +182,8 @@
                 <menu id="viewToolbarsMenu"
                       label="&viewToolbarsMenu.label;"
                       accesskey="&viewToolbarsMenu.accesskey;">
-                  <menupopup onpopupshowing="onViewToolbarsPopupShowing(event);">
+                  <menupopup id="view_toolbars_popup"
+                             onpopupshowing="onViewToolbarsPopupShowing(event);">
                     <menuseparator/>
                     <menuitem id="menu_tabsOnTop"
                               command="cmd_ToggleTabsOnTop"

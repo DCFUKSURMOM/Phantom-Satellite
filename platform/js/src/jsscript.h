@@ -2072,7 +2072,7 @@ class LazyScript : public gc::TenuredCell
     // Add padding so LazyScript is gc::Cell aligned. Make padding protected
     // instead of private to suppress -Wunused-private-field compiler warnings.
   protected:
-#if JS_BITS_PER_WORD == 32 && !(defined(XP_DARWIN) && defined(__ppc__))
+#if JS_BITS_PER_WORD == 32 && !defined(DEBUG)
     uint32_t padding;
 #endif
 

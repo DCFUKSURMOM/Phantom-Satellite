@@ -1,8 +1,8 @@
 // ===| General |==============================================================
 
-pref("startup.homepage_welcome_url","http://dcfuksurmom.duckdns.org/phantomsatellite");
+pref("startup.homepage_welcome_url","https://www.palemoon.org/firstrun.shtml");
 
-pref("app.vendorURL", "http://dcfuksurmom.duckdns.org/phantomsatellite");
+pref("app.vendorURL", "https://www.palemoon.org/");
 
 
 // User Interface
@@ -38,7 +38,6 @@ pref("extensions.getAddons.cache.enabled", false);
 
 // ===| Plugins |==============================================================
 
-pref("plugin.default.state", 2); //Allow plugins to run by default
 pref("plugin.expose_full_path", true); //Security: expose the full path to the plugin
 pref("dom.ipc.plugins.timeoutSecs", 20);
 

@@ -30,7 +30,7 @@
 }
 
 .searchbar-engine-button {
-  -moz-appearance: none;
+  appearance: none;
   min-width: 0;
   margin: 0;
   border: 0;
@@ -39,14 +39,14 @@
 }
 
 .searchbar-engine-button > .button-box {
-  -moz-appearance: none;
+  appearance: none;
   padding: 2px 0;
   padding-inline-end: 2px;
   border: 0;
 }
 
 .searchbar-dropmarker-image {
-  -moz-appearance: toolbarbutton-dropdown !important;
+  appearance: toolbarbutton-dropdown !important;
   width: 12px;
   height: 12px;
 }

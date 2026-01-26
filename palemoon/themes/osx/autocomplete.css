@@ -26,7 +26,7 @@ textbox:not(.padded) .textbox-input-box {
 /* ::::: history button ::::: */
 
 .private-autocomplete-history-dropmarker {
-  -moz-appearance: none !important;
+  appearance: none !important;
   border: none !important;
   background-color: transparent !important;
   padding: 0px;
@@ -43,7 +43,7 @@ panel[type="private-autocomplete-richlistbox"],
   color: -moz-FieldText;
   background-color: -moz-Field;
   font: icon;
-  -moz-appearance: none;
+  appearance: none;
 }
 
 .private-autocomplete-history-popup {
@@ -53,13 +53,13 @@ panel[type="private-autocomplete-richlistbox"],
 /* ::::: tree ::::: */
 
 .private-autocomplete-tree {
-  -moz-appearance: none !important;
+  appearance: none !important;
   border: none !important;
   background-color: transparent !important;
 }
 
 .private-autocomplete-treecol {
-  -moz-appearance: none !important;
+  appearance: none !important;
   margin: 0 !important;
   border: none !important;
   padding: 0 !important;
@@ -89,7 +89,7 @@ treechildren.private-autocomplete-treebody::-moz-tree-cell-text(selected) {
 /* ::::: richlistbox autocomplete ::::: */
 
 .private-autocomplete-richlistbox {
-  -moz-appearance: none;
+  appearance: none;
   margin: 0;
 }
 

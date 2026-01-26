@@ -40,14 +40,13 @@ static CriticalAddress gCriticalAddress;
 #define MOZ_STACKWALK_SUPPORTS_MACOSX 0
 #endif
 
-//disabled this check, seems to break on musl (or at least on adelie linux)
-//#if (defined(linux) && \
-//     ((defined(__GNUC__) && (defined(__i386) || defined(PPC))) || \
-//      defined(HAVE__UNWIND_BACKTRACE)))
-//#define MOZ_STACKWALK_SUPPORTS_LINUX 1
-//#else
+#if (defined(linux) && \
+     ((defined(__GNUC__) && (defined(__i386) || defined(PPC))) || \
+      defined(HAVE__UNWIND_BACKTRACE)))
+#define MOZ_STACKWALK_SUPPORTS_LINUX 1
+#else
 #define MOZ_STACKWALK_SUPPORTS_LINUX 0
-//#endif
+#endif
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 1)
 #define HAVE___LIBC_STACK_END 1

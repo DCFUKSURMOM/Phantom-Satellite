@@ -88,7 +88,7 @@ splitter.status4evar-status-splitter
 
 #status4evar-progress-bar[s4estyle="true"]
 {
-	-moz-appearance: none;
+	appearance: none;
 	border: 1px solid gray;
 }
 

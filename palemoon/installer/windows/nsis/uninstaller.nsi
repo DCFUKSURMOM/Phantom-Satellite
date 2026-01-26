@@ -206,7 +206,7 @@ Section "Uninstall"
   ${EndIf}
 
   ; Remove the updates directory for Vista and above
-  ${un.CleanUpdateDirectories} "Mozilla\PhantomSatellite" "Mozilla\updates"
+  ${un.CleanUpdateDirectories} "Mozilla\PaleMoon" "Mozilla\updates"
 
   ; Remove any app model id's stored in the registry for this install path
   DeleteRegValue HKCU "Software\Mozilla\${AppName}\TaskBarIDs" "$INSTDIR"
@@ -226,26 +226,26 @@ Section "Uninstall"
     ${un.SetAppLSPCategories}
   ${EndIf}
 
-  ${un.RegCleanAppHandler} "PhantomSatelliteURL"
-  ${un.RegCleanAppHandler} "PhantomSatelliteHTML"
+  ${un.RegCleanAppHandler} "PaleMoonURL"
+  ${un.RegCleanAppHandler} "PaleMoonHTML"
   ${un.RegCleanProtocolHandler} "ftp"
   ${un.RegCleanProtocolHandler} "http"
   ${un.RegCleanProtocolHandler} "https"
 
   ClearErrors
-  ReadRegStr $R9 HKCR "PhantomSatelliteHTML" ""
-  ; Don't clean up the file handlers if the PhantomSatelliteHTML key still exists since
+  ReadRegStr $R9 HKCR "PaleMoonHTML" ""
+  ; Don't clean up the file handlers if the PaleMoonHTML key still exists since
   ; there should be a second installation that may be the default file handler
   ${If} ${Errors}
-    ${un.RegCleanFileHandler}  ".htm"   "PhantomSatelliteHTML"
-    ${un.RegCleanFileHandler}  ".html"  "PhantomSatelliteHTML"
-    ${un.RegCleanFileHandler}  ".shtml" "PhantomSatelliteHTML"
-    ${un.RegCleanFileHandler}  ".xht"   "PhantomSatelliteHTML"
-    ${un.RegCleanFileHandler}  ".xhtml" "PhantomSatelliteHTML"
-    ${un.RegCleanFileHandler}  ".oga"  "PhantomSatelliteHTML"
-    ${un.RegCleanFileHandler}  ".ogg"  "PhantomSatelliteHTML"
-    ${un.RegCleanFileHandler}  ".ogv"  "PhantomSatelliteHTML"
-    ${un.RegCleanFileHandler}  ".webm"  "PhantomSatelliteHTML"
+    ${un.RegCleanFileHandler}  ".htm"   "PaleMoonHTML"
+    ${un.RegCleanFileHandler}  ".html"  "PaleMoonHTML"
+    ${un.RegCleanFileHandler}  ".shtml" "PaleMoonHTML"
+    ${un.RegCleanFileHandler}  ".xht"   "PaleMoonHTML"
+    ${un.RegCleanFileHandler}  ".xhtml" "PaleMoonHTML"
+    ${un.RegCleanFileHandler}  ".oga"  "PaleMoonHTML"
+    ${un.RegCleanFileHandler}  ".ogg"  "PaleMoonHTML"
+    ${un.RegCleanFileHandler}  ".ogv"  "PaleMoonHTML"
+    ${un.RegCleanFileHandler}  ".webm"  "PaleMoonHTML"
   ${EndIf}
 
   SetShellVarContext all  ; Set SHCTX to HKLM
@@ -264,7 +264,7 @@ Section "Uninstall"
   ; The StartMenuInternet registry key is independent of the default browser
   ; settings. The XPInstall base un-installer always removes this key if it is
   ; uninstalling the default browser and it will always replace the keys when
-  ; installing even if there is another install of PhantomSatellite that is set as the
+  ; installing even if there is another install of PaleMoon that is set as the
   ; default browser. Now the key is always updated on install but it is only
   ; removed if it refers to this install location.
   ${If} "$INSTDIR" == "$R1"
@@ -280,7 +280,7 @@ Section "Uninstall"
   ; The StartMenuInternet registry key is independent of the default browser
   ; settings. The XPInstall base un-installer always removes this key if it is
   ; uninstalling the default browser and it will always replace the keys when
-  ; installing even if there is another install of PhantomSatellite that is set as the
+  ; installing even if there is another install of PaleMoon that is set as the
   ; default browser. Now the key is always updated on install but it is only
   ; removed if it refers to this install location.
   ${If} "$INSTDIR" == "$R1"
@@ -298,7 +298,7 @@ Section "Uninstall"
     StrCpy $0 "Software\Microsoft\MediaPlayer\ShimInclusionList\plugin-container.exe"
     DeleteRegKey HKLM "$0"
     DeleteRegKey HKCU "$0"
-    StrCpy $0 "Software\Classes\MIME\Database\Content Type\application/x-xpinstall;app=PhantomSatellite"
+    StrCpy $0 "Software\Classes\MIME\Database\Content Type\application/x-xpinstall;app=PaleMoon"
     DeleteRegKey HKLM "$0"
     DeleteRegKey HKCU "$0"
   ${Else}
@@ -366,8 +366,8 @@ Section "Uninstall"
   ; Remove the installation directory if it is empty
   RmDir "$INSTDIR"
 
-  ; If PhantomSatellite.exe was successfully deleted yet we still need to restart to
-  ; remove other files create a dummy PhantomSatellite.exe.moz-delete to prevent the
+  ; If PaleMoon.exe was successfully deleted yet we still need to restart to
+  ; remove other files create a dummy PaleMoon.exe.moz-delete to prevent the
   ; installer from allowing an install without restart when it is required
   ; to complete an uninstall.
   ${If} ${RebootFlag}
@@ -390,12 +390,12 @@ Section "Uninstall"
   ; clients registry key by the OS under some conditions.
   System::Call "shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i 0, i 0, i 0)"
 
-  ; Users who uninstall then reinstall expecting PhantomSatellite to use a clean profile
-  ; may be surprised during first-run. This key is checked during startup of PhantomSatellite and
+  ; Users who uninstall then reinstall expecting PaleMoon to use a clean profile
+  ; may be surprised during first-run. This key is checked during startup of PaleMoon and
   ; subsequently deleted after checking. If the value is found during startup
-  ; the browser will offer to Reset PhantomSatellite. We use the UpdateChannel to match
-  ; uninstalls of PhantomSatellite-release with reinstalls of PhantomSatellite-release, for example.
-  WriteRegStr HKCU "Software\Mozilla\PhantomSatellite" "Uninstalled-${UpdateChannel}" "True"
+  ; the browser will offer to Reset PaleMoon. We use the UpdateChannel to match
+  ; uninstalls of PaleMoon-release with reinstalls of PaleMoon-release, for example.
+  WriteRegStr HKCU "Software\Mozilla\PaleMoon" "Uninstalled-${UpdateChannel}" "True"
 
   ${un.IsFirewallSvcRunning}
   Pop $0

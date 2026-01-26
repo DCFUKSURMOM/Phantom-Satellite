@@ -58,13 +58,13 @@
 }
 
 #navigator-toolbox {
-  -moz-appearance: none;
+  appearance: none;
   background-color: transparent;
   border-top: none;
 }
 
 #main-window {
-  -moz-appearance: none;
+  appearance: none;
   background-color: #eeeeee;
 }
 
@@ -81,7 +81,7 @@
 }
 
 #navigator-toolbox > toolbar:not(:-moz-lwtheme) {
-  -moz-appearance: none;
+  appearance: none;
   border-style: none;
   background-color: var(--toolbar-custom-color);
 }
@@ -98,7 +98,7 @@
 #main-window[tabsontop=false]:not([privatebrowsingmode=temporary]) #PersonalToolbar[collapsed=true]
  ~ #TabsToolbar:not(:-moz-lwtheme),
 #main-window[tabsontop=true]:not([privatebrowsingmode=temporary]) #TabsToolbar:not(:-moz-lwtheme) {
-  -moz-appearance: toolbar;
+  appearance: toolbar;
 }
 
 #main-window[tabsontop=false][privatebrowsingmode=temporary] #nav-bar:not(:-moz-lwtheme),
@@ -116,7 +116,7 @@
 #main-window[tabsontop=false] #PersonalToolbar[collapsed=true]
  ~ #TabsToolbar:not(:-moz-lwtheme),
 #main-window[tabsontop=true] #TabsToolbar:not(:-moz-lwtheme) {
-  -moz-appearance: toolbar;
+  appearance: toolbar;
 }
 %endif
 
@@ -125,7 +125,7 @@
 }
 
 #print-preview-toolbar:not(:-moz-lwtheme) {
-  -moz-appearance: toolbox;
+  appearance: toolbox;
 }
 
 #browser-bottombox:not(:-moz-lwtheme) {
@@ -137,15 +137,15 @@
 /* ::::: titlebar ::::: */
 
 #main-window[sizemode="normal"]:not([privatebrowsingmode=temporary]) > #titlebar {
-  -moz-appearance: -moz-window-titlebar;
+  appearance: -moz-window-titlebar;
 }
 
 #main-window[sizemode="maximized"] > #titlebar {
-  -moz-appearance: -moz-window-titlebar-maximized;
+  appearance: -moz-window-titlebar-maximized;
 }
 
 #titlebar-buttonbox {
-  -moz-appearance: -moz-window-button-box;
+  appearance: -moz-window-button-box;
 }
 
 .titlebar-placeholder[type="appmenu-button"] {
@@ -159,19 +159,19 @@
 /* titlebar command buttons */
 
 #titlebar-min {
-  -moz-appearance: -moz-window-button-minimize;
+  appearance: -moz-window-button-minimize;
 }
 
 #titlebar-max {
-  -moz-appearance: -moz-window-button-maximize;
+  appearance: -moz-window-button-maximize;
 }
 
 #main-window[sizemode="maximized"] #titlebar-max {
-  -moz-appearance: -moz-window-button-restore;
+  appearance: -moz-window-button-restore;
 }
 
 #titlebar-close {
-  -moz-appearance: -moz-window-button-close;
+  appearance: -moz-window-button-close;
 }
 
 /* ensure titlebar on privacy windows is of correct size */
@@ -498,7 +498,7 @@ toolbar[mode=full] .toolbarbutton-1 > .toolbarbutton-menubutton-button {
 
 @navbarLargeIcons@ .toolbarbutton-1,
 @navbarLargeIcons@ .toolbarbutton-1 > .toolbarbutton-menubutton-button {
-  -moz-appearance: none;
+  appearance: none;
   border: none;
   padding: 0;
   background: none;
@@ -648,7 +648,7 @@ toolbar[mode=full] .toolbarbutton-1 > .toolbarbutton-menubutton-button {
 :-moz-any(#TabsToolbar, #addon-bar) .toolbarbutton-1 > .toolbarbutton-menubutton-button,
 .tabbrowser-arrowscrollbox > .scrollbutton-up,
 .tabbrowser-arrowscrollbox > .scrollbutton-down {
-  -moz-appearance: none;
+  appearance: none;
   border-style: none;
   padding: 0 3px;
 }
@@ -890,7 +890,7 @@ toolbar[brighttext] #bookmarks-menu-button.bookmark-item {
 
 #urlbar,
 .searchbar-textbox {
-  -moz-appearance: none;
+  appearance: none;
   margin: 1px 3px;
   padding: 0;
   background-clip: padding-box;
@@ -1142,7 +1142,7 @@ html|*.urlbar-input:-moz-lwtheme::-moz-placeholder,
 /* Location bar dropmarker */
 
 .urlbar-history-dropmarker {
-  -moz-appearance: none;
+  appearance: none;
   padding: 0 3px;
   background-color: transparent;
   border: none;
@@ -1291,7 +1291,7 @@ richlistitem[type~="action"][actiontype="switchtab"][selected="true"] > .ac-url-
 
 #go-button,
 #urlbar > toolbarbutton {
-  -moz-appearance: none;
+  appearance: none;
   padding: 0 2px;
   background-origin: border-box;
   border: none;
@@ -1448,7 +1448,7 @@ richlistitem[type~="action"][actiontype="switchtab"][selected="true"] > .ac-url-
 
 #editBMPanel_rows > row > textbox,
 #editBMPanel_rows > row > hbox > textbox {
-  -moz-appearance: none;
+  appearance: none;
   background: linear-gradient(#fafafa, #fff);
   background-clip: padding-box;
   border-radius: 3px;
@@ -1517,7 +1517,7 @@ richlistitem[type~="action"][actiontype="switchtab"][selected="true"] > .ac-url-
 }
 
 #editBMPanel_newFolderButton {
-  -moz-appearance: none;
+  appearance: none;
   border: 0 solid #a5a5a5;
   border-inline-end-width: 1px;
   padding: 0 9px;
@@ -1564,7 +1564,7 @@ richlistitem[type~="action"][actiontype="switchtab"][selected="true"] > .ac-url-
 }
 
 #editBMPanel_folderMenuList > .menulist-dropmarker {
-  -moz-appearance: none;
+  appearance: none;
   display: -moz-box;
   background-color: transparent;
   border: 0;
@@ -1582,7 +1582,7 @@ richlistitem[type~="action"][actiontype="switchtab"][selected="true"] > .ac-url-
 
 #editBMPanel_folderTree,
 #editBMPanel_tagsSelector {
-  -moz-appearance: none;
+  appearance: none;
   background: linear-gradient(#fafafa, #fff);
   background-clip: padding-box;
   border-radius: 3px;
@@ -1735,7 +1735,7 @@ richlistitem[type~="action"][actiontype="switchtab"][selected="true"] > .ac-url-
 
 .tabbrowser-tab,
 .tabs-newtab-button {
-  -moz-appearance: none;
+  appearance: none;
   background: @toolbarShadowOnTab@, var(--tab-background),
               linear-gradient(var(--toolbar-custom-color), var(--toolbar-custom-color));
   background-clip: padding-box;
@@ -1889,7 +1889,7 @@ richlistitem[type~="action"][actiontype="switchtab"][selected="true"] > .ac-url-
 
 /* Tab close button */
 .tab-close-button {
-  -moz-appearance: none;
+  appearance: none;
   border: none;
   padding: 0px;
 }
@@ -2102,7 +2102,7 @@ toolbar[brighttext] #alltabs-button[type="menu"] {
 
 /* Tabstrip close button */
 .tabs-closebutton {
-  -moz-appearance: none;
+  appearance: none;
   padding: 4px 2px;
   margin: 0px;
   border: none;
@@ -2140,7 +2140,7 @@ toolbar[brighttext] .tabs-closebutton {
 }
 
 #ub-feed-button {
-  -moz-appearance: none; 
+  appearance: none; 
   min-width: 0px; 
   list-style-image: url("chrome://browser/skin/feeds/feed-icons-16.png");
   -moz-image-region: rect(0px 16px 16px 0px);
@@ -2162,7 +2162,7 @@ toolbar[brighttext] .tabs-closebutton {
 }
 
 toolbarbutton.bookmark-item[dragover="true"][open="true"] {
-  -moz-appearance: none;
+  appearance: none;
   background: Highlight !important;
   color: HighlightText !important;
 }
@@ -2300,7 +2300,7 @@ toolbarbutton.bookmark-item[dragover="true"][open="true"] {
 }
 
 .popup-progress-cancel {
-  -moz-appearance: none;
+  appearance: none;
   background: transparent;
   border: none;
   padding: 0;
@@ -2531,7 +2531,7 @@ toolbarbutton.bookmark-item[dragover="true"][open="true"] {
 /* ::::: Keyboard UI Panel ::::: */
 
 .KUI-panel {
-  -moz-appearance: none;
+  appearance: none;
   background: rgba(27%,27%,27%,.9) url(KUI-background.png) repeat-x;
   color: white;
   border-style: none;
@@ -2544,7 +2544,7 @@ toolbarbutton.bookmark-item[dragover="true"][open="true"] {
 
 .KUI-panel-closebutton {
   list-style-image: url(KUI-close.png);
-  -moz-appearance: none;
+  appearance: none;
   border: none;
   padding: 0;
   width: 24px;
@@ -2615,7 +2615,7 @@ toolbarbutton.bookmark-item[dragover="true"][open="true"] {
 
 #allTabs-panel {
   padding-bottom: 10px;
-  -moz-appearance: none;
+  appearance: none;
   border: none;
   background: -moz-dialog;
   color: -moz-dialogText;
@@ -2673,7 +2673,7 @@ toolbarbutton.bookmark-item[dragover="true"][open="true"] {
 /* Add-on bar */
 
 #addon-bar {
-  -moz-appearance: none;
+  appearance: none;
   min-height: 20px;
   border-top-style: none;
   border-bottom-style: none;
@@ -2684,7 +2684,7 @@ toolbarbutton.bookmark-item[dragover="true"][open="true"] {
 }
 
 #status-bar {
-  -moz-appearance: none;
+  appearance: none;
   background-color: transparent;
   border: none;
   min-height: 0;
@@ -2699,13 +2699,13 @@ toolbarbutton.bookmark-item[dragover="true"][open="true"] {
 
 #status-bar > statusbarpanel {
   border-width: 0;
-  -moz-appearance: none;
+  appearance: none;
 }
 
 #addonbar-closebutton {
   border: none;
   padding: 0 5px;
-  -moz-appearance: none;
+  appearance: none;
 }
 
 toolbar[brighttext] #addonbar-closebutton {

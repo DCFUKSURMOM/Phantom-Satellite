@@ -2059,6 +2059,13 @@ nsNativeThemeCocoa::DrawSegment(CGContextRef cgContext, const HIRect& inBoxRect,
             nil]);
 }
 
+static inline UInt8
+ConvertToPressState(EventStates aButtonState, UInt8 aPressState)
+{
+  // If the button is pressed, return the press state passed in. Otherwise, return 0.
+  return aButtonState.HasAllStates(NS_EVENT_STATE_ACTIVE | NS_EVENT_STATE_HOVER) ? aPressState : 0;
+}
+
 void 
 nsNativeThemeCocoa::GetScrollbarPressStates(nsIFrame* aFrame,
                                             EventStates aButtonStates[])
@@ -2082,6 +2089,111 @@ nsNativeThemeCocoa::GetScrollbarPressStates(nsIFrame* aFrame,
     aButtonStates[attrIndex] = GetContentState(childFrame, NS_THEME_BUTTON);
   }
 }
+
+#if !defined(MAC_OS_X_VERSION_10_7) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7)
+// Both of the following sets of numbers were derived by loading the testcase in
+// bmo bug 380185 in Safari and observing its behavior for various heights of scrollbar.
+// These magic numbers are the minimum sizes we can draw a scrollbar and still 
+// have room for everything to display, including the thumb
+#define MIN_SCROLLBAR_SIZE_WITH_THUMB 61
+#define MIN_SMALL_SCROLLBAR_SIZE_WITH_THUMB 49
+// And these are the minimum sizes if we don't draw the thumb
+#define MIN_SCROLLBAR_SIZE 56
+#define MIN_SMALL_SCROLLBAR_SIZE 46
+
+void
+nsNativeThemeCocoa::GetScrollbarDrawInfo(HIThemeTrackDrawInfo& aTdi, nsIFrame *aFrame, 
+                                         const CGSize& aSize, bool aShouldGetButtonStates)
+{
+  NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
+
+  int32_t curpos = CheckIntAttr(aFrame, nsGkAtoms::curpos, 0);
+  int32_t minpos = CheckIntAttr(aFrame, nsGkAtoms::minpos, 0);
+  int32_t maxpos = CheckIntAttr(aFrame, nsGkAtoms::maxpos, 100);
+  int32_t thumbSize = CheckIntAttr(aFrame, nsGkAtoms::pageincrement, 10);
+
+  bool isHorizontal = aFrame->GetContent()->AttrValueIs(kNameSpaceID_None, nsGkAtoms::orient, 
+                                                          nsGkAtoms::horizontal, eCaseMatters);
+  bool isSmall = aFrame->StyleDisplay()->mAppearance == NS_THEME_SCROLLBAR_SMALL;
+
+  aTdi.version = 0;
+  aTdi.kind = isSmall ? kThemeSmallScrollBar : kThemeMediumScrollBar;
+  aTdi.bounds.origin = CGPointZero;
+  aTdi.bounds.size = aSize;
+  aTdi.min = minpos;
+  aTdi.max = maxpos;
+  aTdi.value = curpos;
+  aTdi.attributes = 0;
+  aTdi.enableState = kThemeTrackActive;
+  if (isHorizontal)
+    aTdi.attributes |= kThemeTrackHorizontal;
+
+  aTdi.trackInfo.scrollbar.viewsize = (SInt32)thumbSize;
+
+  // This should be done early on so things like "kThemeTrackNothingToScroll" can
+  // override the active enable state.
+  aTdi.enableState = FrameIsInActiveWindow(aFrame) ? kThemeTrackActive : kThemeTrackInactive;
+
+  /* Only display features if we have enough room for them.
+   * Gecko still maintains the scrollbar info; this is just a visual issue (bug 380185).
+   */
+  int32_t longSideLength = (int32_t)(isHorizontal ? (aSize.width) : (aSize.height));
+  if (longSideLength >= (isSmall ? MIN_SMALL_SCROLLBAR_SIZE_WITH_THUMB : MIN_SCROLLBAR_SIZE_WITH_THUMB)) {
+    aTdi.attributes |= kThemeTrackShowThumb;
+  }
+  else if (longSideLength < (isSmall ? MIN_SMALL_SCROLLBAR_SIZE : MIN_SCROLLBAR_SIZE)) {
+    aTdi.enableState = kThemeTrackNothingToScroll;
+    return;
+  }
+
+  aTdi.trackInfo.scrollbar.pressState = 0;
+
+  // Only go get these scrollbar button states if we need it. For example,
+  // there's no reason to look up scrollbar button states when we're only
+  // creating a TrackDrawInfo to determine the size of the thumb. There's
+  // also no reason to do this on Lion or later, whose scrollbars have no
+  // arrow buttons.
+  if (aShouldGetButtonStates) {
+    EventStates buttonStates[4];
+    GetScrollbarPressStates(aFrame, buttonStates);
+    NSString *buttonPlacement = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleScrollBarVariant"];
+    // It seems that unless all four buttons are showing, kThemeTopOutsideArrowPressed is the correct constant for
+    // the up scrollbar button.
+    if ([buttonPlacement isEqualToString:@"DoubleBoth"]) {
+      aTdi.trackInfo.scrollbar.pressState = ConvertToPressState(buttonStates[0], kThemeTopOutsideArrowPressed) |
+                                            ConvertToPressState(buttonStates[1], kThemeTopInsideArrowPressed) |
+                                            ConvertToPressState(buttonStates[2], kThemeBottomInsideArrowPressed) |
+                                            ConvertToPressState(buttonStates[3], kThemeBottomOutsideArrowPressed);
+    } else {
+      aTdi.trackInfo.scrollbar.pressState = ConvertToPressState(buttonStates[0], kThemeTopOutsideArrowPressed) |
+                                            ConvertToPressState(buttonStates[1], kThemeBottomOutsideArrowPressed) |
+                                            ConvertToPressState(buttonStates[2], kThemeTopOutsideArrowPressed) |
+                                            ConvertToPressState(buttonStates[3], kThemeBottomOutsideArrowPressed);
+    }
+  }
+
+  NS_OBJC_END_TRY_ABORT_BLOCK;
+}
+
+static void
+RenderScrollbar(CGContextRef cgContext, const HIRect& aRenderRect, void* aData)
+{
+  HIThemeTrackDrawInfo* tdi = (HIThemeTrackDrawInfo*)aData;
+  HIThemeDrawTrack(tdi, NULL, cgContext, HITHEME_ORIENTATION);
+}
+
+void
+nsNativeThemeCocoa::DrawScrollbar(CGContextRef aCGContext, const HIRect& aBoxRect, nsIFrame *aFrame)
+{
+  NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
+
+  HIThemeTrackDrawInfo tdi;
+  GetScrollbarDrawInfo(tdi, aFrame, aBoxRect.size, true); // True means we want the press states
+  RenderTransformedHIThemeControl(aCGContext, aBoxRect, RenderScrollbar, &tdi);
+
+  NS_OBJC_END_TRY_ABORT_BLOCK;
+}
+#endif
 
 nsIFrame*
 nsNativeThemeCocoa::GetParentScrollbarFrame(nsIFrame *aFrame)
@@ -2777,9 +2889,13 @@ nsNativeThemeCocoa::DrawWidgetBackground(nsRenderingContext* aContext,
 
     case NS_THEME_SCROLLBAR_SMALL:
     case NS_THEME_SCROLLBAR:
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+      DrawScrollbar(cgContext, macRect, aFrame);
+#endif
       break;
     case NS_THEME_SCROLLBARTHUMB_VERTICAL:
     case NS_THEME_SCROLLBARTHUMB_HORIZONTAL: {
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
       BOOL isOverlay = nsLookAndFeel::UseOverlayScrollbars();
       BOOL isHorizontal = (aWidgetType == NS_THEME_SCROLLBARTHUMB_HORIZONTAL);
       BOOL isRolledOver = IsParentScrollbarRolledOver(aFrame);
@@ -2811,6 +2927,7 @@ nsNativeThemeCocoa::DrawWidgetBackground(nsRenderingContext* aContext,
         [options setObject:@"rollover" forKey:@"state"];
       }
       RenderWithCoreUI(macRect, cgContext, options, true);
+#endif
     }
       break;
 
@@ -2830,6 +2947,7 @@ nsNativeThemeCocoa::DrawWidgetBackground(nsRenderingContext* aContext,
     break;
     case NS_THEME_SCROLLBARTRACK_HORIZONTAL:
     case NS_THEME_SCROLLBARTRACK_VERTICAL: {
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
       BOOL isOverlay = nsLookAndFeel::UseOverlayScrollbars();
       if (!isOverlay || IsParentScrollbarRolledOver(aFrame)) {
         BOOL isHorizontal = (aWidgetType == NS_THEME_SCROLLBARTRACK_HORIZONTAL);
@@ -2848,6 +2966,7 @@ nsNativeThemeCocoa::DrawWidgetBackground(nsRenderingContext* aContext,
                   nil],
                 true);
       }
+#endif
     }
       break;
 
@@ -3077,6 +3196,27 @@ nsNativeThemeCocoa::GetWidgetBorder(nsDeviceContext* aContext,
     case NS_THEME_SCROLLBARTRACK_VERTICAL:
     {
       bool isHorizontal = (aWidgetType == NS_THEME_SCROLLBARTRACK_HORIZONTAL);
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+      if (!nsCocoaFeatures::OnLionOrLater()) {
+        // There's only an endcap to worry about when both arrows are on the bottom
+        NSString *buttonPlacement = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleScrollBarVariant"];
+        if (!buttonPlacement || [buttonPlacement isEqualToString:@"DoubleMax"]) {
+          nsIFrame *scrollbarFrame = GetParentScrollbarFrame(aFrame);
+          if (!scrollbarFrame) return NS_ERROR_FAILURE;
+          bool isSmall = (scrollbarFrame->StyleDisplay()->mAppearance == NS_THEME_SCROLLBAR_SMALL);
+
+          // There isn't a metric for this, so just hardcode a best guess at the value.
+          // This value is even less exact due to the fact that the endcap is partially concave.
+          int32_t endcapSize = isSmall ? 5 : 6;
+
+          if (isHorizontal)
+            aResult->SizeTo(0, 0, 0, endcapSize);
+          else
+            aResult->SizeTo(endcapSize, 0, 0, 0);
+        }
+        // The use of overlay scrollbars is unpossible before 10.7.
+      }
+#endif
       if (nsLookAndFeel::UseOverlayScrollbars()) {
         if (!nsCocoaFeatures::OnYosemiteOrLater()) {
           // Pre-10.10, we have to center the thumb rect in the middle of the

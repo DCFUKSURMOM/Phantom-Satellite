@@ -86,7 +86,7 @@ splitter.status4evar-status-splitter
 
 #browser-bottombox[s4eboarder="true"] :-moz-any(#status4evar-status-bar, #addon-bar)
 {
-	-moz-appearance: none;
+	appearance: none;
 }
 
 #browser-bottombox[s4eboarder="true"] > *:not([hidden="true"]):not([collapsed="true"])

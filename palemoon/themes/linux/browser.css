@@ -26,7 +26,7 @@
 }
 
 #navigator-toolbox {
-  -moz-appearance: none;
+  appearance: none;
   background-color: transparent;
   border-top: none;
 }
@@ -37,7 +37,7 @@
 
 #navigator-toolbox[tabsontop=true] > toolbar:not(:-moz-lwtheme):not(#toolbar-menubar):not(#TabsToolbar),
 #navigator-toolbox[tabsontop=false] > toolbar:not(:-moz-lwtheme):not(#toolbar-menubar) {
-  -moz-appearance: none;
+  appearance: none;
   border-style: none;
   background-color: -moz-Dialog;
 }
@@ -913,12 +913,12 @@ toolbar[iconsize="small"] #webrtc-status-button {
 /* Location bar */
 #urlbar {
   width: 7em;
-  -moz-appearance: textfield;
+  appearance: textfield;
   padding: 0;
 }
 
 .urlbar-textbox-container {
-  -moz-appearance: none;
+  appearance: none;
   -moz-box-align: stretch;
 }
 
@@ -928,7 +928,7 @@ toolbar[iconsize="small"] #webrtc-status-button {
 }
 
 .urlbar-history-dropmarker {
-  -moz-appearance: toolbarbutton-dropdown;
+  appearance: toolbarbutton-dropdown;
 }
 
 #urlbar-container {
@@ -946,7 +946,7 @@ toolbar[iconsize="small"] #webrtc-status-button {
 }
 
 #urlbar-search-splitter {
-  -moz-appearance: none;
+  appearance: none;
   width: 8px;
   margin-inline-start: -4px;
 }
@@ -1214,7 +1214,7 @@ toolbar[iconsize="small"] #webrtc-status-button {
 }
 
 .popup-progress-cancel {
-  -moz-appearance: none;
+  appearance: none;
   background: transparent;
   border: none;
   padding: 0;
@@ -1410,7 +1410,7 @@ toolbar[iconsize="small"] #webrtc-status-button {
 }
 
 #ub-feed-button {
-  -moz-appearance: none; 
+  appearance: none; 
   min-width: 0px; 
   margin-right: 1px !important;
   list-style-image: url("chrome://browser/skin/page-livemarks.png");
@@ -1490,7 +1490,7 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 }
 
 #urlbar > toolbarbutton {
-  -moz-appearance: none;
+  appearance: none;
   padding: 0;
   border: none;
   cursor: pointer;
@@ -1603,7 +1603,7 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 }
 
 #TabsToolbar[tabsontop=true]:not(:-moz-lwtheme) {
-  -moz-appearance: menubar;
+  appearance: menubar;
   color: -moz-menubartext;
   box-shadow: 0 -1px 0 rgba(0,0,0,.1) inset;
 }
@@ -1630,7 +1630,7 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 .tabbrowser-tab,
 .tabs-newtab-button {
   position: static;
-  -moz-appearance: none;
+  appearance: none;
   background: linear-gradient(hsla(0,0%,100%,.2), hsla(0,0%,45%,.2) 2px, hsla(0,0%,32%,.2) 80%);
   background-origin: border-box;
   background-position: 1px 2px;
@@ -1880,7 +1880,7 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 /* Tabbrowser arrowscrollbox arrows */
 .tabbrowser-arrowscrollbox > .scrollbutton-up,
 .tabbrowser-arrowscrollbox > .scrollbutton-down {
-  -moz-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
@@ -1999,7 +1999,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 .ctrlTab-preview,
 .allTabs-preview {
-  -moz-appearance: toolbarbutton;
+  appearance: toolbarbutton;
 }
 
 .tabPreview-canvas {
@@ -2032,7 +2032,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 }
 
 #ctrlTab-showAll {
-  -moz-appearance: button;
+  appearance: button;
   color: ButtonText;
   padding: 0 3px;
   margin-top: 10px;
@@ -2105,7 +2105,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 #status-bar {
   min-height: 0;
-  -moz-appearance: none;
+  appearance: none;
   background-color: transparent;
   border: none;
 }
@@ -2119,7 +2119,7 @@ toolbar[mode="text"] toolbarbutton.chevron > .toolbarbutton-icon {
 
 #status-bar > statusbarpanel {
   border-width: 0;
-  -moz-appearance: none;
+  appearance: none;
 }
 
 #addonbar-closebutton > .toolbarbutton-icon {

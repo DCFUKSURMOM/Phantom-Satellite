@@ -1634,7 +1634,6 @@ TextInputHandler::HandleKeyDownEvent(NSEvent* aNativeEvent)
        this));
     return currentKeyEvent->IsDefaultPrevented();
   }
-
   MOZ_LOG(gLog, LogLevel::Info,
     ("%p TextInputHandler::HandleKeyDownEvent, wasComposing=%s, "
      "IsIMEComposing()=%s",
@@ -4067,7 +4066,7 @@ IMEInputHandler::OnHandleEvent(NSEvent* aEvent)
   NSTextInputContext* inputContext = [mView inputContext];
   return [inputContext handleEvent:aEvent];
 #else
-  return true;
+  return [[NSInputManager currentInputManager] handleMouseEvent:aEvent];
 #endif
 }
 

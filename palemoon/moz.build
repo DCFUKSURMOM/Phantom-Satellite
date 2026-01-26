@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 CONFIGURE_SUBST_FILES += ['installer/Makefile']
+
 DIRS += [
     'base',
     'components',

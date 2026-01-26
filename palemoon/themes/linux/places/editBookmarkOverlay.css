@@ -28,11 +28,11 @@
 }
 
 .expander-up > .button-box {
-  -moz-appearance: button-arrow-up;
+  appearance: button-arrow-up;
 }
 
 .expander-down > .button-box {
-  -moz-appearance: button-arrow-down;
+  appearance: button-arrow-down;
 }
 
 #editBookmarkPanelContent {

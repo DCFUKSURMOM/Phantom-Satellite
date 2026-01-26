@@ -25,6 +25,7 @@
 #include <dlfcn.h>
 #include <CoreVideo/CoreVideo.h>
 
+#include "nsCocoaFeatures.h"
 #include "mozilla/layers/CompositorBridgeParent.h"
 #include "VsyncSource.h"
 
@@ -73,11 +74,19 @@ DisableFontActivation()
 
 gfxPlatformMac::gfxPlatformMac()
 {
-    DisableFontActivation();
+    // Backout bug 850408
+    if(nsCocoaFeatures::OnSnowLeopardOrLater()) {
+         DisableFontActivation();
+    }
     mFontAntiAliasingThreshold = ReadAntiAliasingThreshold();
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     uint32_t canvasMask = BackendTypeBit(BackendType::SKIA);
-    uint32_t contentMask = BackendTypeBit(BackendType::SKIA);
+#else
+    uint32_t canvasMask = BackendTypeBit(BackendType::SKIA) |
+                          BackendTypeBit(BackendType::COREGRAPHICS);
+#endif
+    uint32_t contentMask = canvasMask;
     InitBackendPrefs(canvasMask, BackendType::SKIA,
                      contentMask, BackendType::SKIA);
 
@@ -93,12 +102,16 @@ gfxPlatformMac::gfxPlatformMac()
         }
     }
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     MacIOSurfaceLib::LoadLibrary();
+#endif
 }
 
 gfxPlatformMac::~gfxPlatformMac()
 {
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     gfxCoreTextShaper::Shutdown();
+#endif
 }
 
 #if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
@@ -170,9 +183,179 @@ gfxPlatformMac::IsFontFormatSupported(nsIURI *aFontURI, uint32_t aFormatFlags)
     NS_ASSERTION(!(aFormatFlags & gfxUserFontSet::FLAG_FORMAT_NOT_USED),
                  "strange font format hint set");
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    // TenFourFox issue 261. Prevent loading certain known bad font URIs.
+    // Our checks only know about HTTP, though, so don't check others (issue 477).
+
+    // Automates a whole buncha boilerplate.
+    // Since HTTPS is becoming more common, check that first.
+#define EXACT_URL(x) \
+    { \
+      if(spec.Equals(x)) { \
+         failed = true; \
+         goto halt_font; \
+      } \
+    }
+
+#define HTTP_OR_HTTPS_SUBDIR(x, y) \
+    { \
+      if (hostname.Equals(x)) { \
+           NS_NAMED_LITERAL_CSTRING(https_, "https://" x y); \
+           if (StringBeginsWith(spec, https_)) { \
+               failed = true; \
+               goto halt_font; \
+           } else { \
+               NS_NAMED_LITERAL_CSTRING(http_, "http://" x y); \
+               if (StringBeginsWith(spec, http_)) { \
+                   failed = true; \
+                   goto halt_font; \
+               } \
+           } \
+      } \
+    }
+
+// TenFourFox issue 477: deal with changing infix version URLs, such as latimes.com
+#define HOST_AND_KEY(x, y) \
+    { \
+            if (hostname.Equals(x)) { \
+                 if (spec.Find(y) != kNotFound) { \
+                    failed = true; \
+                    goto halt_font; \
+                } \
+            } \
+    }
+
+
+    nsAutoCString spec, loc;
+    nsresult rv = aFontURI->GetAsciiSpec(spec);
+    bool failed = false;
+
+    if (MOZ_LIKELY(NS_SUCCEEDED(rv))) {
+        nsAutoCString scheme;
+        if (MOZ_LIKELY(NS_SUCCEEDED(aFontURI->GetScheme(scheme)))) {
+            if (scheme.Equals("http") || scheme.Equals("https")) {
+#if DEBUG
+                fprintf(stderr, "Font blacklist checking: %s\n", spec.get());
+#endif
+
+                // Check exact matches. wm.com has some that work and some
+                // that don't, and because they are hashed we can't pattern.
+                // Use this section for future one-offs since it is faster.
+                EXACT_URL("https://www.wm.com/etc.clientlibs/wm/clientlibs/react-app/resources/fonts/56c766e2-7578-4ae7-8531-1c063c276d37.woff");
+                EXACT_URL("https://www.wm.com/etc.clientlibs/wm/clientlibs/react-app/resources/fonts/92ebef0f-380f-40af-b2e3-7d3275cb73cd.woff");
+                EXACT_URL("https://www.wm.com/etc.clientlibs/wm/clientlibs/react-app/resources/fonts/5652257a-eb06-43ed-b7b9-77444c65f9e6.woff");
+                EXACT_URL("https://www.wm.com/etc.clientlibs/wm/clientlibs/react-app/resources/fonts/4f99cc7e-9e83-4698-bf36-c7033e16db05.woff");
+                EXACT_URL("https://www.wm.com/etc.clientlibs/wm/clientlibs/react-app/resources/fonts/4d27f3a7-2889-440f-a415-734d7d9e80a7.woff");
+
+		EXACT_URL("https://www.kulturstiftung-des-bundes.de/typo3conf/ext/base_ksb/Resources/Public/38c1bdeb69b2cae2f59fae38f127aa6d.woff2");
+
+                // Get the hostname to eliminate creating unnecessary test strings.
+                nsAutoCString hostname;
+                if (MOZ_LIKELY(NS_SUCCEEDED(aFontURI->GetHost(hostname)))) {
+                    ToLowerCase(hostname);
+
+                    // Start with leftmost, using hostname as a screen (TenFourFox issue 492).
+
+                    HTTP_OR_HTTPS_SUBDIR("www.tagesschau.de", "/resources/assets/fonts/TheSansC5s");
+
+                    HTTP_OR_HTTPS_SUBDIR("assets.tagesspiegel.de", "/fonts/Abril_Text_");
+                    HTTP_OR_HTTPS_SUBDIR("assets.tagesspiegel.de", "/fonts/franklingothic-");
+
+                    HTTP_OR_HTTPS_SUBDIR("fonts.gstatic.com", "/ea/notosansjapanese/v6/NotoSansJP-");
+                    HTTP_OR_HTTPS_SUBDIR("fonts.gstatic.com", "/s/notosansjp/v14/");
+                    HTTP_OR_HTTPS_SUBDIR("fonts.gstatic.com", "/s/pressstart2p/v9/");
+                    HTTP_OR_HTTPS_SUBDIR("fonts.gstatic.com", "/s/sourceserifpro/v17/");
+                    HTTP_OR_HTTPS_SUBDIR("fonts.gstatic.com", "/s/oswald/v53/");
+
+
+                    HTTP_OR_HTTPS_SUBDIR("www.icloud.com", "/fonts/SFUIText-");
+                    HTTP_OR_HTTPS_SUBDIR("www.icloud.com", "/fonts/current/fonts/SFNSText-");
+                    HTTP_OR_HTTPS_SUBDIR("www.icloud.com", "/fonts/current/fonts/SFNSDisplay-");
+
+
+                    HTTP_OR_HTTPS_SUBDIR("typeface.nyt.com", "/fonts/nyt-cheltenham-");
+                    HTTP_OR_HTTPS_SUBDIR("typeface.nytimes.com", "/fonts/nyt-cheltenham-");
+
+                    HTTP_OR_HTTPS_SUBDIR("www.washingtonpost.com", "/wp-stat/assets/fonts/PostoniWide-");
+
+                    // Don't cut to SF-Pro-; there are some dingbat fonts that DO work.
+                    HTTP_OR_HTTPS_SUBDIR("www.apple.com", "/wss/fonts/SF-Pro-JP/v1/");
+                    HTTP_OR_HTTPS_SUBDIR("www.apple.com", "/wss/fonts/SF-Pro-Text/v1/");
+                    HTTP_OR_HTTPS_SUBDIR("www.apple.com", "/wss/fonts/SF-Pro-Display/v1/");
+
+                    HTTP_OR_HTTPS_SUBDIR("lib.intuitcdn.net", "/fonts/AvenirNext/1.0/");
+                    HTTP_OR_HTTPS_SUBDIR("lib.intuitcdn.net", "/fonts/AvenirNext/3.0/");
+
+                    HTTP_OR_HTTPS_SUBDIR("use.typekit.net", "/af/e3bd4a/00000000000000003b9ade5d/");
+                    HTTP_OR_HTTPS_SUBDIR("use.typekit.net", "/af/dd9acd/0000000000000000000177dc/");
+                    HTTP_OR_HTTPS_SUBDIR("use.typekit.net", "/af/7088b5/0000000000000000000177de/");
+                    HTTP_OR_HTTPS_SUBDIR("use.typekit.net", "/af/430cc5/0000000000000000000177da/");
+                    HTTP_OR_HTTPS_SUBDIR("platform-assets.typekit.net", "/AND-Regular.");
+
+                    HTTP_OR_HTTPS_SUBDIR("ici.radio-canada.ca", "/unit/app/assets/fonts/Radio-Canada/");
+
+                    HTTP_OR_HTTPS_SUBDIR("www.adac.de", "/assets/font/milo-");
+                    HTTP_OR_HTTPS_SUBDIR("www.adac.de", "/static/Milo");
+
+                    HTTP_OR_HTTPS_SUBDIR("www.heise.de", "/sso/fonts/SourceSansPro-");
+
+                    HTTP_OR_HTTPS_SUBDIR("www.vetmed.fu-berlin.de", "/assets/default2/NexusSansWeb-P");
+
+                    HTTP_OR_HTTPS_SUBDIR("www.theatlantic.com", "/packages/fonts/garamond/AGaramondPro");
+                    HTTP_OR_HTTPS_SUBDIR("www.theatlantic.com", "/packages/fonts/goldwyn/goldwyn");
+                    HTTP_OR_HTTPS_SUBDIR("www.theatlantic.com", "/packages/fonts/atlantic/Atlantic-Serif");
+                    HTTP_OR_HTTPS_SUBDIR("www.theatlantic.com", "/packages/fonts/atlantic/AtlanticCondensed");
+                    HTTP_OR_HTTPS_SUBDIR("www.theatlantic.com", "/packages/fonts/logic/LogicMonospace");
+
+                    HTTP_OR_HTTPS_SUBDIR("www.kulturstiftung-des-bundes.de", "/typo3conf/ext/base_ksb/Resources/Public/");
+
+                    HTTP_OR_HTTPS_SUBDIR("cdn.trustpilot.net", "/brand-assets/2.1.0/fonts/trustpilot-default-font-");
+
+                    HTTP_OR_HTTPS_SUBDIR("www.swr3.de", "/static/dist/fonts/TheSans/");
+
+                    HTTP_OR_HTTPS_SUBDIR("hartzfacts.de", "/google-fonts/s/notoseriftc/v7/");
+
+                    HTTP_OR_HTTPS_SUBDIR("som.yale.edu","/themes/custom/som/fonts/neuehaasunica/NeueHaasUnicaBlack");
+
+                    HTTP_OR_HTTPS_SUBDIR("www.statnews.com","/wp-content/themes/stat/fonts/Utopia");
+
+                    // Check hostname and subpatterns (TenFourFox issue 477).
+                    HOST_AND_KEY("www.latimes.com", "/fonts/KisFBDisplay-");
+                    HOST_AND_KEY("www.nerdwallet.com", "Gotham-Book--critical");
+                    HOST_AND_KEY("www.nerdwallet.com", "Gotham-Bold--critical");
+                } else
+                    failed = true; // Didn't get hostname, should have.
+            } // Must not be HTTP(S). We could catch others below.
+        } else
+            failed = true; // Didn't get scheme, should have.
+    } else
+        failed = true; // Didn't get URL, should have.
+    halt_font:
+    if (failed ||
+        // XXX: Reserve listing things here for one-offs that are too expensive to check otherwise,
+        // or if there is a non-HTTP(S) URL we need to block (!!).
+        // spec.Equals("URL") ||
+	spec.Equals("https://cdn-static-1.medium.com/_/fp/fonts/charter-nonlatin.b-nw7PXlIqmGHGmHvkDiTw.woff") ||
+    0) {
+	if (MOZ_LIKELY(NS_SUCCEEDED(rv))) // Don't print if we couldn't get the URL.
+	    fprintf(stderr, "Warning: TenFourFox blocking ATSUI-incompatible webfont %s.\n", spec.get());
+	return false;
+    }
+
+#undef EXACT_URL
+#undef HTTP_OR_HTTPS_SUBDIR
+#undef HOST_AND_KEY
+#endif
+
     // accept supported formats
     if (aFormatFlags & (gfxUserFontSet::FLAG_FORMATS_COMMON |
-                        gfxUserFontSet::FLAG_FORMAT_TRUETYPE_AAT)) {
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+                        // No AAT in TenFourFox!
+                        0
+#else
+                        gfxUserFontSet::FLAG_FORMAT_TRUETYPE_AAT
+#endif
+    )) {
         return true;
     }
 
@@ -218,7 +401,7 @@ gfxPlatformMac::GetCommonFallbackFonts(uint32_t aCh, uint32_t aNextCh,
                                        nsTArray<const char*>& aFontList)
 {
     EmojiPresentation emoji = GetEmojiPresentation(aCh);
-    EmojiPresentation eNext = GetEmojiPresentation(aNextCh);
+    EmojiPresentation eNext = GetEmojiPresentation(aNextCh, true);
     if (aNextCh != kVariationSelector15 &&
         emoji != EmojiPresentation::TextOnly &&
         (emoji != EmojiPresentation::TextDefault ||
@@ -604,6 +787,88 @@ gfxPlatformMac::GetPlatformCMSOutputProfile(void* &mem, size_t &size)
     mem = nullptr;
     size = 0;
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    // 10.4 lacks ::CGColorSpaceCopyICCProfile, so we need an equivalent.
+    CMProfileRef cmProfile;
+    CMProfileLocation *location;
+    UInt32 locationSize;
+
+    CGDirectDisplayID displayID = CGMainDisplayID();
+    CMError err = CMGetProfileByAVID((CMDisplayIDType)displayID, &cmProfile);
+    if (err != noErr)
+		return;
+
+    // get the size of location
+    err = NCMGetProfileLocation(cmProfile, nullptr, &locationSize);
+    if (err != noErr)
+        return;
+        
+    // allocate enough room for location
+    location = static_cast<CMProfileLocation*>(malloc(locationSize));
+    if (!location) {
+    	CMCloseProfile(cmProfile);
+    	return;
+    }
+    err = NCMGetProfileLocation(cmProfile, location, &locationSize);
+    if (err != noErr) {
+    	free(location);
+    	CMCloseProfile(cmProfile);
+    	return;
+    }
+    
+    char path[512];
+    bool path_ok = false;
+    size_t rsize = 0;
+
+    switch (location->locType) {
+    case cmFileBasedProfile: {
+    	// We need to support this, particularly on 10.4 which has Classic.
+        FSRef fsRef;
+        if (!FSpMakeFSRef(&location->u.fileLoc.spec, &fsRef)) {
+            if (!FSRefMakePath(&fsRef, reinterpret_cast<UInt8*>(path), sizeof(path))) {
+				path_ok = true;
+			}
+		}
+		break;
+	}
+	case cmPathBasedProfile: {
+		path_ok = true;
+		break;
+	}
+	default:
+		NS_WARNING("Unsupported ColorSync profile location not supported");
+		break;
+	}
+	
+	
+    if (path_ok) {
+#ifdef DEBUG
+	fprintf(stderr, "Loading ColorSync profile: %s\n",
+		(location->locType == cmPathBasedProfile) ?
+			location->u.pathLoc.path : path);
+#endif
+	rsize = qcms_size_of_data(
+		(location->locType == cmPathBasedProfile) ?
+			location->u.pathLoc.path : path);
+#ifdef DEBUG
+	fprintf(stderr, "Size of profile: %i\n", rsize);
+#endif
+    	if (rsize) {
+       		mem = malloc(rsize);
+		qcms_data_from_path(
+		(location->locType == cmPathBasedProfile) ?
+			location->u.pathLoc.path : path, &mem, &size);
+#ifdef DEBUG
+		if (size != rsize)
+			fprintf(stderr, "Odd: size %i != rsize %i\n",
+				size, rsize);
+#endif
+    	}
+    }
+    free(location);
+    CMCloseProfile(cmProfile);
+    return;
+#else
     CGColorSpaceRef cspace = ::CGDisplayCopyColorSpace(::CGMainDisplayID());
     if (!cspace) {
         cspace = ::CGColorSpaceCreateDeviceRGB();
@@ -633,4 +898,5 @@ gfxPlatformMac::GetPlatformCMSOutputProfile(void* &mem, size_t &size)
     }
 
     ::CFRelease(iccp);
+#endif
 }

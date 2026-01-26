@@ -18,7 +18,7 @@ textbox:not(.padded) {
 }
 
 textbox[enablehistory="true"] {
-  -moz-appearance: none;
+  appearance: none;
   border: 0;
   background-color: transparent;
 }
@@ -32,7 +32,7 @@ textbox[nomatch="true"][highlightnonmatches="true"] {
 }
 
 textbox[enablehistory="true"] > .autocomplete-textbox-container {
-  -moz-appearance: menulist-textfield;
+  appearance: menulist-textfield;
 }
 
 textbox:not(.padded) .textbox-input-box {
@@ -64,14 +64,14 @@ panel[type="private-autocomplete-richlistbox"],
 /* ::::: tree ::::: */
 
 .private-autocomplete-tree {
-  -moz-appearance: none !important;
+  appearance: none !important;
   border: none !important;
   background-color: transparent !important;
   color: MenuText;
 }
 
 .private-autocomplete-treecol {
-  -moz-appearance: none !important;
+  appearance: none !important;
   margin: 0 !important;
   border: none !important;
   padding: 0 !important;
@@ -79,7 +79,7 @@ panel[type="private-autocomplete-richlistbox"],
 
 /* GTK calculates space for a sort arrow */
 .private-autocomplete-treecol > .treecol-sortdirection {
-  -moz-appearance: none !important;
+  appearance: none !important;
 }
 
 .private-autocomplete-treebody::-moz-tree-cell-text {
@@ -102,7 +102,7 @@ treechildren.private-autocomplete-treebody::-moz-tree-cell-text(selected) {
 /* ::::: richlistbox autocomplete ::::: */
 
 .private-autocomplete-richlistbox {
-  -moz-appearance: none;
+  appearance: none;
   margin: 1px;
   background-color: transparent;
 }

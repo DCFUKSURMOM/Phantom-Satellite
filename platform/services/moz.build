@@ -7,3 +7,6 @@ DIRS += [
     'common',
     'crypto',
 ]
+
+if CONFIG['MOZ_SERVICES_SYNC']:
+    DIRS += ['sync']

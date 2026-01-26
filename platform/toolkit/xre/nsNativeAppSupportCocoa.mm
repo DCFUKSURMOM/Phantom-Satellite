@@ -79,10 +79,12 @@ nsNativeAppSupportCocoa::Enable()
 
 NS_IMETHODIMP nsNativeAppSupportCocoa::Start(bool *_retval)
 {
-  int major, minor, bugfix;
-  nsCocoaFeatures::GetSystemVersion(major, minor, bugfix);
-
   NS_OBJC_BEGIN_TRY_ABORT_BLOCK_NSRESULT;
+
+  int major, minor, bugfix;
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  nsCocoaFeatures::GetSystemVersion(major, minor, bugfix);
+  [pool release];
 
   // Check that the OS version is supported, if not return false,
   // which will make the browser quit.  In principle we could display an

@@ -3704,9 +3704,12 @@ var XULBrowserWindow = {
   },
 
   setOverLink: function(url, anchorElt) {
-    // Encode bidirectional formatting characters.
-    // (RFC 3987 sections 3.2 and 4.1 paragraph 6)
-    url = url.replace(/[\u200e\u200f\u202a\u202b\u202c\u202d\u202e]/g,
+    /**
+     * Encode bidirectional formatting characters.
+     * @see https://url.spec.whatwg.org/#url-rendering-i18n
+     * @see https://www.unicode.org/reports/tr9/#Directional_Formatting_Characters
+     */
+    url = url.replace(/[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/g,
                       encodeURIComponent);
 
     if (gURLBar && gURLBar._mayTrimURLs /* corresponds to browser.urlbar.trimURLs */) {

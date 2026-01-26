@@ -285,6 +285,10 @@ public:
   static void PrepareForNativeAppModalDialog();
   static void CleanUpAfterNativeAppModalDialog();
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+  static NSUInteger GetCocoaEventModifierFlags(NSEvent *theEvent);
+#endif
+
   // 3 utility functions to go from a frame of imgIContainer to CGImage and then to NSImage
   // Convert imgIContainer -> CGImageRef, caller owns result
   

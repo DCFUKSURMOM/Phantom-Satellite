@@ -1165,8 +1165,10 @@ CompositorOGL::DrawGeometry(const Geometry& aGeometry,
         static_cast<TexturedEffect*>(aEffectChain.mPrimaryEffect.get());
       source = texturedEffect->mTexture->AsSourceOGL();
     }
-    // This is used by IOSurface that use 0,0...w,h coordinate rather then 0,0..1,1.
-    program->SetTexCoordMultiplier(source->GetSize().width, source->GetSize().height);
+    if (source) {
+        // This is used by IOSurface that use 0,0...w,h coordinate rather then 0,0..1,1.
+        program->SetTexCoordMultiplier(source->GetSize().width, source->GetSize().height);
+    }
   }
 
   // XXX kip - These calculations could be performed once per layer rather than

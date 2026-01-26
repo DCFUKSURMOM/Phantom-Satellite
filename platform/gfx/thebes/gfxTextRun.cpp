@@ -1609,8 +1609,6 @@ gfxFontGroup::~gfxFontGroup()
 void
 gfxFontGroup::BuildFontList()
 {
-    bool enumerateFonts = true;
-
     // initialize fonts in the font family list
     AutoTArray<gfxFontFamily*,10> fonts;
     gfxPlatformFontList *pfl = gfxPlatformFontList::PlatformFontList();
@@ -1639,7 +1637,9 @@ gfxFontGroup::BuildFontList()
 
     // build the fontlist from the specified families
     for (gfxFontFamily* fontFamily : fonts) {
-        AddFamilyToFontList(fontFamily);
+        if(fontFamily) {
+            AddFamilyToFontList(fontFamily);
+        }
     }
 }
 

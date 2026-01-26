@@ -8,5 +8,5 @@
 <overlay id="win6-browser-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <toolbar id="toolbar-menubar"
-           autohide="false"/>
+           autohide="true"/>
 </overlay>

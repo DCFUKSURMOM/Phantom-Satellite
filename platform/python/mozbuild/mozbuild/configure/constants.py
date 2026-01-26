@@ -41,10 +41,11 @@ Kernel = EnumString.subclass(
 
 CPU_bitness = {
     'aarch64': 64,
-    'Alpha': 32,
+    'Alpha': 64,
     'arm': 32,
     'hppa': 32,
     'ia64': 64,
+    'loongarch64': 64,
     'mips32': 32,
     'mips64': 64,
     'ppc': 32,
@@ -76,6 +77,7 @@ CPU_preprocessor_checks = OrderedDict((
     ('arm', '__arm__ || _M_ARM'),
     ('aarch64', '__aarch64__'),
     ('ia64', '__ia64__'),
+    ('loongarch64', '__loongarch64'),
     ('s390x', '__s390x__'),
     ('s390', '__s390__'),
     ('ppc64', '__powerpc64__ || __ppc64__'),

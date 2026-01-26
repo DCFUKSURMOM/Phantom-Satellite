@@ -327,6 +327,16 @@ gfxHarfBuzzShaper::GetGlyphHAdvance(hb_codepoint_t glyph) const
         glyph = mNumLongHMetrics - 1;
     }
 
+#if defined(XP_MACOSX) && (defined(__ppc__) || defined(__ppc64__))
+    if (MOZ_UNLIKELY(mFont->mSpacingKludge && glyph == mFont->GetSpaceGlyph())) {
+        // This is one of the fonts where the spacing went awry,
+        // invariably on an nbsp character that escaped into the run.
+        // Use the value we computed in gfxMacFont for consistency
+        // (TenFourFox issue 355).
+        return FloatToFixed(mFont->GetMetrics(gfxFont::eHorizontal).spaceWidth);
+    }
+#endif
+
     // glyph must be valid now, because we checked during initialization
     // that mNumLongHMetrics is > 0, and that the metrics table is large enough
     // to contain mNumLongHMetrics records

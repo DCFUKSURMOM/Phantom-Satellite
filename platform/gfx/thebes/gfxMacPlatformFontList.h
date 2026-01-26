@@ -171,6 +171,10 @@ private:
                                                            const void *object,
                                                            CFDictionaryRef userInfo);
 #else
+    // eliminate faces which have the same ATS font reference
+    // backout bug 663688
+    void EliminateDuplicateFaces(const nsAString& aFamilyName);
+
     // backout bug 869762
     static void ATSNotification(ATSFontNotificationInfoRef aInfo, void* aUserArg);
     uint32_t mATSGeneration;

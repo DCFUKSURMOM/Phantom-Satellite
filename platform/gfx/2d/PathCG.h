@@ -80,7 +80,11 @@ public:
 
   // Paths will always return BackendType::COREGRAPHICS, but note that they
   // are compatible with BackendType::COREGRAPHICS_ACCELERATED backend.
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
   virtual BackendType GetBackendType() const { return BackendType::SKIA; }
+#else
+  virtual BackendType GetBackendType() const { return BackendType::COREGRAPHICS; }
+#endif
 
   virtual already_AddRefed<PathBuilder> CopyToBuilder(FillRule aFillRule) const;
   virtual already_AddRefed<PathBuilder> TransformedCopyToBuilder(const Matrix &aTransform,

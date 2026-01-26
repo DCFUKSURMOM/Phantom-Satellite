@@ -1485,6 +1485,7 @@ public:
 #endif
 
 #ifdef XP_DARWIN
+  static already_AddRefed<DrawTarget> CreateDrawTargetForCairoCGContext(CGContextRef cg, const IntSize& aSize);
   static already_AddRefed<GlyphRenderingOptions>
     CreateCGGlyphRenderingOptions(const Color &aFontSmoothingBackgroundColor);
 #endif

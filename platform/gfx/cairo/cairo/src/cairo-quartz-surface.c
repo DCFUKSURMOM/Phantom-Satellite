@@ -2020,7 +2020,7 @@ _cairo_quartz_surface_finish (void *abstract_surface)
 
     if (surface->imageSurfaceEquiv) {
         if (surface->ownsData)
-            _cairo_image_surface_assume_ownership_of_data (surface->imageSurfaceEquiv);
+            _cairo_image_surface_assume_ownership_of_data ((cairo_image_surface_t *)surface->imageSurfaceEquiv);
 	cairo_surface_destroy (surface->imageSurfaceEquiv);
 	surface->imageSurfaceEquiv = NULL;
     } else if (surface->imageData && surface->ownsData) {

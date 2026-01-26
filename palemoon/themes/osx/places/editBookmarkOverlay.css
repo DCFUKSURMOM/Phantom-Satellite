@@ -34,7 +34,7 @@
 
 .expander-up,
 .expander-down {
-  -moz-appearance: none;
+  appearance: none;
   margin: 0;
   margin-left: 8px;
   padding: 0;

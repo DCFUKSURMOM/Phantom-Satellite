@@ -147,6 +147,7 @@ qcms_profile* qcms_profile_from_file(FILE *file);
 qcms_profile* qcms_profile_from_path(const char *path);
 
 void qcms_data_from_path(const char *path, void **mem, size_t *size);
+size_t qcms_size_of_data(const char *path);
 
 #ifdef _WIN32
 qcms_profile* qcms_profile_from_unicode_path(const wchar_t *path);

@@ -485,12 +485,12 @@ class Build(MachCommandBase):
         if status:
             return status
 
-        long_build = monitor.elapsed > 1800 #assuming this is in seconds, bump long_build time from 10 minutes to 30 minutes
+        long_build = monitor.elapsed > 600
 
         if long_build:
-            output.on_line('It took a while, but your build was successful! Thank you for choosing Phantom Satellite!')
+            output.on_line('We know it took a while, but your build finally finished successfully!')
         else:
-            output.on_line('Your build was successful! Thank you for choosing Phantom Satellite!')
+            output.on_line('Your build was successful!')
 
         if monitor.have_resource_usage:
             excessive, swap_in, swap_out = monitor.have_excessive_swapping()

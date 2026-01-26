@@ -373,6 +373,33 @@ void nsCocoaUtils::CleanUpAfterNativeAppModalDialog()
   NS_OBJC_END_TRY_ABORT_BLOCK;
 }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+NSUInteger nsCocoaUtils::GetCocoaEventModifierFlags(NSEvent *theEvent)
+{
+  NSUInteger modifierFlags = 0;
+  if (nsCocoaFeatures::OnLeopardOrLater())
+    return [theEvent modifierFlags];
+  NSEventType type = [theEvent type];
+  if ((type != NSKeyDown) && (type != NSKeyUp))
+    return modifierFlags;
+  NSString *unmodchars = [theEvent charactersIgnoringModifiers];
+  if (!modifierFlags && ([unmodchars length] == 1)) {
+    // An OS-X-10.4.X-specific Apple bug causes the 'theEvent' parameter of
+    // all calls to performKeyEquivalent: (whether on NSMenu, NSWindow or
+    // NSView objects) to have most of its fields zeroed on a ctrl-ESC event.
+    // These include its keyCode and modifierFlags fields, but fortunately
+    // not its characters and charactersIgnoringModifiers fields.  So if
+    // charactersIgnoringModifiers has length == 1 and corresponds to the ESC
+    // character (0x1b), we correct modifierFlags to NSControlKeyMask.  (ESC
+    // key events don't get messed up (anywhere they're sent) on opt-ESC,
+    // shift-ESC or cmd-ESC.)
+    if ([unmodchars characterAtIndex:0] == 0x1b)
+      modifierFlags = NSControlKeyMask;
+  }
+  return modifierFlags;
+}
+#endif
+
 void data_ss_release_callback(void *aDataSourceSurface,
                               const void *data,
                               size_t size)
@@ -440,6 +467,7 @@ nsresult nsCocoaUtils::CreateNSImageFromCGImage(CGImageRef aInputImage, NSImage 
 {
   NS_OBJC_BEGIN_TRY_ABORT_BLOCK_NSRESULT;
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   // Be very careful when creating the NSImage that the backing NSImageRep is
   // exactly 1:1 with the input image. On a retina display, both [NSImage
   // lockFocus] and [NSImage initWithCGImage:size:] will create an image with a
@@ -486,6 +514,25 @@ nsresult nsCocoaUtils::CreateNSImageFromCGImage(CGImageRef aInputImage, NSImage 
   [*aResult addRepresentation:offscreenRep];
   [offscreenRep release];
   return NS_OK;
+#else
+  // The code above generates mangled icons on 10.4 and 10.5, so restore the
+  // Firefox 26 code (backout bug 888689).
+  int32_t width = ::CGImageGetWidth(aInputImage);
+  int32_t height = ::CGImageGetHeight(aInputImage);
+  NSRect imageRect = ::NSMakeRect(0.0, 0.0, width, height);
+
+  // Create a new image to receive the Quartz image data.
+  *aResult = [[NSImage alloc] initWithSize:imageRect.size];
+
+  [*aResult lockFocus];
+
+  // Get the Quartz context and draw.
+  CGContextRef imageContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+  ::CGContextDrawImage(imageContext, *(CGRect*)&imageRect, aInputImage);
+
+  [*aResult unlockFocus];
+  return NS_OK;
+#endif
 
   NS_OBJC_END_TRY_ABORT_BLOCK_NSRESULT;
 }
@@ -497,6 +544,7 @@ nsresult nsCocoaUtils::CreateNSImageFromImageContainer(imgIContainer *aImage, ui
   aImage->GetWidth(&width);
   aImage->GetHeight(&height);
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   // Render a vector image at the correct resolution on a retina display
   if (aImage->GetType() == imgIContainer::TYPE_VECTOR && scaleFactor != 1.0f) {
     IntSize scaledSize = IntSize::Ceil(width * scaleFactor, height * scaleFactor);
@@ -522,7 +570,9 @@ nsresult nsCocoaUtils::CreateNSImageFromImageContainer(imgIContainer *aImage, ui
     }
 
     surface = drawTarget->Snapshot();
-  } else {
+  } else
+#endif
+  {
     surface = aImage->GetFrame(aWhichFrame, imgIContainer::FLAG_SYNC_DECODE);
   }
 
@@ -606,7 +656,11 @@ nsCocoaUtils::MakeNewCocoaEventWithType(NSEventType aEventType, NSEvent *aEvent)
   NSEvent* newEvent =
     [NSEvent     keyEventWithType:aEventType
                          location:[aEvent locationInWindow] 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
                     modifierFlags:[aEvent modifierFlags]
+#else
+                    modifierFlags:nsCocoaUtils::GetCocoaEventModifierFlags(aEvent)
+#endif
                         timestamp:[aEvent timestamp]
                      windowNumber:[aEvent windowNumber]
                           context:[aEvent context]
@@ -646,7 +700,13 @@ Modifiers
 nsCocoaUtils::ModifiersForEvent(NSEvent* aNativeEvent)
 {
   NSUInteger modifiers =
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     aNativeEvent ? [aNativeEvent modifierFlags] : [NSEvent modifierFlags];
+#else
+    aNativeEvent ? nsCocoaUtils::GetCocoaEventModifierFlags(aNativeEvent) :
+    nsCocoaFeatures::OnSnowLeopardOrLater() ? [NSEvent modifierFlags] :
+    0;
+#endif
   Modifiers result = 0;
   if (modifiers & NSShiftKeyMask) {
     result |= MODIFIER_SHIFT;

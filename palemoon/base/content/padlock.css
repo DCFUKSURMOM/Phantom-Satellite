@@ -1,5 +1,5 @@
 #padlock-ib {
-  -moz-appearance: none;
+  appearance: none;
   min-width: 0px;
   margin-right: 1px !important;
   background-repeat: no-repeat;
@@ -36,7 +36,7 @@
 }
 
 #padlock-ib-left {
-  -moz-appearance: none;
+  appearance: none;
   min-width: 0px;
   margin-right: 1px !important;
   background-repeat: no-repeat;
@@ -78,7 +78,7 @@
 }
 
 #padlock-ub-right {
-  -moz-appearance: none;
+  appearance: none;
   min-width: 0px;
   margin-right: 1px !important;
   background-repeat: no-repeat;
@@ -115,7 +115,7 @@
 }
 
 #padlock-sb {
-  -moz-appearance: none;
+  appearance: none;
   background-repeat: no-repeat;
   background-position: center;
 }
@@ -146,7 +146,7 @@
 }
 
 #padlock-tab {
-  -moz-appearance: none;
+  appearance: none;
   background-repeat: no-repeat;
   background-position: center;
 }

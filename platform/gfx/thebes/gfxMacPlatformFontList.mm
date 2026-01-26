@@ -146,6 +146,20 @@ MacOSFontEntry::ReadCMAP(FontInfoData *aFontInfoData)
         return NS_OK;
     }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    if (!mIsDataUserFont || mIsLocalUserFont) {
+        // If there is no glyf or CFF table, Harfbuzz will choke on this font.
+        // Don't bother if this is a downloaded font, though (expensive to check).
+        // See 10.4Fx issue 171.
+        if(!HasFontTable(TRUETYPE_TAG('g','l','y','f')) &&
+           !HasFontTable(TRUETYPE_TAG('C','F','F',' '))) {
+           fprintf(stderr, "Warning: TenFourFox rejecting bitmap-only font %s.\n",
+                     NS_ConvertUTF16toUTF8(mName).get());
+           mCharacterMap = new gfxCharacterMap(); // no characters
+           return NS_OK;
+        }
+    }
+#endif
     RefPtr<gfxCharacterMap> charmap;
     nsresult rv;
     bool symbolFont = false; // currently ignored
@@ -284,6 +298,12 @@ MacOSFontEntry::MacOSFontEntry(const nsAString& aPostscriptName,
       mFontRefInitialized(false),
       mRequiresAAT(false),
       mIsCFF(false),
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+      mATSFontRef(kInvalidFont),
+      mFontTableDirSize(0),
+      mContainerRef(NULL),
+      mATSFontRefInitialized(false),
+#endif
       mIsCFFInitialized(false)
 {
     mWeight = aWeight;
@@ -494,15 +514,15 @@ MacOSFontEntry::GetFontTable(uint32_t aTag)
 
 #ifdef DEBUG_X
         uint32_t j = 12;
-        uint8_t *table = (reinterpret_cast<uint8_t *>(
-                mFontTableDir.Elements()));
+        uint8_t *table = (reinterpret_cast<uint8_t *>(mFontTableDir.Elements()));
         fprintf(stderr, "fast fetch ");
 #endif
         uint32_t i;
-        uint32_t *wtable = (reinterpret_cast<uint32_t *>(
-                mFontTableDir.Elements()));
+        uint32_t *wtable = (reinterpret_cast<uint32_t *>(mFontTableDir.Elements()));
+        uint32_t count = mFontTableDirSize / 4;
+        uint32_t length = mFontTableDir.Length();
 
-        for (i=3; i<(mFontTableDirSize/4); i+=4) { // Skip header
+        for (i=3; i<count && i<length; i+=4) { // Skip header
 #ifdef DEBUG_X
                 char tag[5] = { table[j], table[j+1], table[j+2], table[j+3],
                         '\0' };
@@ -576,7 +596,10 @@ static bool FindTagInTableDir(const FallibleTArray<uint8_t>& table,
 #endif
   uint32_t i;
   const uint32_t *wtable = (reinterpret_cast<const uint32_t *>(table.Elements()));
-  for (i=3; i<(sizer/4); i+=4) { // Skip header
+  // Make sure we don't overrun the buffer
+  uint32_t count = sizer / 4;
+  uint32_t length = table.Length();
+  for (i=3; i<count && i<length; i+=4) { // Skip header
 #ifdef DEBUG_X
     char tag[5] = { table[j], table[j+1], table[j+2], table[j+3], '\0' };
     fprintf(stderr, "%s ", tag); // remember: big endian
@@ -632,8 +655,9 @@ MacOSFontEntry::HasFontTable(uint32_t aTableTag)
     if (!mIsDataUserFont || mIsLocalUserFont) TryGlobalFontTableCache();
 
     // Use cached directory to avoid repeatedly fetching the same data.
-    if (MOZ_LIKELY(mFontTableDirSize > 0))
+    if (MOZ_LIKELY(mFontTableDirSize > 0)) {
         return FindTagInTableDir(mFontTableDir, aTableTag, mFontTableDirSize);
+    }
 
     ByteCount sizer;
 
@@ -641,9 +665,8 @@ MacOSFontEntry::HasFontTable(uint32_t aTableTag)
       // If the header is abnormal, try the old, slower way in case this
       // is a gap in our algorithm.
       if (MOZ_UNLIKELY(sizer <= 12 || ((sizer-12) % 16) || sizer >= 1024)) {
-        fprintf(stderr, "Warning: TenFourFox found "
-                "abnormal font table dir in %s (%i).\n",
-                 NS_ConvertUTF16toUTF8(mName).get(), sizer);
+        fprintf(stderr, "Warning: Found abnormal font table dir in %s (%i).\n",
+                NS_ConvertUTF16toUTF8(mName).get(), sizer);
         return
         (::ATSFontGetTable(fontRef, aTableTag, 0, 0, 0, &sizer) == noErr);
       }
@@ -660,9 +683,9 @@ MacOSFontEntry::HasFontTable(uint32_t aTableTag)
         reinterpret_cast<void *>(mFontTableDir.Elements()), &sizer) == noErr)) {
 
         // Push to platform.
-        if (!mIsDataUserFont || mIsLocalUserFont)
+        if (!mIsDataUserFont || mIsLocalUserFont) {
              reinterpret_cast<gfxPlatformMac *>(gfxPlatform::GetPlatform())->SetCachedDirForFont(mName, reinterpret_cast<uint8_t *>(mFontTableDir.Elements()), mFontTableDirSize);
-
+        }
         return FindTagInTableDir(mFontTableDir, aTableTag, mFontTableDirSize);
       }
    }
@@ -695,6 +718,10 @@ public:
     virtual void LocalizedName(nsAString& aLocalizedName);
 
     virtual void FindStyleVariations(FontInfoData *aFontInfoData = nullptr);
+
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    void EliminateDuplicateFaces(); // needed for 10.4
+#endif
 
 protected:
     double mSizeHint;
@@ -843,6 +870,58 @@ gfxMacFontFamily::FindStyleVariations(FontInfoData *aFontInfoData)
     }
 }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+// restored from bug 663688 for 10.4
+void
+gfxMacFontFamily::EliminateDuplicateFaces()
+{
+    uint32_t i, bold, numFonts, italicIndex;
+    MacOSFontEntry *italic, *nonitalic;
+
+    FindStyleVariations();
+
+    // if normal and italic have the same ATS font ref, delete italic
+    // if bold and bold-italic have the same ATS font ref, delete bold-italic
+
+    // two iterations, one for normal, one for bold
+    for (bold = 0; bold < 2; bold++) {
+        numFonts = mAvailableFonts.Length();
+
+        // find the non-italic face
+        nonitalic = nullptr;
+        for (i = 0; i < numFonts; i++) {
+            if ((mAvailableFonts[i]->IsBold() == (bold == 1)) &&
+                !mAvailableFonts[i]->IsItalic()) {
+                nonitalic = static_cast<MacOSFontEntry*>(mAvailableFonts[i].get());
+                break;
+            }
+        }
+
+        // find the italic face
+        if (nonitalic) {
+            italic = nullptr;
+            for (i = 0; i < numFonts; i++) {
+                if ((mAvailableFonts[i]->IsBold() == (bold == 1)) &&
+                     mAvailableFonts[i]->IsItalic()) {
+                    italic = static_cast<MacOSFontEntry*>(mAvailableFonts[i].get());
+                    italicIndex = i;
+                    break;
+                }
+            }
+
+            // if italic face and non-italic face have matching ATS refs,
+            // or if the italic returns 0 rather than an actual ATSFontRef,
+            // then the italic face is bogus so remove it
+            if (italic && (italic->GetATSFontRef() == 0 ||
+			   italic->GetATSFontRef() == kInvalidFont ||
+                           italic->GetATSFontRef() == nonitalic->GetATSFontRef())) {
+                mAvailableFonts.RemoveElementAt(italicIndex);
+            }
+        }
+    }
+}
+#endif
+
 /* gfxSingleFaceMacFontFamily */
 #pragma mark-
 
@@ -922,6 +1001,7 @@ gfxMacPlatformFontList::gfxMacPlatformFontList() :
     mDefaultFont(nullptr),
 #else
     mDefaultFont(0),
+    mATSGeneration(uint32_t(kATSGenerationInitial)), // backout bug 869762
 #endif
     mUseSizeSensitiveSystemFont(false)
 {
@@ -1072,6 +1152,21 @@ gfxMacPlatformFontList::InitFontListForPlatform()
 
     InitSingleFaceList();
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    // clean up various minor 10.4 font problems for specific fonts
+    if (!nsCocoaFeatures::OnLeopardOrLater()) {
+        // Cocoa calls report that italic faces exist for Courier and Helvetica
+        // even though only bold faces exist so test for this using ATS font
+	// refs (10.5 has proper faces)
+        EliminateDuplicateFaces(NS_LITERAL_STRING("Courier"));
+        EliminateDuplicateFaces(NS_LITERAL_STRING("Helvetica"));
+
+        // Cocoa reports that Courier and Monaco are not fixed-pitch fonts
+        // so explicitly tweak these settings
+        SetFixedPitch(NS_LITERAL_STRING("Courier"));
+        SetFixedPitch(NS_LITERAL_STRING("Monaco"));
+    }
+#endif
     // to avoid full search of font name tables, seed the other names table with localized names from
     // some of the prefs fonts which are accessed via their localized names.  changes in the pref fonts will only cause
     // a font lookup miss earlier. this is a simple optimization, it's not required for correctness
@@ -1317,6 +1412,18 @@ gfxMacPlatformFontList::FindSystemFontFamily(const nsAString& aFamily)
     return nullptr;
 }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+void
+gfxMacPlatformFontList::EliminateDuplicateFaces(const nsAString& aFamilyName)
+{
+    gfxMacFontFamily *family =
+        static_cast<gfxMacFontFamily*>(FindFamily(aFamilyName));
+
+    if (family)
+        family->EliminateDuplicateFaces();
+}
+#endif
+
 bool
 gfxMacPlatformFontList::GetStandardFamilyName(const nsAString& aFontName, nsAString& aFamilyName)
 {
@@ -1461,12 +1568,22 @@ gfxMacPlatformFontList::PlatformGlobalFontFallback(const uint32_t aCh,
 
     return fontEntry;
 #else
-    uint32_t aCmapCount = 0;
-    return gfxPlatformFontList::GlobalFontFallback(aCh,
-                                                   aRunScript,
-                                                   aMatchStyle,
-                                                   aCmapCount,
-                                                   aMatchedFamily);
+    static bool recursing = false;
+    gfxFontEntry *retval = nullptr;
+    if (!recursing) {
+        uint32_t aCmapCount = 0;
+        // Try calling GlobalFontFallback once in case we were called
+        // directly.  Then stop and return nullptr so GlobalFontCallback
+        // will search the internal font table. 
+        recursing = true;
+        retval = gfxPlatformFontList::GlobalFontFallback(aCh,
+                                                         aRunScript,
+                                                         aMatchStyle,
+                                                         aCmapCount,
+                                                         aMatchedFamily);
+        recursing = false;
+    }
+	return retval;
 #endif
 }
 
@@ -1686,8 +1803,7 @@ gfxMacPlatformFontList::MakePlatformFont(const nsAString& aFontName,
             [psname isEqualToString:@".SFNSText-Medium"] ||
             [psname isEqualToString:@".SFNSDisplay-Medium"] ||
                 0) {
-            fprintf(stderr,
-"Warning: TenFourFox rejected ATSUI-incompatible web font %s.\n",
+            fprintf(stderr, "Warning: Rejected ATSUI-incompatible web font %s.\n",
                 [psname UTF8String]);
             [psname release];
             ::ATSFontDeactivate(containerRef, NULL,
@@ -2061,6 +2177,7 @@ gfxMacPlatformFontList::ActivateBundledFonts()
         if (NS_FAILED(file->GetNativePath(path))) {
             continue;
         }
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
         CFURLRef fontURL =
             ::CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault,
                                                       (uint8_t*)path.get(),
@@ -2073,6 +2190,28 @@ gfxMacPlatformFontList::ActivateBundledFonts()
                                                &error);
             ::CFRelease(fontURL);
         }
+#else
+        NSURL *fontURL = [NSURL fileURLWithPath:[NSString stringWithCString:path.get() encoding:NSUTF8StringEncoding]];
+        if (fontURL) {
+            FSRef fsRef;
+            FSSpec fsSpec;
+            (void)CFURLGetFSRef((CFURLRef)fontURL, &fsRef);
+            OSStatus status = FSGetCatalogInfo(&fsRef, kFSCatInfoNone, NULL, NULL, &fsSpec, NULL);
+            if (status == noErr) {
+                status = ATSFontActivateFromFileSpecification(&fsSpec,
+                                                              kATSFontContextLocal,
+                                                              kATSFontFormatUnspecified,
+                                                              NULL,
+                                                              kATSOptionFlagsDefault,
+                                                              NULL);
+                if (status != noErr) {
+                    NSLog(@"Error %d loading font from %@", status, fontURL);
+                }
+            } else {
+                NSLog(@"Error loading catalog info");
+            }
+        }
+#endif
     }
 }
 

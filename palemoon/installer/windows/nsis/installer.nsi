@@ -72,7 +72,7 @@ Var PreventRebootRequired
 !include common.nsh
 !include locales.nsi
 
-VIAddVersionKey "FileDescription" "Phantom Satellite Installer"
+VIAddVersionKey "FileDescription" "${BrandShortName} Installer"
 VIAddVersionKey "OriginalFilename" "setup.exe"
 
 ; Must be inserted before other macros that use logging
@@ -250,7 +250,7 @@ Section "-InstallStartCleanup"
   ${InitHashAppModelId} "$INSTDIR" "Software\Mozilla\${AppName}\TaskBarIDs"
 
   ; Remove the updates directory for Vista and above
-  ${CleanUpdateDirectories} "Mozilla\Phantom Satellite" "Mozilla\updates"
+  ${CleanUpdateDirectories} "Mozilla\Pale Moon" "Mozilla\updates"
 
   ${RemoveDeprecatedFiles}
   ${RemovePrecompleteEntries} "false"
@@ -371,17 +371,17 @@ Section "-Application" APP_IDX
   ; it doesn't cause problems always add them.
   ${SetUninstallKeys}
 
-  ; On install always add the PhantomSatelliteHTML and PhantomSatelliteURL keys.
-  ; An empty string is used for the 5th param because PhantomSatelliteHTML is not a
+  ; On install always add the PaleMoonHTML and PaleMoonURL keys.
+  ; An empty string is used for the 5th param because PaleMoonHTML is not a
   ; protocol handler.
   ${GetLongPath} "$INSTDIR\${FileMainEXE}" $8
   StrCpy $2 "$\"$8$\" -osint -url $\"%1$\""
 
-  ; In Win8, the delegate execute handler picks up the value in PhantomSatelliteURL and
-  ; PhantomSatelliteHTML to launch the desktop browser when it needs to.
-  ${AddDisabledDDEHandlerValues} "PhantomSatelliteHTML" "$2" "$8,1" \
+  ; In Win8, the delegate execute handler picks up the value in PaleMoonURL and
+  ; PaleMoonHTML to launch the desktop browser when it needs to.
+  ${AddDisabledDDEHandlerValues} "PaleMoonHTML" "$2" "$8,1" \
                                  "${AppRegName} Document" ""
-  ${AddDisabledDDEHandlerValues} "PhantomSatelliteURL" "$2" "$8,1" "${AppRegName} URL" \
+  ${AddDisabledDDEHandlerValues} "PaleMoonURL" "$2" "$8,1" "${AppRegName} URL" \
                                  "true"
 
   ; For pre win8, the following keys should only be set if we can write to HKLM.
@@ -571,7 +571,7 @@ Section "-InstallEndCleanup"
       ; If we have something other than empty string now, write the value.
       ${If} "$0" != ""
         ClearErrors
-        WriteRegStr HKCU "Software\Mozilla\Phantom Satellite" "OldDefaultBrowserCommand" "$0"
+        WriteRegStr HKCU "Software\Mozilla\Pale Moon" "OldDefaultBrowserCommand" "$0"
       ${EndIf}
 
       ${LogHeader} "Setting as the default browser"
@@ -587,7 +587,7 @@ Section "-InstallEndCleanup"
     ${ElseIfNot} ${Errors}
       ${LogHeader} "Writing default-browser opt-out"
       ClearErrors
-      WriteRegStr HKCU "Software\Mozilla\Phantom Satellite" "DefaultBrowserOptOut" "True"
+      WriteRegStr HKCU "Software\Mozilla\Pale Moon" "DefaultBrowserOptOut" "True"
       ${If} ${Errors}
         ${LogMsg} "Error writing default-browser opt-out"
       ${EndIf}
@@ -778,9 +778,7 @@ Function CheckExistingInstall
 FunctionEnd
 
 Function LaunchApp
-!ifndef DEV_EDITION
   ${ManualCloseAppPrompt} "${WindowClass}" "$(WARN_MANUALLY_CLOSE_APP_LAUNCH)"
-!endif
 
   ClearErrors
   ${GetParameters} $0
@@ -956,14 +954,14 @@ Function preSummary
   WriteRegStr HKLM "Software\Mozilla" "${BrandShortName}InstallerTest" "Write Test"
   ${Unless} ${Errors}
     DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
-    ; Check if Phantom Satellite is the http handler for this user.
+    ; Check if Pale Moon is the http handler for this user.
     SetShellVarContext current ; Set SHCTX to the current user
     ${IsHandlerForInstallDir} "http" $R9
     ${If} $TmpVal == "HKLM"
       SetShellVarContext all ; Set SHCTX to all users
     ${EndIf}
-    ; If Phantom Satellite isn't the http handler for this user show the option to set
-    ; Phantom Satellite as the default browser.
+    ; If Pale Moon isn't the http handler for this user show the option to set
+    ; Pale Moon as the default browser.
     ${If} "$R9" != "true"
     ${AndIf} ${AtMostWin2008R2}
       WriteINIStr "$PLUGINSDIR\summary.ini" "Settings" NumFields "4"

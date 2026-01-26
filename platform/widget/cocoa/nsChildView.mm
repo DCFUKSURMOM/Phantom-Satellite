@@ -3343,16 +3343,12 @@ NSEvent* gLastDragMouseDownEvent = nil;
 
 - (void)installTextInputHandler:(TextInputHandler*)aHandler
 {
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   mTextInputHandler = aHandler;
-#endif
 }
 
 - (void)uninstallTextInputHandler
 {
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   mTextInputHandler = nullptr;
-#endif
 }
 
 - (bool)preRender:(NSOpenGLContext *)aGLContext
@@ -3667,9 +3663,55 @@ NSEvent* gLastDragMouseDownEvent = nil;
 
   NSSize viewSize = [self bounds].size;
   gfx::IntSize backingSize = gfx::IntSize::Truncate(viewSize.width * scale, viewSize.height * scale);
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
   LayoutDeviceIntRegion region = [self nativeDirtyRegionWithBoundingRect:aRect];
 
   bool painted = mGeckoChild->PaintWindowInContext(cgContext, region, backingSize);
+#else
+  CGContextSaveGState(cgContext);
+
+  LayoutDeviceIntRegion region = [self nativeDirtyRegionWithBoundingRect:aRect];
+
+  // Create Cairo objects.
+  RefPtr<gfxQuartzSurface> targetSurface;
+
+  RefPtr<gfx::DrawTarget> dt =
+    gfx::Factory::CreateDrawTargetForCairoCGContext(cgContext,
+                                                    gfx::IntSize(backingSize.width,
+                                                                 backingSize.height));
+  if (!dt || !dt->IsValid()) {
+    // This used to be an assertion, so keep crashing in nightly+aurora
+    gfxDevCrash(mozilla::gfx::LogReason::InvalidContext) << "Cannot create target with CreateDrawTargetForCairoCGContext " << backingSize;
+    return;
+  }
+  dt->AddUserData(&gfxContext::sDontUseAsSourceKey, dt, nullptr);
+  RefPtr<gfxContext> targetContext = gfxContext::CreateOrNull(dt);
+  MOZ_ASSERT(targetContext); // already checked the draw target above
+
+  // Set up the clip region.
+  targetContext->NewPath();
+  for (auto iter = region.RectIter(); !iter.Done(); iter.Next()) {
+    const LayoutDeviceIntRect& r = iter.Get();
+    targetContext->Rectangle(gfxRect(r.x, r.y, r.width, r.height));
+  }
+  targetContext->Clip();
+
+  nsAutoRetainCocoaObject kungFuDeathGrip(self);
+  bool painted = false;
+  if (mGeckoChild->GetLayerManager()->GetBackendType() == LayersBackend::LAYERS_BASIC) {
+    nsBaseWidget::AutoLayerManagerSetup
+      setupLayerManager(mGeckoChild, targetContext, BufferMode::BUFFER_NONE);
+    painted = mGeckoChild->PaintWindow(region);
+  } else if (mGeckoChild->GetLayerManager()->GetBackendType() == LayersBackend::LAYERS_CLIENT) {
+    // We only need this so that we actually get DidPaintWindow fired
+    painted = mGeckoChild->PaintWindow(region);
+  }
+
+  targetContext = nullptr;
+  targetSurface = nullptr;
+
+  CGContextRestoreGState(cgContext);
+#endif
 
   // Undo the scale transform so that from now on the context is in
   // CocoaPoints again.
@@ -4917,6 +4959,7 @@ GetIntegerDeltaForEvent(NSEvent* aEvent)
 
   WidgetMouseEventBase* mouseEvent = outGeckoEvent->AsMouseEventBase();
   mouseEvent->buttons = 0;
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   NSUInteger mouseButtons = [NSEvent pressedMouseButtons];
 
   if (mouseButtons & 0x01) {
@@ -4934,6 +4977,7 @@ GetIntegerDeltaForEvent(NSEvent* aEvent)
   if (mouseButtons & 0x10) {
     mouseEvent->buttons |= WidgetMouseEvent::e5thButtonFlag;
   }
+#endif
 
   switch ([aMouseEvent type]) {
     case NSLeftMouseDown:
@@ -4945,11 +4989,29 @@ GetIntegerDeltaForEvent(NSEvent* aEvent)
     case NSOtherMouseDown:
     case NSOtherMouseUp:
     case NSOtherMouseDragged:
+    {
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+      // pressedMouseButtons: doesn't exist in the 10.4 SDK, so use the
+      // additional code below (TenFourFox issue 507).
+
+      NSInteger mouseButtons = [aMouseEvent buttonNumber];
+      if (mouseButtons == 0)
+        mouseEvent->buttons |= WidgetMouseEvent::eLeftButtonFlag;
+      else if (mouseButtons == 1)
+        mouseEvent->buttons |= WidgetMouseEvent::eRightButtonFlag;
+      else if (mouseButtons == 2)
+        mouseEvent->buttons |= WidgetMouseEvent::eMiddleButtonFlag;
+      else if (mouseButtons == 3)
+        mouseEvent->buttons |= WidgetMouseEvent::e4thButtonFlag;
+      else if (mouseButtons >= 4) // WRONG! but close enough
+        mouseEvent->buttons |= WidgetMouseEvent::e5thButtonFlag;
+#endif
       if ([aMouseEvent subtype] == NSTabletPointEventSubtype) {
         mouseEvent->pressure = [aMouseEvent pressure];
         MOZ_ASSERT(mouseEvent->pressure >= 0.0 && mouseEvent->pressure <= 1.0);
       }
       break;
+    }
 
     default:
       // Don't check other NSEvents for pressure.
@@ -5025,6 +5087,31 @@ GetIntegerDeltaForEvent(NSEvent* aEvent)
 
   NS_OBJC_END_TRY_ABORT_BLOCK_NIL;
 }
+
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+// Provide a legacy NSTextInput method for compatibility with Leopard (and below),
+// as interpretKeyEvents: isn't aware about new insertText:replacementRange: method
+// from NSTextInputClient.
+- (void)insertText:(id)aString
+{
+  NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
+
+  NS_ENSURE_TRUE_VOID(mGeckoChild);
+
+  nsAutoRetainCocoaObject kungFuDeathGrip(self);
+
+  NSAttributedString* attrStr;
+  if ([aString isKindOfClass:[NSAttributedString class]]) {
+    attrStr = static_cast<NSAttributedString*>(aString);
+  } else {
+    attrStr = [[[NSAttributedString alloc] initWithString:aString] autorelease];
+  }
+
+  mTextInputHandler->InsertText(attrStr);
+
+  NS_OBJC_END_TRY_ABORT_BLOCK;
+}
+#endif
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
 {

@@ -46,7 +46,7 @@
 #include "nsTextFrame.h"
 #include "nsCCUncollectableMarker.h"
 #include "nsTextFragment.h"
-#include "nsCSSRuleProcessor.h"
+#include "nsCSSRuleUtils.h"
 #include "nsCORSListenerProxy.h"
 #include "nsHTMLDNSPrefetch.h"
 #include "nsHtml5Atoms.h"
@@ -237,7 +237,7 @@ nsLayoutStatics::Initialize()
   }
 
   nsCSSParser::Startup();
-  nsCSSRuleProcessor::Startup();
+  nsCSSRuleUtils::Startup();
 
   rv = nsXULPopupManager::Init();
   if (NS_FAILED(rv)) {
@@ -319,7 +319,7 @@ nsLayoutStatics::Shutdown()
   EventListenerManager::Shutdown();
   IMEStateManager::Shutdown();
   nsCSSParser::Shutdown();
-  nsCSSRuleProcessor::Shutdown();
+  nsCSSRuleUtils::Shutdown();
   nsHTMLDNSPrefetch::Shutdown();
   nsCSSRendering::Shutdown();
   StaticPresData::Shutdown();

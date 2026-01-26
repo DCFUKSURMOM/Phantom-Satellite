@@ -1264,6 +1264,33 @@ void qcms_data_from_path(const char *path, void **mem, size_t *size)
 	}
 }
 
+/* Helper function for 10.4 */
+size_t qcms_size_of_data(const char *path)
+{
+	be32 length_be;
+	uint32_t length;
+	FILE *file = NULL;
+
+	file = fopen(path, "rb");
+	if (!file)
+		return 0;
+
+	if (fread(&length_be, 1, sizeof(length_be), file) != sizeof(length_be))
+	{
+		fclose(file);
+		return 0;
+	}
+
+	length = be32_to_cpu(length_be); // XXX shouldn't be needed
+	if (length > MAX_PROFILE_SIZE || length < sizeof(length_be)) {
+		fclose(file);
+		return 0;
+	}
+	
+	fclose(file);
+	return length;
+}
+
 #ifdef _WIN32
 /* Unicode path version */
 qcms_profile* qcms_profile_from_unicode_path(const wchar_t *path)

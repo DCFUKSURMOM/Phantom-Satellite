@@ -35,6 +35,13 @@ if CONFIG['CPU_ARCH'] == 'aarch64':
         'source/row_neon64.cc',
         'source/scale_neon64.cc',
     ]
+if CONFIG['CPU_ARCH'] == 'loongarch64':
+    libyuv_non_unified_sources += [
+        'source/rotate_lsx.cc',
+        'source/row_lasx.cc',
+        'source/row_lsx.cc',
+        'source/scale_lsx.cc',
+    ]
 
 GYP_DIRS['.'].input = 'libyuv.gyp'
 GYP_DIRS['.'].variables = gyp_vars

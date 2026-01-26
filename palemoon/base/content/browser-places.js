@@ -1176,7 +1176,6 @@ var BookmarkingUI = {
 
     if (aState == "invalid") {
       this.star.setAttribute("disabled", "true");
-      this.star.removeAttribute("starred");
     } else {
       this.star.removeAttribute("disabled");
     }

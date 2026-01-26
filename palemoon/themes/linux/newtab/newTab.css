@@ -5,7 +5,7 @@
 %include ../../shared/newtab/newTab.css.inc
 
 .newtab-undo-button {
-  -moz-appearance: none;
+  appearance: none;
   color: rgb(78,114,204);
   cursor: pointer;
   padding: 0;

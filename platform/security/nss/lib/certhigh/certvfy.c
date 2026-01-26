@@ -2133,6 +2133,7 @@ CERT_GetCertChainFromCert(CERTCertificate *cert, PRTime time, SECCertUsage usage
 
     chain = CERT_NewCertList();
     if (NULL == chain) {
+        CERT_DestroyCertificate(cert);
         PORT_SetError(SEC_ERROR_NO_MEMORY);
         return NULL;
     }
@@ -2140,6 +2141,7 @@ CERT_GetCertChainFromCert(CERTCertificate *cert, PRTime time, SECCertUsage usage
     while (cert != NULL && ++count <= CERT_MAX_CERT_CHAIN) {
         if (SECSuccess != CERT_AddCertToListTail(chain, cert)) {
             /* return partial chain */
+            CERT_DestroyCertificate(cert);
             PORT_SetError(SEC_ERROR_NO_MEMORY);
             return chain;
         }
@@ -2153,6 +2155,7 @@ CERT_GetCertChainFromCert(CERTCertificate *cert, PRTime time, SECCertUsage usage
     }
 
     /* return partial chain */
+    CERT_DestroyCertificate(cert);
     PORT_SetError(SEC_ERROR_UNKNOWN_ISSUER);
     return chain;
 }

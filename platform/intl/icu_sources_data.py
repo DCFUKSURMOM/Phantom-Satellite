@@ -13,6 +13,7 @@
 from __future__ import print_function
 
 import glob
+import multiprocessing
 import os
 import sets
 import shutil
@@ -47,7 +48,6 @@ UNUSED_SOURCES = sets.Set([
     'intl/icu/source/common/unorm.cpp',
     'intl/icu/source/common/usc_impl.cpp',
     'intl/icu/source/common/ustr_wcs.cpp',
-    'intl/icu/source/common/util_props.cpp',
     'intl/icu/source/i18n/anytrans.cpp',
     'intl/icu/source/i18n/brktrans.cpp',
     'intl/icu/source/i18n/casetrn.cpp',
@@ -124,26 +124,20 @@ UNUSED_SOURCES = sets.Set([
     'intl/icu/source/i18n/ulocdata.cpp',
 ])
 
-def find_source_file(dir, filename):
-    base = os.path.splitext(filename)[0]
-    for ext in ('.cpp', '.c'):
-        f = mozpath.join(dir, base + ext)
-        if os.path.isfile(f):
-            return f
+def ensure_source_file_exists(dir, filename):
+    f = mozpath.join(dir, filename)
+    if os.path.isfile(f):
+        return f
     raise Exception("Couldn't find source file for: %s" % filename)
 
 
-def get_sources_from_makefile(makefile):
-    import pymake.parser
-    from pymake.parserdata import SetVariable
-    srcdir = os.path.dirname(makefile)
-    for statement in pymake.parser.parsefile(makefile):
-        if (isinstance(statement, SetVariable) and
-                statement.vnameexp.is_static_string and
-                statement.vnameexp.s == 'OBJECTS'):
-            return sorted((find_source_file(srcdir, s)
-                           for s in statement.value.split()),
-                          key=lambda x: x.lower())
+def get_sources(sources_file):
+    srcdir = os.path.dirname(sources_file)
+    with open(sources_file) as f:
+        return sorted(
+            (ensure_source_file_exists(srcdir, name.strip()) for name in f),
+            key=lambda x: x.lower(),
+        )
 
 
 def list_headers(path):
@@ -172,14 +166,13 @@ def write_sources(mozbuild, sources, headers):
 
 def update_sources(topsrcdir):
     print('Updating ICU sources lists...')
-    sys.path.append(mozpath.join(topsrcdir, 'build/pymake'))
     for d in ['common', 'i18n']:
-        base_path = mozpath.join(topsrcdir, 'intl/icu/source/%s' % mozpath.basename(d))
-        makefile = mozpath.join(base_path, 'Makefile.in')
+        base_path = mozpath.join(topsrcdir, 'intl/icu/source/%s' % d)
+        sources_file = mozpath.join(base_path, 'sources.txt')
         mozbuild = mozpath.join(topsrcdir,
-                                'config/external/icu/%s/sources.mozbuild' % d)
+                                'config/external/icu/%s/sources.mozbuild' % mozpath.basename(d))
         sources = [mozpath.relpath(s, topsrcdir)
-                   for s in get_sources_from_makefile(makefile)]
+                   for s in get_sources(sources_file)]
         unicode_dir = mozpath.join(base_path, 'unicode')
         if os.path.exists(unicode_dir):
             headers = [mozpath.normsep(os.path.relpath(s, topsrcdir))
@@ -216,11 +209,20 @@ def update_data_file(topsrcdir):
     # bug 1262101 - these should be shared with the moz.build files
     env.update({
         'CPPFLAGS': ('-DU_NO_DEFAULT_INCLUDE_UTF_HEADERS=1 ' +
+                     '-DU_HIDE_OBSOLETE_UTF_OLD_H=1 ' +
+                     '-DUCONFIG_NO_LEGACY_CONVERSION ' +
                      '-DUCONFIG_NO_TRANSLITERATION ' +
                      '-DUCONFIG_NO_REGULAR_EXPRESSIONS ' +
                      '-DUCONFIG_NO_BREAK_ITERATION ' +
                      '-DU_CHARSET_IS_UTF8')
     })
+
+    # Exclude data that we currently don't need.
+    #
+    # The file format for ICU's data build tool is described at
+    # <https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md>.
+    env['ICU_DATA_FILTER_FILE'] = mozpath.join(topsrcdir, 'intl/icu/data_filter.json')
+
     print('Running ICU configure...')
     if not try_run(
             'icu-configure',
@@ -231,6 +233,7 @@ def update_data_file(topsrcdir):
              '--disable-extras',
              '--disable-icuio',
              '--disable-layout',
+             '--disable-layoutex',
              '--disable-tests',
              '--disable-samples',
              '--disable-strict'],
@@ -238,7 +241,12 @@ def update_data_file(topsrcdir):
             env=env):
         return False
     print('Running ICU make...')
-    if not try_run('icu-make', ['make'], cwd=objdir):
+    if not try_run(
+            'icu-make',
+            ['make',
+             '--jobs=%d' % multiprocessing.cpu_count(),
+             '--output-sync'],
+            cwd=objdir):
         return False
     print('Copying ICU data file...')
     tree_data_path = mozpath.join(topsrcdir,

@@ -10,6 +10,7 @@
 #include "skia/include/core/SkPath.h"
 #include "skia/include/ports/SkTypeface_mac.h"
 #endif
+#include "DrawTargetCG.h"
 #include <vector>
 #include <dlfcn.h>
 #ifdef MOZ_WIDGET_UIKIT
@@ -86,8 +87,54 @@ SkTypeface* ScaledFontMac::GetSkTypeface()
 already_AddRefed<Path>
 ScaledFontMac::GetPathForGlyphs(const GlyphBuffer &aBuffer, const DrawTarget *aTarget)
 {
+  if (aTarget->GetBackendType() == BackendType::COREGRAPHICS ||
+      aTarget->GetBackendType() == BackendType::COREGRAPHICS_ACCELERATED) {
+      CGMutablePathRef path = CGPathCreateMutable();
+      for (unsigned int i = 0; i < aBuffer.mNumGlyphs; i++) {
+          // XXX: we could probably fold both of these transforms together to avoid extra work
+          CGAffineTransform flip = CGAffineTransformMakeScale(1, -1);
+
+          // CGFontGetGlyphPath is non-public and CoreText can do the same on 10.5 and later
+#if !defined(MAC_OS_X_VERSION_10_5) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
+          CGPathRef glyphPath = ::CGFontGetGlyphPath(mFont, &flip, 0, aBuffer.mGlyphs[i].mIndex);
+#else
+          CTFontRef ctFont = CTFontCreateWithGraphicsFont(mFont, 1.0, NULL, NULL);
+          CGPathRef glyphPath = CTFontCreatePathForGlyph(ctFont, aBuffer.mGlyphs[i].mIndex, &flip);
+#endif
+
+          CGAffineTransform matrix = CGAffineTransformMake(mSize, 0, 0, mSize,
+                                                           aBuffer.mGlyphs[i].mPosition.x,
+                                                           aBuffer.mGlyphs[i].mPosition.y);
+          CGPathAddPath(path, &matrix, glyphPath);
+          CGPathRelease(glyphPath);
+      }
+      RefPtr<Path> ret = new PathCG(path, FillRule::FILL_WINDING);
+      CGPathRelease(path);
+      return ret.forget();
+  }
   return ScaledFontBase::GetPathForGlyphs(aBuffer, aTarget);
 }
+
+#if !defined(MAC_OS_X_VERSION_10_7) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7)
+void
+ScaledFontMac::CopyGlyphsToBuilder(const GlyphBuffer &aBuffer, PathBuilder *aBuilder, const Matrix *aTransformHint)
+{
+  PathBuilderCG *pathBuilderCG =
+    static_cast<PathBuilderCG*>(aBuilder);
+  // XXX: check builder type
+  for (unsigned int i = 0; i < aBuffer.mNumGlyphs; i++) {
+    // XXX: we could probably fold both of these transforms together to avoid extra work
+    CGAffineTransform flip = CGAffineTransformMakeScale(1, -1);
+    CGPathRef glyphPath = ::CGFontGetGlyphPath(mFont, &flip, 0, aBuffer.mGlyphs[i].mIndex);
+
+    CGAffineTransform matrix = CGAffineTransformMake(mSize, 0, 0, mSize,
+                                                     aBuffer.mGlyphs[i].mPosition.x,
+                                                     aBuffer.mGlyphs[i].mPosition.y);
+    CGPathAddPath(pathBuilderCG->mCGPath, &matrix, glyphPath);
+    CGPathRelease(glyphPath);
+  }
+}
+#endif
 
 uint32_t
 CalcTableChecksum(const uint32_t *tableStart, uint32_t length, bool skipChecksumAdjust = false)

@@ -105,6 +105,11 @@ extern int32_t             gXULModalLevel;
 
 static bool gAppShellMethodsSwizzled = false;
 
+#ifdef __ppc__
+#pragma GCC push_optimize
+#pragma GCC optimize ("-O1")
+#endif
+
 @implementation GeckoNSApplication
 
 - (void)sendEvent:(NSEvent *)anEvent
@@ -142,6 +147,10 @@ static bool gAppShellMethodsSwizzled = false;
 }
 
 @end
+
+#ifdef __ppc__
+#pragma GCC pop_optimize
+#endif
 
 // AppShellDelegate
 //

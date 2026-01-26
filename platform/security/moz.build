@@ -79,6 +79,7 @@ gyp_vars['nspr_lib_dir'] = CONFIG['NSPR_LIB_DIR']
 gyp_vars['NSS_DISABLE_AVX2'] = 1
 if CONFIG['CLANG_CXX']:
     gyp_vars['cc_is_clang'] = 1
+gyp_vars['disable_crypto_vsx'] = 1
 
 GYP_DIRS += ['nss']
 GYP_DIRS['nss'].input = 'nss/nss.gyp'

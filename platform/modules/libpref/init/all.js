@@ -1216,6 +1216,9 @@ pref("privacy.popups.disable_from_plugins", 2);
 // Send "Sec-GPC" HTTP header, disabled by default
 pref("privacy.GPCheader.enabled",    false);
 
+// By default, do not clear domain passwords for "Forget about site"
+pref("privacy.forgetaboutsite.clearPasswords", false);
+
 pref("dom.event.contextmenu.enabled",       true);
 pref("dom.event.clipboardevents.enabled",   true);
 
@@ -1306,6 +1309,9 @@ pref("javascript.options.dynamicImport", true);
 
 // Streams API
 pref("javascript.options.streams", true);
+
+// Enable garbage collection of weakrefed objects
+pref("javascript.options.weakrefs", false);
 
 // advanced prefs
 pref("advanced.mailftp",                    false);
@@ -2549,6 +2555,7 @@ pref("layout.css.prefixes.animations", true);
 pref("layout.css.prefixes.box-sizing", true);
 pref("layout.css.prefixes.font-features", true);
 pref("layout.css.prefixes.gradients", true);
+pref("layout.css.prefixes.appearance", true);
 
 // Are webkit-prefixed properties & property-values supported?
 pref("layout.css.prefixes.webkit", true);
@@ -2665,6 +2672,12 @@ pref("layout.css.resizeobserver.enabled", true);
 
 // Is support for cascade layers enabled?
 pref("layout.css.cascade-layers.enabled", true);
+
+// Should rules in imported style sheets be added based on the order
+// of appearance of their respective @import rules in the parent
+// style sheet? Otherwise, they are added before rules preceding
+// @import are processed, which is problematic for cascade layers.
+pref("layout.css.load-imported-sheets-in-order", true);
 
 // pref for which side vertical scrollbars should be on
 // 0 = end-side in UI direction

@@ -139,6 +139,7 @@ enum {
 };
 typedef NSInteger NSEventGestureAxis;
 
+#ifndef __ppc64__
 @interface NSEvent (FluidSwipeTracking)
 + (BOOL)isSwipeTrackingFromScrollEventsEnabled;
 - (BOOL)hasPreciseScrollingDeltas;
@@ -150,6 +151,7 @@ typedef NSInteger NSEventGestureAxis;
                                max:(CGFloat)maxDampenThreshold
                       usingHandler:(void (^)(CGFloat gestureAmount, NSEventPhase phase, BOOL isComplete, BOOL *stop))trackingHandler;
 @end
+#endif // #ifndef __ppc64__
 #endif // #ifdef __LP64__
 #endif // #if !defined(MAC_OS_X_VERSION_10_7) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7)
 

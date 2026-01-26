@@ -4,7 +4,7 @@
 
 #downloadsRichListBox {
   /** The default listbox appearance comes with an unwanted margin. **/
-  -moz-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
@@ -36,7 +36,7 @@
 }
 
 .downloadButton {
-  -moz-appearance: none;
+  appearance: none;
   background: transparent;
   min-width: 0;
   min-height: 0;
@@ -148,7 +148,7 @@ richlistitem.download:hover > .downloadButton.downloadRetry:active {
 
 @media (-moz-os-version: windows-win7) and (-moz-windows-default-theme) {
   /*
-  -moz-appearance: menuitem is almost right, but the hover effect is not
+  appearance: menuitem is almost right, but the hover effect is not
   transparent and is lighter than desired.
 
   Copied from the autocomplete richlistbox styling in

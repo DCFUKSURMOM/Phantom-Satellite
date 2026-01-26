@@ -890,8 +890,8 @@ NS_IMETHODIMP nsCocoaWindow::Show(bool bState)
                             ordered:NSWindowAbove];
     }
     else {
-#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
       NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
       if (mWindowType == eWindowType_toplevel &&
           [mWindow respondsToSelector:@selector(setAnimationBehavior:)]) {
         NSWindowAnimationBehavior behavior;
@@ -912,9 +912,9 @@ NS_IMETHODIMP nsCocoaWindow::Show(bool bState)
         }
         [mWindow setAnimationBehavior:behavior];
       }
+#endif
       [mWindow makeKeyAndOrderFront:nil];
       NS_OBJC_END_TRY_ABORT_BLOCK;
-#endif
       SendSetZLevelEvent();
     }
   }
@@ -3338,7 +3338,7 @@ static const NSString* kStateCollectionBehavior = @"collectionBehavior";
 // This class also provides us with a pill button to show/hide the toolbar up to 10.6.
 //
 // Drawing the unified gradient in the titlebar and the toolbar works like this:
-// 1) In the style sheet we set the toolbar's -moz-appearance to toolbar.
+// 1) In the style sheet we set the toolbar's appearance to "toolbar".
 // 2) When the toolbar is visible and we paint the application chrome
 //    window, the array that Gecko passes nsChildView::UpdateThemeGeometries
 //    will contain an entry for the widget type NS_THEME_TOOLBAR.

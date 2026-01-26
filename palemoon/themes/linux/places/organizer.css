@@ -42,14 +42,14 @@
 
 /* Menu */
 #placesMenu {
-  -moz-appearance: none;
+  appearance: none;
   border: none;
 }
 
 #placesMenu > menu {
   padding-inline-start: 4px;
   -moz-binding: url("chrome://browser/skin/places/organizer.xml#toolbarbutton-dropdown");
-  -moz-appearance: toolbarbutton;
+  appearance: toolbarbutton;
   color: -moz-DialogText;
 }
 
@@ -58,7 +58,7 @@
 }
 
 #placesMenu > menu > .menubar-right {
-  -moz-appearance: toolbarbutton-dropdown;
+  appearance: toolbarbutton-dropdown;
   width: 12px;
   height: 12px;
 }

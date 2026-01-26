@@ -22,6 +22,9 @@ DIRS += [
     'statusbar',
 ]
 
+if CONFIG['MOZ_SERVICES_SYNC']:
+    DIRS += ['sync']
+
 DIRS += ['build']
 
 XPIDL_SOURCES += [

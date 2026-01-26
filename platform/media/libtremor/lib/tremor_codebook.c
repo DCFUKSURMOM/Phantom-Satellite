@@ -336,7 +336,7 @@ long vorbis_book_decodev_set(codebook *book,ogg_int32_t *a,
     }
   }else{
 
-    int i;
+    int i,j;
     for(i=0;i<n;){
       a[i++]=0;
     }

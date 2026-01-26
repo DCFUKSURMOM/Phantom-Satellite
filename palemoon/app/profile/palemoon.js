@@ -21,6 +21,16 @@
 #endif
 #endif
 
+#ifdef MOZ_WIDGET_GTK
+#if MOZ_WIDGET_GTK == 2
+#define NOT_GTK3
+#endif
+#endif
+
+#ifndef MOZ_WIDGET_GTK
+#define NOT_GTK3
+#endif
+
 pref("browser.chromeURL","chrome://browser/content/");
 pref("browser.hiddenWindowChromeURL", "chrome://browser/content/hiddenWindow.xul");
 
@@ -723,8 +733,8 @@ pref("plugins.always_show_indicator", false);
 pref("plugins.click_to_play", true);
 
 // Platform pref is to enable all plugins by default.
-// Uncomment this pref to default to click-to-play
-// pref("plugin.default.state", 1);
+// This pref defaults them to click-to-play
+pref("plugin.default.state", 1);
 
 // Don't load plugin instances with no src declared.
 // These prefs are documented in detail in all.js.
@@ -998,11 +1008,9 @@ pref("toolbar.customization.usesheet", true);
 pref("toolbar.customization.usesheet", false);
 #endif
 
-#ifdef XP_MACOSX
-// On mac, the default pref is per-architecture
-pref("dom.ipc.plugins.enabled.i386", true);
-pref("dom.ipc.plugins.enabled.x86_64", true);
-#else
+#ifdef MOZ_ENABLE_NPAPI
+// Whether plugins are run out-of-process. Only applicable in non-GTK3
+#ifdef NOT_GTK3
 pref("dom.ipc.plugins.enabled", true);
 #endif
 
@@ -1016,6 +1024,7 @@ pref("dom.ipc.plugins.enabled", true);
 #ifdef XP_MACOSX
 pref("dom.ipc.plugins.nativeCursorSupport", true);
 #endif
+#endif /* MOZ_ENABLE_NPAPI */
 
 #ifdef XP_WIN
 pref("browser.taskbar.previews.enable", false);

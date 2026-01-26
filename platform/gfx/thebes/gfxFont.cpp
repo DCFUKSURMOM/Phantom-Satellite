@@ -854,7 +854,8 @@ gfxFont::gfxFont(gfxFontEntry *aFontEntry, const gfxFontStyle *aFontStyle,
     mStyle(*aFontStyle),
     mAdjustedSize(0.0),
     mFUnitsConvFactor(-1.0f), // negative to indicate "not yet initialized"
-    mAntialiasOption(anAAOption)
+    mAntialiasOption(anAAOption),
+    mSpacingKludge(false)
 {
 #ifdef DEBUG_TEXT_RUN_STORAGE_METRICS
     ++gFontCount;
@@ -883,9 +884,11 @@ gfxFont::GetGlyphHAdvance(DrawTarget* aDrawTarget, uint16_t aGID)
     if (!SetupCairoFont(aDrawTarget)) {
         return 0;
     }
+#if !defined(XP_MACOSX) || (defined(XP_MACOSX) && !(defined(__ppc__) || defined(__ppc64__)))
     if (ProvidesGlyphWidths()) {
         return GetGlyphWidth(*aDrawTarget, aGID) / 65536.0;
     }
+#endif
     if (mFUnitsConvFactor < 0.0f) {
         GetMetrics(eHorizontal);
     }

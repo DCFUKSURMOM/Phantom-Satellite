@@ -896,7 +896,7 @@ static const bool config_recycle = false;
  * controlling the malloc behavior are defined as compile-time constants
  * for best performance and cannot be altered at runtime.
  */
-#if !defined(__ia64__) && !defined(__sparc__) && !defined(__mips__) && !defined(__aarch64__) && !defined(__powerpc) && !defined(__powerpc64)
+#if !defined(__ia64__) && !defined(__sparc__) && !defined(__mips__) && !defined(__aarch64__)
 #define MALLOC_STATIC_SIZES 1
 #endif
 
@@ -912,6 +912,8 @@ static const bool config_recycle = false;
 #define pagesize_2pow			((size_t) 13)
 #elif defined(__powerpc64__)
 #define pagesize_2pow			((size_t) 16)
+#elif defined(__loongarch__) || defined(__loongarch64)
+#define pagesize_2pow			((size_t) 14)
 #else
 #define pagesize_2pow			((size_t) 12)
 #endif

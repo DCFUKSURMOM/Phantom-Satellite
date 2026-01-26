@@ -156,6 +156,11 @@ protected:
   void DrawResizer(CGContextRef cgContext, const HIRect& aRect, nsIFrame *aFrame);
 
   // Scrollbars
+#if !defined(MAC_OS_X_VERSION_10_7) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7)
+  void DrawScrollbar(CGContextRef aCGContext, const HIRect& aBoxRect, nsIFrame *aFrame);
+  void GetScrollbarDrawInfo (HIThemeTrackDrawInfo& aTdi, nsIFrame *aFrame, 
+                             const CGSize& aSize, bool aShouldGetButtonStates);
+#endif
   void GetScrollbarPressStates(nsIFrame *aFrame,
                                mozilla::EventStates aButtonStates[]);
   nsIFrame* GetParentScrollbarFrame(nsIFrame *aFrame);
