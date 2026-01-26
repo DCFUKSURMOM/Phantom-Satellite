@@ -42,3 +42,4 @@ pref("privacy.GPCheader.enabled", true); //tell sites to not share or sell data 
 pref("canvas.poisondata", true); //poison canvas data by default
 pref("general.warnOnAboutConfig", false); //nuke about:config warning
 pref("xpinstall.whitelist.required", true); //warn when sites try to install extentions
+pref("browser.display.prefers_color_scheme", 2); //tell websites to use dark mode by default
