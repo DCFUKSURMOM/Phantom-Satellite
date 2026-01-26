@@ -113,33 +113,34 @@ def config_status(topobjdir='.', topsrcdir='.', defines=None,
     log_manager.add_terminal_logging(level=log_level)
     log_manager.enable_unstructured()
 
+#status messages with #orig are the original status messages, status messages with #cust are the custom ones
     STATUS_MESSAGES = [
-        'Walking the dog',
-        'Feeding the hatchlings',
-        'Inserting floppy disk',
-        'Initializing Stacker volume',
-        'Spinning yarn',
-        'Adjusting flux capacitor',
-        'Granting wishes',
-        'Auditing the taxes',
-        'Twiddling thumbs',
-        'Consulting the manual',
-        'Brewing coffee',
-        'Inserting coin',
-        'Deriving optimal formula',
-        'Deleting junk mail',
-        'Warming caches',
-        'Popping bubble wrap',
-        'Pausing for fika',
-        'Oiling the hamster wheel',
-        'Ordering a pizza',
-        'Unclogging the Internet tubes',
-        'Testing your patience',
-        'Watching cat videos',
-        'Rescuing dragon from princess',
-        'Judging things by the spoon',
-        'Nailing down the files',
-        'Whistling in the dark',
+        'Inserting floppy disk', #orig
+        'Adjusting flux capacitor', #orig
+        'Commiting tax fraud', #cust
+        'Questioning my life choices', #cust
+        'Consulting the manual', #orig
+        'Inserting coin', #orig
+        'Warming caches', #orig
+        'Calling your mother', #cust
+        'Calling the police', #cust, requested by TheLibrarian in the ArchPOWER Discord
+        'Summoning a demon', #cust
+        'Testing your patience', #orig
+        'Watching cat videos', #orig
+        'Rescuing dragon from princess', #orig
+        'Judging your hardware', #cust
+        'Hiring a hitman', #cust, requested by Selim in the Wii-Linux Discord
+        'Linuxing your Wii', #cust, requested by Selim in the Wii-Linux Discord
+        'Linuxing your Wii-U', #cust, requested by Selim in the Wii-Linux Discord
+        'Linuxing your GameCube', #cust
+        'Linuxing your PS2', #cust
+        'Linuxing your PS3', #cust
+        'Deleting Filesystem', #cust, requested by Tech64 in the Wii-Linux Discord
+        'Causing a Resonance Cascade', #cust, requested by Tech64 in the Wii-Linux Discord
+        'Making memes', #cust, requested by Tech64 in the Wii-Linux Discord
+        'Installing Haiku', #cust, requested by Tech64 in the Wii-Linux Discord
+        'Boiling water for tea', #cust, requested by waterpear in the Wii-Linux Discord
+        'Reticulating splines', #cust, requested by waterpear in the Wii-Linux Discord
     ]
 
     print('{0}...'.format(random.choice(STATUS_MESSAGES)), file=sys.stderr)
