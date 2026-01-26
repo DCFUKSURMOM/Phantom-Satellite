@@ -1,0 +1,40 @@
+mk_add_options MOZ_MAKE_FLAGS="-j5"
+
+# Build options for Phantom Satellite
+ac_add_options --enable-application=palemoon
+
+ac_add_options --enable-jemalloc
+ac_add_options --enable-strip
+ac_add_options --enable-devtools
+ac_add_options --enable-av1
+ac_add_options --enable-jxl
+ac_add_options --disable-webrtc
+ac_add_options --disable-gamepad
+ac_add_options --disable-tests
+ac_add_options --disable-debug
+ac_add_options --disable-necko-wifi
+ac_add_options --disable-updater
+ac_add_options --with-pthreads
+ac_add_options --disable-crashreporter
+ac_add_options --disable-js-shell
+ac_add_options --disable-precompiled-startupcache
+ac_add_options --disable-gconf
+ac_add_options --disable-gold
+
+# Specify location of MacOS X SDK
+ac_add_options --with-macos-sdk=/Users/daniel/Desktop/PS/MacOSX11.3.sdk
+
+# Use Clang
+export CXX="/usr/bin/clang++ -stdlib=libc++"
+
+# Compile for Apple Silicon (this doesn't HAVE to be specified on x86_64, done for consistency)
+ac_add_options --host=x86_64-apple-darwin
+ac_add_options --target=x86_64-apple-darwin
+
+# Remove unused function sections, this doesnt work when set globally sadly
+ac_add_options --enable-optimize="-ffunction-sections"
+
+# Optimize for generic x86_64, optimize for size, remove unused data sections
+export CFLAGS="-march=x86-64 -mtune=generic -Os -fdata-sections"
+export CXXFLAGS="-march=x86-64 -mtune=generic -Os -fdata-sections"
+export LDFLAGS="-march=x86-64 -mtune=generic -Os -fdata-sections"

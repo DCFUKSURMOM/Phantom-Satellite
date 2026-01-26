@@ -1,0 +1,40 @@
+mk_add_options MOZ_MAKE_FLAGS="-j5"
+
+# Build options for Phantom Satellite
+ac_add_options --enable-application=palemoon
+
+ac_add_options --enable-jemalloc
+ac_add_options --enable-strip
+ac_add_options --enable-devtools
+ac_add_options --enable-av1
+ac_add_options --enable-jxl
+ac_add_options --disable-webrtc
+ac_add_options --disable-gamepad
+ac_add_options --disable-tests
+ac_add_options --disable-debug
+ac_add_options --disable-necko-wifi
+ac_add_options --disable-updater
+ac_add_options --with-pthreads
+ac_add_options --disable-crashreporter
+ac_add_options --disable-js-shell
+ac_add_options --disable-precompiled-startupcache
+ac_add_options --disable-gconf
+ac_add_options --disable-gold
+
+# Specify location of MacOS X SDK
+ac_add_options --with-macos-sdk=/Users/daniel/Desktop/PS/MacOSX11.3.sdk
+
+# Use Clang
+export CXX="/usr/bin/clang++ -stdlib=libc++"
+
+# Cross compile for Apple Silicon
+ac_add_options --host=x86_64-apple-darwin
+ac_add_options --target=aarch64-apple-darwin
+
+# Remove unused function sections, this doesnt work when set globally sadly
+ac_add_options --enable-optimize="-ffunction-sections"
+
+# Set Apple M1 as minimum CPU while still tuning for newer, disable strict aliasing, optimize for size, remove unused data sections
+export CFLAGS="-mcpu=apple-m1 -mtune=apple-m4 -fno-strict-aliasing -Os -fdata-sections"
+export CXXFLAGS="-mcpu=apple-m1 -mtune=apple-m4 -fno-strict-aliasing -Os -fdata-sections"
+export LDFLAGS="-mcpu=apple-m1 -mtune=apple-m4 -fno-strict-aliasing -Os -fdata-sections"
