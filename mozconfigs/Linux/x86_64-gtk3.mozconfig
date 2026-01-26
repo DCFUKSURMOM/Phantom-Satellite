@@ -25,7 +25,6 @@ ac_add_options --disable-crashreporter
 ac_add_options --disable-js-shell
 ac_add_options --disable-precompiled-startupcache
 ac_add_options --disable-elf-hack
-ac_add_options --disable-gconf
 ac_add_options --disable-gold # Disable ld.gold, not required for x86 but done anyways for consistency
 
 # Optimize for size and remove unused function sections, these don't work properly when set globally sadly
