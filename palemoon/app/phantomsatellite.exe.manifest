@@ -3,10 +3,10 @@
 <assemblyIdentity
         version="1.0.0.0"
         processorArchitecture="*"
-        name="Pale Moon"
+        name="Phantom Satellite"
         type="win32"
 />
-<description>Pale Moon</description>
+<description>Phantom Satellite</description>
 <application>
   <windowsSettings>
 	<activeCodePage xmlns="http://schemas.microsoft.com/SMI/2019/WindowsSettings">UTF-8</activeCodePage>
