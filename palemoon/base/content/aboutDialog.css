@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #aboutPMDialogContainer {
-  width: 420px;
+  width: 640px;
   height: 240px;
 }
 
@@ -37,7 +37,7 @@
   padding: 4px 10px 0px;
   border: 1px solid;
   border-color: #00FFFF;
-  color: #0088AA;
+  color: #00AAAA;
 }
 
 #aboutLinkBox {

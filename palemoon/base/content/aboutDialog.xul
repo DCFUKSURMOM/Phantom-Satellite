@@ -54,18 +54,18 @@
          &brandFullName; is maintained by &vendorShortName;.
         </description>
         <description class="text-credits">
-          This browser was originally started as a rebranded fork of Pale Moon to get around their branding drama. I would like for it to eventually become something more. It already has some patches that arent in stock Pale Moon, like fixes for PPC builds. Source code is <label class="text-link" href="https://github.com/DCFUKSURMOM/Phantom-Satellite">here</label>
+          This is the Phantom Satellite web browser, a fork of Pale Moon that aims to support older/niche platforms, without sacrificing support for more common/modern platforms. The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon (the moon is a natural satellite). Source code is <label class="text-link" href="https://github.com/DCFUKSURMOM/Phantom-Satellite">here</label>
 #else
          &brandFullName; is maintained by &vendorShortName;.
         </description>
         <description class="text-credits">
-          This browser was originally started as a rebranded fork of Pale Moon to get around their branding drama. I would like for it to eventually become something more. It already has some patches that arent in stock Pale Moon, like fixes for PPC builds. Source code is <label class="text-link" href="https://github.com/DCFUKSURMOM/Phantom-Satellite">here</label>
+          This is the Phantom Satellite web browser, a fork of Pale Moon that aims to support older/niche platforms, without sacrificing support for more common/modern platforms. The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon (the moon is a natural satellite). Source code is <label class="text-link" href="https://github.com/DCFUKSURMOM/Phantom-Satellite">here</label>
 #endif
 #else
          &brandFullName; is maintained by &vendorShortName;.
         </description>
         <description class="text-credits">
-          This browser was originally started as a rebranded fork of Pale Moon to get around their branding drama. I would like for it to eventually become something more. It already has some patches that arent in stock Pale Moon, like fixes for PPC builds. Source code is <label class="text-link" href="https://github.com/DCFUKSURMOM/Phantom-Satellite">here</label>
+          This is the Phantom Satellite web browser, a fork of Pale Moon that aims to support older/niche platforms, without sacrificing support for more common/modern platforms. The name is a play on Pale Moon, Phantom = Pale (like a ghost) Satellite = Moon (the moon is a natural satellite). Source code is <label class="text-link" href="https://github.com/DCFUKSURMOM/Phantom-Satellite">here</label>
 #endif
         </description>    
     </vbox>
