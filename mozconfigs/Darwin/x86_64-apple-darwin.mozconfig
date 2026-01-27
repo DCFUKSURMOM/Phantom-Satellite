@@ -18,7 +18,6 @@ ac_add_options --with-pthreads
 ac_add_options --disable-crashreporter
 ac_add_options --disable-js-shell
 ac_add_options --disable-precompiled-startupcache
-ac_add_options --disable-gconf
 ac_add_options --disable-gold
 
 # Specify location of MacOS X SDK
