@@ -13,27 +13,26 @@ Key differences:
 * Support for x86 CPUs that do not support SSE2 via compiler flag shenanigans (only tested on Linux, config is at mozconfigs/Linux/i686-nosse2-gtk2.mozconfig, requires a least a Pentium 3)
 * The Linux nosse/nosse2 configs should work for stock PaleMoon as well.
 
-Minimum Requirements:
-* Windows: Windows 7 or newer running on a Pentium 4 or newer (I have not figured out the compiler flags for older chips on Windows yet)
-* Linux: Any reasonably up to date distro, running on a Pentium MMX or newer (depending on the config), the releases are currently built against Artix Linux and may not run on distros with older packages, this can be fixed by updating those packages or recompiling the browser.
-* Mac OS: Mac OS 10.7 on x86_64 or 11.0 on ARM64, according to the Pale Moon download page anyways, it may or may not work on older. I previously did not do Mac builds, but I just got a Mac build environment set up, you can get test builds [here](http://dcfuksurmom.duckdns.org/phantomsatellite/testbuilds/33.9.1/darwin/), future releases will have builds in the release tab. PowerPC Mac OS is not currently supported (see the "Features I would like to have" section)
-
 I'm not opposed to applying any cool patches that are submitted or that I find myself, preferably patches that can be directly applied to stock Pale Moon so that updating the base for this browser can remain as simple as possible.
 
+Minimum Requirements:
+* Windows: Windows 7 or newer running on a Pentium 4 or newer (I have not figured out the compiler flags for older chips on Windows yet)
+* Linux: Any reasonably up to date distro, running on a Pentium MMX or newer (depending on the config). The releases are currently built system libs on Artix (x64), ArchPower (PPC, PPC64), and Void Linux (i686) and may not run on distros with older packages, this can be fixed by updating those packages or recompiling the browser.
+* Mac OS: Mac OS 10.7 on x86_64 or 11.0 on ARM64. PowerPC Mac OS is currently experimental thanks to [Whitestar](https://github.com/dbsoft/White-Star), but I do not yet have a build environment set up, I do not know the minimum version.
+
+Disclaimer: Arch32, the distro I was testing i586 against, has finally broken after being poorly maintained for years. Until it is either fixed, or I find another option, i586 Linux builds are postponed. i686 and i686-nosse2 Linux builds have been moved to Void Linux for the same reason. x86_64 Linux builds are still on Artix Linux.
+
 Features I would like to have (but arent currently planned because I have no idea where to start with them):
-* Support for Windows XP and Windows Vista, I may be able to pull stuff from [here](https://github.com/roytam1/UXP), but no guarantees.
+* Support for Windows XP and Windows Vista, I may be able to pull stuff from [here](https://github.com/Eclipse-Community/UXP), but no guarantees.
 There are some Pale Moon forks that support Windows XP and Vista, but they are based on older Pale Moon versions.
 * Proper support for Android (depends on working ARM support).
 Stock Pale Moon had experimental Android support for a while, but it was removed, I thought there was still some traces in the code but I was apparently wrong.
-* Support for Classic Mac OS X versions, including PowerPC Macs.
-[Whitestar](https://github.com/dbsoft/White-Star), a PM fork with some experimental Mac stuff, does seem to be able to be built for Classic Mac OS, but its currently [broken](https://github.com/dbsoft/White-Star/issues/2).
-The Whitestar dev seemingly wants to get his changes merged with upstream UXP once everything is working, so this feature may end up adding itself...
 * Proper support for iOS.
 Since modern Mac OS support is already here, this probably isnt that far fetched.
 
 Known issues:
 * 32 bit ARM does not build at all, this issue is also present in upstream Pale Moon, it's possible im doing something wrong. 64 bit ARM was able to be built by a friend
-* Hardware acceleration is broken on PowerPC, causes rendering issues, this issue is also present in upstream Pale Moon
+* Hardware acceleration is broken on PowerPC Linux, causes rendering issues, this issue is also present in upstream Pale Moon
 * 32 bit Windows builds fail if optimized for size, something in mozavcodec, builds fine otherwise
 * JS heavy sites can be slow or even unusable at times, seems to be hit or miss, this issue is also present in upstream Pale Moon, possible config issue
 * JS performance is severely lacking on PowerPC due to the lack of jit support, this issue is also present in upstream Pale Moon
@@ -47,5 +46,5 @@ You can build Phantom Satellite the same way you build stock Pale Moon using the
 
 * [Build for Windows](https://developer.palemoon.org/build/windows/)
 * [Build for Linux](https://developer.palemoon.org/build/linux/)
-* [Build for Mac OS (I did not test this personally, but a friend was able to build it)](https://www.dbsoft.org/whitestar-build-mac.php)
+* [Build for Mac OS](https://www.dbsoft.org/whitestar-build-mac.php)
 * [Pale Moon home page](http://www.palemoon.org/)
