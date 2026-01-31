@@ -33,8 +33,8 @@ MOZ_APP_STATIC_INI=1
 # Changing MOZ_*BRANDING_DIRECTORY requires a clobber because branding
 # dependencies are broken.
 # MOZ_APP_DISPLAYNAME will be set by [branding]/configure.sh
-MOZ_BRANDING_DIRECTORY=palemoon/branding/unofficial
-MOZ_OFFICIAL_BRANDING_DIRECTORY=palemoon/branding/official
+MOZ_BRANDING_DIRECTORY=phantomsatellite/branding/unofficial
+MOZ_OFFICIAL_BRANDING_DIRECTORY=phantomsatellite/branding/unofficial
 
 # Enables conditional code in the platform for Pale Moon only
 MC_PALEMOON=1
