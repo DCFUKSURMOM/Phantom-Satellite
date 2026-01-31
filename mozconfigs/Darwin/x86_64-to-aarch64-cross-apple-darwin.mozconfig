@@ -1,7 +1,7 @@
 mk_add_options MOZ_MAKE_FLAGS="-j5"
 
 # Build options for Phantom Satellite
-ac_add_options --enable-application=palemoon
+ac_add_options --enable-application=phantomsatellite
 
 ac_add_options --enable-jemalloc
 ac_add_options --enable-strip

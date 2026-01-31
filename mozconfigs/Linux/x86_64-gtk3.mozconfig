@@ -5,7 +5,7 @@ mk_add_options MOZ_MAKE_FLAGS="-j5"
 _GTK_VERSION=3
 
 # Build options for Phantom Satellite
-ac_add_options --enable-application=palemoon
+ac_add_options --enable-application=phantomsatellite
 
 ac_add_options --enable-default-toolkit=cairo-gtk$_GTK_VERSION
 ac_add_options --enable-jemalloc

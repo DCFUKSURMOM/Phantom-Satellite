@@ -1,7 +1,7 @@
 mk_add_options MOZ_MAKE_FLAGS="-j4"
 
 # Build options for Phantom Satellite
-ac_add_options --enable-application=palemoon
+ac_add_options --enable-application=phantomsatellite
 
 ac_add_options --target=x86_64-pc-mingw32
 ac_add_options --host=x86_64-pc-mingw32
