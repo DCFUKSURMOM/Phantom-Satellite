@@ -24,5 +24,5 @@ ac_add_options --disable-accessibility
 #Windows builds currently fail with -Os, so keep the default -O2
 ac_add_options --enable-optimize="-O2 -GTs -GS- -Qspectre -utf-8"
 
-WIN32_REDIST_DIR="C:/VisualStudio/2022/Community/VC/Redist/MSVC/14.44.35112/x64/Microsoft.VC143.CRT"
+WIN32_REDIST_DIR="C:/VisualStudio/18/Community/VC/Redist/MSVC/14.50.35710/x64/Microsoft.VC145.CRT"
 WIN_UCRT_REDIST_DIR="C:/Program Files (x86)/Windows Kits/10/Redist/10.0.26100.0/ucrt/DLLs/x64"
