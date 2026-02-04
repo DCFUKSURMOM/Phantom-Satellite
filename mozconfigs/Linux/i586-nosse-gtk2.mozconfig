@@ -25,10 +25,10 @@ ac_add_options --disable-crashreporter
 ac_add_options --disable-js-shell
 ac_add_options --disable-precompiled-startupcache
 ac_add_options --disable-elf-hack
-ac_add_options --disable-gold # Disable ld.gold, not required for x86 but done anyways for consistency
+ac_add_options --disable-gold # Disable ld.gold, does not work on all architectures and I want consistent configs
 
-# Optimize for size and remove unused function sections (these don't work properly when set globally sadly), disable sse2 and enable sse
-ac_add_options --enable-optimize="-Os -ffunction-sections -mfpmath=387 -mno-sse2 -mno-sse -mmmx"
+# Medium optimization (higher seems to make no difference or breaks stuff), suppress warnings, remove unused function sections, disable sse/sse2, enable mmx
+ac_add_options --enable-optimize="-O2 -w -ffunction-sections -mfpmath=387 -mno-sse2 -mno-sse -mmmx"
 
 export MOZ_PKG_SPECIAL=gtk$_GTK_VERSION
 
@@ -40,7 +40,11 @@ ac_add_options --enable-system-pixman
 ac_add_options --with-system-jpeg
 ac_add_options --enable-system-cairo
 
-# Set Pentium MMX as minimum, Optimize for Pentium 2, remove unused data sections
-export CFLAGS="-m32 -march=pentium-mmx -mcpu=pentium-mmx -mtune=pentium2 -fdata-sections -mfpmath=387 -mno-sse2 -mno-sse -mmmx"
-export CXXFLAGS="-m32 -march=pentium-mmx -mcpu=pentium-mmx -mtune=pentium2 -fdata-sections -mfpmath=387 -mno-sse2 -mno-sse -mmmx"
-export LDFLAGS="-m32 -march=pentium-mmx -mcpu=pentium-mmx -mtune=pentium2 -fdata-sections -mfpmath=387 -mno-sse2 -mno-sse -mmmx"
+# Use Clang compiler and linker, slightly faster builds (not by much but it adds up)
+export CC=clang
+export CXX=clang++
+export LD=ld.lld
+
+# Set Pentium MMX as minimum, Optimize for Pentium 2, disable sse/sse2, enable mmx
+export CFLAGS="-m32 -march=pentium-mmx -mtune=pentium2 -mfpmath=387 -mno-sse2 -mno-sse -mmmx"
+export CXXFLAGS="-m32 -march=pentium-mmx -mtune=pentium2 -mfpmath=387 -mno-sse2 -mno-sse -mmmx"
