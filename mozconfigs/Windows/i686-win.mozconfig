@@ -18,7 +18,8 @@ ac_add_options --disable-crashreporter
 ac_add_options --disable-js-shell
 ac_add_options --disable-precompiled-startupcache
 ac_add_options --disable-parental-controls
-#Windows builds currently fail with -Os, so keep the default -O2
+
+# Default options from the sample config at https://developer.palemoon.org/build/windows/
 ac_add_options --enable-optimize="-O2 -GTs -GS- -Qspectre -utf-8"
 
 export CC=C:/VisualStudio/18/Community/VC/Tools/MSVC/14.33.31629/bin/HostX64/x86/cl.exe
