@@ -1102,20 +1102,16 @@ gfxMacPlatformFontList::InitFontListForPlatform()
     ATSGeneration currentGeneration = ::ATSGetGeneration();
 
     // need to ignore notifications after adding each font
-    if (mATSGeneration == currentGeneration)
+    if (mATSGeneration == currentGeneration && mFontFamilies.Count() > 0)
         return NS_OK;
     mATSGeneration = currentGeneration;
-
-    // reset font lists
-    gfxPlatformFontList::InitFontList();
 #endif
     mSystemFontFamilies.Clear();
 
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     // iterate over available families
-
     InitSystemFontNames();
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     CFArrayRef familyNames = CTFontManagerCopyAvailableFontFamilyNames();
 
     for (NSString* familyName in (NSArray*)familyNames) {

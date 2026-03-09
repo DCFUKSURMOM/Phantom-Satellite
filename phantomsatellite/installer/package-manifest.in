@@ -50,7 +50,7 @@
 @RESPATH@/browser/defaults/profile/localstore.rdf
 @RESPATH@/browser/defaults/profile/mimeTypes.rdf
 @RESPATH@/dictionaries/*
-#if defined(XP_WIN) || defined(MOZ_WIDGET_GTK)
+#ifdef MOZ_BUNDLED_FONTS
 @RESPATH@/fonts/*
 #endif
 @RESPATH@/hyphenation/*
@@ -125,6 +125,9 @@
 #if defined(MOZ_GTK3) && defined(MOZ_ENABLE_NPAPI)
 @BINPATH@/@DLL_PREFIX@mozgtk@DLL_SUFFIX@
 @BINPATH@/gtk2/@DLL_PREFIX@mozgtk@DLL_SUFFIX@
+#endif
+#if defined(XP_WIN) && defined(MOZ_MIMALLOC)
+@BINPATH@/mimalloc*@DLL_SUFFIX@
 #endif
 
 [browser]

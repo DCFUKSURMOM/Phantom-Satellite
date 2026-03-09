@@ -343,6 +343,9 @@ nsAbOSXCard::Update(bool aNotify)
     }
   }
   // This was kABAIMInstantProperty previously, but it was deprecated in OS X 10.7.
+  #ifndef kABInstantMessageProperty
+  #define kABInstantMessageProperty kABAIMInstantProperty
+  #endif
   value = GetMultiValue(card, kABInstantMessageProperty);
   if (value) {
     unsigned int count = [value count];

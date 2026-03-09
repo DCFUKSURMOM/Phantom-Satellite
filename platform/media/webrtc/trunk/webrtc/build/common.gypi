@@ -133,6 +133,10 @@
     # enable schannel on windows.
     'use_legacy_ssl_defaults%': 0,
 
+    # Use AVFoundation (default). Enable to use the AVFoundation framework on
+    # OS X. Otherwise, QTKit will be used
+    'use_avfoundation%': 1,
+
     'conditions': [
       ['build_with_chromium==1', {
         # Exclude pulse audio on Chromium since its prerequisites don't require

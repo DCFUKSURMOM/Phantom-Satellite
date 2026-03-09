@@ -435,7 +435,7 @@ nsChildView::Create(nsIWidget* aParent,
   CGFloat scaleFactor = nsCocoaUtils::GetBackingScaleFactor(mParentView);
   NSRect r = nsCocoaUtils::DevPixelsToCocoaPoints(mBounds, scaleFactor);
   mView = [[[[ChildView alloc] initWithFrame:r geckoChild:this] autorelease] retain];
-  
+
   if (!mView) {
     return NS_ERROR_FAILURE;
   }
@@ -2092,6 +2092,16 @@ DrawResizer(CGContextRef aCtx)
   CGContextStrokeLineSegments(aCtx, points, 6);
 }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+static void MaybeDrawResizeIndicatorCallback(gfx::DrawTarget* drawTarget,
+	const LayoutDeviceIntRegion& updateRegion) {
+    ClearRegion(drawTarget, updateRegion);
+    gfx::BorrowedCGContext borrow(drawTarget);
+    DrawResizer(borrow.cg);
+    borrow.Finish();
+}
+#endif
+
 void
 nsChildView::MaybeDrawResizeIndicator(GLManager* aManager)
 {
@@ -2101,16 +2111,25 @@ nsChildView::MaybeDrawResizeIndicator(GLManager* aManager)
   }
 
   if (!mResizerImage) {
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     mResizerImage = MakeUnique<RectTextureImage>();
+#else
+    mResizerImage = MakeUnique<RectTextureImage>(aManager->gl());
+#endif
   }
 
   LayoutDeviceIntSize size = mResizeIndicatorRect.Size();
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   mResizerImage->UpdateIfNeeded(size, LayoutDeviceIntRegion(), [this](gfx::DrawTarget* drawTarget, const LayoutDeviceIntRegion& updateRegion) {
     ClearRegion(drawTarget, updateRegion);
     gfx::BorrowedCGContext borrow(drawTarget);
     DrawResizer(borrow.cg);
     borrow.Finish();
   });
+#else
+  mResizerImage->UpdateIfNeeded(size, LayoutDeviceIntRegion(),
+    &MaybeDrawResizeIndicatorCallback);
+#endif
 
   mResizerImage->Draw(aManager, mResizeIndicatorRect.TopLeft());
 }
@@ -2168,12 +2187,14 @@ CreateCGContext(const LayoutDeviceIntSize& aSize)
   return ctx;
 }
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
 LayoutDeviceIntSize
 TextureSizeForSize(const LayoutDeviceIntSize& aSize)
 {
   return LayoutDeviceIntSize(RoundUpPow2(aSize.width),
                              RoundUpPow2(aSize.height));
 }
+#endif
 
 // When this method is entered, mEffectsLock is already being held.
 void
@@ -2188,7 +2209,12 @@ nsChildView::UpdateTitlebarCGContext()
   NSRect dirtyRect = [mView convertRect:[(BaseWindow*)[mView window] getAndResetNativeDirtyRect] fromView:nil];
   NSRect dirtyTitlebarRect = NSIntersectionRect(titlebarRect, dirtyRect);
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   LayoutDeviceIntSize texSize = TextureSizeForSize(mTitlebarRect.Size());
+#else
+  LayoutDeviceIntSize texSize =
+    RectTextureImage::TextureSizeForSize(mTitlebarRect.Size());
+#endif
   if (!mTitlebarCGContext ||
       CGBitmapContextGetWidth(mTitlebarCGContext) != size_t(texSize.width) ||
       CGBitmapContextGetHeight(mTitlebarCGContext) != size_t(texSize.height)) {
@@ -2269,7 +2295,7 @@ nsChildView::UpdateTitlebarCGContext()
 
     [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithGraphicsPort:ctx flipped:[view isFlipped]]];
 
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
     if ([window useBrightTitlebarForeground] && !nsCocoaFeatures::OnYosemiteOrLater() &&
         view == [window standardWindowButton:NSWindowFullScreenButton]) {
       // Make the fullscreen button visible on dark titlebar backgrounds by
@@ -2334,7 +2360,11 @@ nsChildView::MaybeDrawTitlebar(GLManager* aManager)
   mUpdatedTitlebarRegion.SetEmpty();
 
   if (!mTitlebarImage) {
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     mTitlebarImage = MakeUnique<RectTextureImage>();
+#else
+    mTitlebarImage = MakeUnique<RectTextureImage>(aManager->gl());
+#endif
   }
 
   mTitlebarImage->UpdateFromCGContext(mTitlebarRect.Size(),
@@ -2351,6 +2381,20 @@ DrawTopLeftCornerMask(CGContextRef aCtx, int aRadius)
   CGContextFillEllipseInRect(aCtx, CGRectMake(0, 0, aRadius * 2, aRadius * 2));
 }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+static void MaybeDrawRoundedCornersCallback(gfx::DrawTarget* drawTarget,
+	const LayoutDeviceIntRegion& updateRegion, int devPixelCornerRadius) {
+    ClearRegion(drawTarget, updateRegion);
+    RefPtr<gfx::PathBuilder> builder = drawTarget->CreatePathBuilder();
+    builder->Arc(gfx::Point(devPixelCornerRadius, devPixelCornerRadius), devPixelCornerRadius, 0, 2.0f * M_PI);
+    RefPtr<gfx::Path> path = builder->Finish();
+    drawTarget->Fill(path,
+                     gfx::ColorPattern(gfx::Color(1.0, 1.0, 1.0, 1.0)),
+                     gfx::DrawOptions(1.0f, gfx::CompositionOp::OP_SOURCE));
+
+}
+#endif
+
 void
 nsChildView::MaybeDrawRoundedCorners(GLManager* aManager,
                                      const LayoutDeviceIntRect& aRect)
@@ -2358,10 +2402,16 @@ nsChildView::MaybeDrawRoundedCorners(GLManager* aManager,
   MutexAutoLock lock(mEffectsLock);
 
   if (!mCornerMaskImage) {
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     mCornerMaskImage = MakeUnique<RectTextureImage>();
+#else
+    mCornerMaskImage = MakeUnique<RectTextureImage>(aManager->gl());
+#endif
   }
 
   LayoutDeviceIntSize size(mDevPixelCornerRadius, mDevPixelCornerRadius);
+
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   mCornerMaskImage->UpdateIfNeeded(size, LayoutDeviceIntRegion(), [this](gfx::DrawTarget* drawTarget, const LayoutDeviceIntRegion& updateRegion) {
     ClearRegion(drawTarget, updateRegion);
     RefPtr<gfx::PathBuilder> builder = drawTarget->CreatePathBuilder();
@@ -2371,6 +2421,10 @@ nsChildView::MaybeDrawRoundedCorners(GLManager* aManager,
                      gfx::ColorPattern(gfx::Color(1.0, 1.0, 1.0, 1.0)),
                      gfx::DrawOptions(1.0f, gfx::CompositionOp::OP_SOURCE));
   });
+#else
+  mCornerMaskImage->UpdateIfNeeded(size, LayoutDeviceIntRegion(),
+	  &MaybeDrawRoundedCornersCallback, mDevPixelCornerRadius);
+#endif
 
   // Use operator destination in: multiply all 4 channels with source alpha.
   aManager->gl()->fBlendFuncSeparate(LOCAL_GL_ZERO, LOCAL_GL_SRC_ALPHA,
@@ -2688,7 +2742,11 @@ nsChildView::StartRemoteDrawingInRegion(LayoutDeviceIntRegion& aInvalidRegion,
   LayoutDeviceIntSize renderSize = mBounds.Size();
 
   if (!mBasicCompositorImage) {
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     mBasicCompositorImage = MakeUnique<RectTextureImage>();
+#else
+    mBasicCompositorImage = MakeUnique<RectTextureImage>(mGLPresenter->gl());
+#endif
   }
 
   RefPtr<gfx::DrawTarget> drawTarget =
@@ -2709,7 +2767,11 @@ nsChildView::StartRemoteDrawingInRegion(LayoutDeviceIntRegion& aInvalidRegion,
 void
 nsChildView::EndRemoteDrawing()
 {
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   mBasicCompositorImage->EndUpdate();
+#else
+  mBasicCompositorImage->EndUpdate(true);
+#endif
   DoRemoteComposition(mBounds);
 }
 
@@ -2739,6 +2801,10 @@ nsChildView::InitCompositor(Compositor* aCompositor)
 void
 nsChildView::DoRemoteComposition(const LayoutDeviceIntRect& aRenderRect)
 {
+  if (!mGLPresenter) {
+    return;
+  }
+
   if (![(ChildView*)mView preRender:mGLPresenter->GetNSOpenGLContext()]) {
     return;
   }
@@ -3251,9 +3317,7 @@ NSEvent* gLastDragMouseDownEvent = nil;
 
     [self setFocusRingType:NSFocusRingTypeNone];
 
-#ifdef __LP64__
     mCancelSwipeAnimation = nil;
-#endif
 
     mNonDraggableViewsContainer = [[ViewRegionContainerView alloc] initWithFrame:[self bounds]];
     mVibrancyViewsContainer = [[ViewRegionContainerView alloc] initWithFrame:[self bounds]];

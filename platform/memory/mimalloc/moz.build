@@ -1,0 +1,47 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+EXPORTS += [
+    'include/mimalloc-new-delete.h',
+    'include/mimalloc-override.h',
+    'include/mimalloc-stats.h',
+    'include/mimalloc.h',
+]
+
+SOURCES += [
+    'src/static.c',
+]
+
+if CONFIG['OS_TARGET'] == 'WINNT' and CONFIG['MOZ_MIMALLOC']:
+    SharedLibrary('mimalloc')
+    DIST_INSTALL = True
+else:
+    FINAL_LIBRARY = 'mozglue'
+
+LOCAL_INCLUDES += [
+    '/memory/mimalloc/include',
+]
+
+if CONFIG['OS_TARGET'] in ('WINNT', 'Darwin'):
+    DEFINES['MI_SHARED_LIB'] = True
+    DEFINES['MI_SHARED_LIB_EXPORT'] = True
+
+if CONFIG['OS_TARGET'] != 'WINNT':
+    DEFINES['MI_MALLOC_OVERRIDE'] = True
+
+if CONFIG['OS_TARGET'] == 'Darwin':
+    DEFINES['MI_OSX_ZONE'] = True
+
+if CONFIG['OS_TARGET'] == 'WINNT' and CONFIG['MOZ_MIMALLOC']:
+    if CONFIG['CPU_ARCH'] == 'x86':
+        redirect_lib = 'mimalloc-redirect32'
+    elif CONFIG['CPU_ARCH'] == 'x86_64':
+        redirect_lib = 'mimalloc-redirect'
+    else:
+        redirect_lib = None
+    if redirect_lib:
+        redirect_path = TOPSRCDIR + '/memory/mimalloc/redirect'
+        OS_LIBS += [redirect_path + '/' + redirect_lib]
+        FINAL_TARGET_FILES += ['/memory/mimalloc/redirect/' + redirect_lib + '.dll']

@@ -46,6 +46,24 @@ const YuvConstants* GetYUVConstants(mozilla::YUVColorSpace yuv_color_space,
   }
 }
 
+const YuvConstants* GetYVUConstants(mozilla::YUVColorSpace yuv_color_space,
+                                    mozilla::ColorRange color_range)
+{
+  switch (yuv_color_space) {
+    case mozilla::YUVColorSpace::BT709:
+      return color_range == mozilla::ColorRange::LIMITED
+        ? &libyuv::kYvuH709Constants
+        : &libyuv::kYvuF709Constants;
+
+    default:
+      MOZ_FALLTHROUGH_ASSERT("Unsupported YUVColorSpace");
+    case mozilla::YUVColorSpace::BT601:
+      return color_range == mozilla::ColorRange::LIMITED
+        ? &libyuv::kYvuI601Constants
+        : &libyuv::kYvuJPEGConstants;
+  }
+}
+
 
 // YUV to RGB conversion and scaling functions were implemented by referencing
 // scale_argb.cc
@@ -77,7 +95,7 @@ const YuvConstants* GetYUVConstants(mozilla::YUVColorSpace yuv_color_space,
 // -[3] Modified scaling functions as to handle YUV conversion buffer and
 //      use YUVBuferIter.
 // -[4] Color conversion function selections in YUVBuferIter were borrowed from
-//      I444ToARGBMatrix(), I422ToARGBMatrix() and I420ToARGBMatrix() 
+//      I444ToARGBMatrix(), I422ToARGBMatrix() and I420ToARGBMatrix()
 
 static __inline int Abs(int v) {
   return v >= 0 ? v : -v;
@@ -111,7 +129,12 @@ struct YUVBuferIter {
 };
 
 void YUVBuferIter_InitI422(YUVBuferIter& iter) {
+#if MOZ_BIG_ENDIAN
+  iter.YUVToARGBRow = I422ToRGBARow_C;
+#else
   iter.YUVToARGBRow = I422ToARGBRow_C;
+#endif
+
 #if defined(HAS_I422TOARGBROW_SSSE3)
   if (TestCpuFlag(kCpuHasSSSE3)) {
     iter.YUVToARGBRow = I422ToARGBRow_Any_SSSE3;
@@ -232,11 +255,21 @@ void YUVBuferIter_Init(YUVBuferIter& iter,
                        mozilla::YUVColorSpace yuv_color_space,
                        mozilla::ColorRange color_range) {
   iter.src_fourcc = src_fourcc;
+#if MOZ_BIG_ENDIAN
+  const uint8_t* temp_u = iter.src_u;
+  iter.src_u = iter.src_v;
+  iter.src_v = temp_u;
+  int temp_stride = iter.src_stride_u;
+  iter.src_stride_u = iter.src_stride_v;
+  iter.src_stride_v = temp_stride;
+  iter.yuvconstants = GetYVUConstants(yuv_color_space, color_range);
+#else
+  iter.yuvconstants = GetYUVConstants(yuv_color_space, color_range);
+#endif
   iter.y_index = 0;
   iter.src_row_y = iter.src_y;
   iter.src_row_u = iter.src_u;
   iter.src_row_v = iter.src_v;
-  iter.yuvconstants = GetYUVConstants(yuv_color_space, color_range);
 
   if (src_fourcc == FOURCC_I444) {
     YUVBuferIter_InitI444(iter);

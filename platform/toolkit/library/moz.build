@@ -149,12 +149,17 @@ if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'cocoa':
         '-framework CoreUI',
         'cups',
     ]
-    if CONFIG['CPU_ARCH'] != 'ppc':
+    if [int(x) for x in CONFIG['MACOSX_DEPLOYMENT_TARGET'].split('.')] >= [10, 7]:
         OS_LIBS += [
             '-framework AVFoundation',
             '-framework CoreMedia',
             '-framework CoreSymbolication',
         ]
+    else:
+        OS_LIBS += [
+            '-framework QTKit',
+        ]
+
 
 if CONFIG['MOZ_WMF']:
     OS_LIBS += [

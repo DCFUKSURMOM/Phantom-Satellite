@@ -44,6 +44,8 @@ if not CONFIG['JS_STANDALONE']:
         SOURCES += ['WindowsDllBlocklist.cpp']
         DISABLE_STL_WRAPPING = True
         OS_LIBS += ['version']
+        if CONFIG['MOZ_MIMALLOC']:
+            USE_LIBS += ['mimalloc']
 
     EXPORTS.mozilla += [
         'arm.h',

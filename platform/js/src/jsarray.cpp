@@ -3208,6 +3208,8 @@ static const JSFunctionSpec array_methods[] = {
     /* ES2023 proposals */
     JS_SELF_HOSTED_FN("findLast",    "ArrayFindLast",    1,0),
     JS_SELF_HOSTED_FN("findLastIndex", "ArrayFindLastIndex", 1,0),
+    JS_SELF_HOSTED_FN("toReversed",  "ArrayToReversed",  0,0),
+    JS_SELF_HOSTED_FN("toSorted",    "ArrayToSorted",    1,0),
     
     JS_FS_END
 };
@@ -3379,7 +3381,9 @@ array_proto_finish(JSContext* cx, JS::HandleObject ctor, JS::HandleObject proto)
         !DefineProperty(cx, unscopables, cx->names().flatMap, value) ||
         !DefineProperty(cx, unscopables, cx->names().includes, value) ||
         !DefineProperty(cx, unscopables, cx->names().keys, value) ||
-        !DefineProperty(cx, unscopables, cx->names().values, value))
+        !DefineProperty(cx, unscopables, cx->names().toReversed, value) ||
+        !DefineProperty(cx, unscopables, cx->names().values, value) ||
+        !DefineProperty(cx, unscopables, cx->names().toSorted, value))
     {
         return false;
     }

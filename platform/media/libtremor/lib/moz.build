@@ -20,9 +20,6 @@ SOURCES += [
 
 FINAL_LIBRARY = 'gkmedias'
 
-if CONFIG['OS_ARCH'] == 'AIX':
-    DEFINES['alloca'] = '__alloca'
-
 if CONFIG['CPU_ARCH'] == 'arm' and CONFIG['CC_TYPE'] in ('clang', 'gcc') and not CONFIG['MOZ_THUMB2']:
     DEFINES['_ARM_ASSEM_'] = True
 

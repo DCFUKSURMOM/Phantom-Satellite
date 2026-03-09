@@ -1305,7 +1305,7 @@ nsSocketTransportService::GetSendBufferSize(int32_t *value)
 
 #if defined(XP_WIN)
 #include <windows.h>
-#elif defined(XP_UNIX) && !defined(AIX) && !defined(NEXTSTEP) && !defined(QNX)
+#elif defined(XP_UNIX) && !defined(NEXTSTEP) && !defined(QNX)
 #include <sys/resource.h>
 #endif
 
@@ -1379,7 +1379,7 @@ nsSocketTransportService::DiscoverMaxCount()
 {
     gMaxCount = SOCKET_LIMIT_MIN;
 
-#if defined(XP_UNIX) && !defined(AIX) && !defined(NEXTSTEP) && !defined(QNX)
+#if defined(XP_UNIX) && !defined(NEXTSTEP) && !defined(QNX)
     // On unix and os x network sockets and file
     // descriptors are the same. OS X comes defaulted at 256,
     // most linux at 1000. We can reliably use [sg]rlimit to

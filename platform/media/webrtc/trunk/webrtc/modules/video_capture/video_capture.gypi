@@ -64,6 +64,9 @@
             'video_capture_module',
             '<(webrtc_root)/common.gyp:webrtc_common',
           ],
+          'include_dirs': [
+            '<(libyuv_dir)/include',
+          ],
 	  'cflags_mozilla': [
 	    '$(NSPR_CFLAGS)',
           ],
@@ -77,17 +80,34 @@
               ],
             }],  # linux
             ['OS=="mac"', {
-              'sources': [
-                'mac/avfoundation/video_capture_avfoundation.h',
-                'mac/avfoundation/video_capture_avfoundation.mm',
-                'mac/avfoundation/video_capture_avfoundation_info.h',
-                'mac/avfoundation/video_capture_avfoundation_info.mm',
-                'mac/avfoundation/video_capture_avfoundation_info_objc.h',
-                'mac/avfoundation/video_capture_avfoundation_info_objc.mm',
-                'mac/avfoundation/video_capture_avfoundation_objc.h',
-                'mac/avfoundation/video_capture_avfoundation_objc.mm',
-                'mac/avfoundation/video_capture_avfoundation_utility.h',
-                'mac/video_capture_mac.mm',
+              'conditions': [
+                ['use_avfoundation==1', {
+                  'sources': [
+                    'mac/avfoundation/video_capture_avfoundation.h',
+                    'mac/avfoundation/video_capture_avfoundation.mm',
+                    'mac/avfoundation/video_capture_avfoundation_info.h',
+                    'mac/avfoundation/video_capture_avfoundation_info.mm',
+                    'mac/avfoundation/video_capture_avfoundation_info_objc.h',
+                    'mac/avfoundation/video_capture_avfoundation_info_objc.mm',
+                    'mac/avfoundation/video_capture_avfoundation_objc.h',
+                    'mac/avfoundation/video_capture_avfoundation_objc.mm',
+                    'mac/avfoundation/video_capture_avfoundation_utility.h',
+                    'mac/video_capture_mac.mm',
+                  ],
+                }, { #use_avfoundation
+                  'sources': [
+                    'mac/qtkit/video_capture_qtkit.h',
+                    'mac/qtkit/video_capture_qtkit.mm',
+                    'mac/qtkit/video_capture_qtkit_info.h',
+                    'mac/qtkit/video_capture_qtkit_info.mm',
+                    'mac/qtkit/video_capture_qtkit_info_objc.h',
+                    'mac/qtkit/video_capture_qtkit_info_objc.mm',
+                    'mac/qtkit/video_capture_qtkit_objc.h',
+                    'mac/qtkit/video_capture_qtkit_objc.mm',
+                    'mac/qtkit/video_capture_qtkit_utility.h',
+                    'mac/video_capture_mac.mm',
+                  ],
+                }],
               ],
               'link_settings': {
                 'xcode_settings': {
@@ -275,4 +295,3 @@
     }],
   ],
 }
-

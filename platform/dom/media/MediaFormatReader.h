@@ -235,6 +235,7 @@ private:
       , mDrainComplete(false)
       , mNumOfConsecutiveError(0)
       , mMaxConsecutiveError(aNumOfMaxError)
+      , mFirstFrameTime(Some(media::TimeUnit()))
       , mNumSamplesInput(0)
       , mNumSamplesOutput(0)
       , mNumSamplesOutputTotal(0)
@@ -243,6 +244,7 @@ private:
       , mIsHardwareAccelerated(false)
       , mLastStreamSourceID(UINT32_MAX)
       , mIsBlankDecode(false)
+      , mHardwareDecodingDisabled(false)
     {}
 
     MediaFormatReader* mOwner;
@@ -316,6 +318,11 @@ private:
 
     uint32_t mNumOfConsecutiveError;
     uint32_t mMaxConsecutiveError;
+    // Set when we haven't yet decoded the first frame.
+    // Cleared once the first frame has been decoded.
+    // This is used to determine, upon error, if we should try again to decode
+    // the frame, or skip to the next keyframe.
+    Maybe<media::TimeUnit> mFirstFrameTime;
 
     Maybe<MediaResult> mError;
     bool HasFatalError() const
@@ -341,8 +348,8 @@ private:
     // Used for internal seeking when a change of stream is detected or when
     // encountering data discontinuity.
     Maybe<InternalSeekTarget> mTimeThreshold;
-    // Time of last sample returned.
-    Maybe<media::TimeInterval> mLastSampleTime;
+    // Time of last decoded sample returned.
+    Maybe<media::TimeInterval> mLastDecodedSampleTime;
 
     // Decoded samples returned my mDecoder awaiting being returned to
     // state machine upon request.
@@ -405,7 +412,7 @@ private:
       mDraining = false;
       mDrainComplete = false;
       mTimeThreshold.reset();
-      mLastSampleTime.reset();
+      mLastDecodedSampleTime.reset();
       mOutput.Clear();
       mNumSamplesInput = 0;
       mNumSamplesOutput = 0;
@@ -437,6 +444,7 @@ private:
     Maybe<media::TimeUnit> mFirstDemuxedSampleTime;
     // Use BlankDecoderModule or not.
     bool mIsBlankDecode;
+    bool mHardwareDecodingDisabled;
 
   };
 

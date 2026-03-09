@@ -89,8 +89,6 @@ GLScreenBuffer::CreateFactory(GLContext* gl,
 #elif defined(GL_PROVIDER_GLX)
                 if (sGLXLibrary.UseTextureFromPixmap())
                   factory = SurfaceFactory_GLXDrawable::Create(gl, caps, ipcChannel, flags);
-#elif defined(MOZ_WIDGET_UIKIT)
-                factory = MakeUnique<SurfaceFactory_GLTexture>(mGLContext, caps, ipcChannel, mFlags);
 #else
                 if (gl->GetContextType() == GLContextType::EGL) {
                     if (XRE_IsParentProcess()) {

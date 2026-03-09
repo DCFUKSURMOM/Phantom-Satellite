@@ -31,6 +31,10 @@
 #include "mozilla/Attributes.h"
 #include "mozilla/Types.h"
 
+#if defined(MOZ_MIMALLOC) && !defined(MOZ_GLUE_IN_PROGRAM)
+#  include "mimalloc.h"
+#endif
+
 #define MOZALLOC_HAVE_XMALLOC
 
 #if defined(__cplusplus)
@@ -44,12 +48,20 @@ extern "C" {
  * ours.
  */
 #ifndef free_impl
-#define free_impl free
-#define free_impl_
+#  if defined(MOZ_MIMALLOC) && !defined(MOZ_GLUE_IN_PROGRAM)
+#    define free_impl mi_free
+#  else
+#    define free_impl free
+#  endif
+#  define free_impl_
 #endif
 #ifndef malloc_impl
-#define malloc_impl malloc
-#define malloc_impl_
+#  if defined(MOZ_MIMALLOC) && !defined(MOZ_GLUE_IN_PROGRAM)
+#    define malloc_impl mi_malloc
+#  else
+#    define malloc_impl malloc
+#  endif
+#  define malloc_impl_
 #endif
 
 /*

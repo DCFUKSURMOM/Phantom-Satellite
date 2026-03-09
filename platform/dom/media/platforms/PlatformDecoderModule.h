@@ -10,6 +10,7 @@
 #include "ImageContainer.h"
 #include "MediaDecoderReader.h"
 #include "MediaInfo.h"
+#include "mozilla/EnumSet.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/layers/LayersTypes.h"
 #include "mozilla/layers/KnowsCompositor.h"
@@ -46,6 +47,13 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
   explicit CreateDecoderParams(const TrackInfo& aConfig)
     : mConfig(aConfig)
   {}
+
+  enum class Option
+  {
+    Default,
+    HardwareDecoderNotAllowed,
+  };
+  using OptionSet = EnumSet<Option>;
 
   template <typename T1, typename... Ts>
   CreateDecoderParams(const TrackInfo& aConfig, T1&& a1, Ts&&... args)
@@ -85,6 +93,7 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
   RefPtr<GMPCrashHelper> mCrashHelper;
 #endif
   bool mUseBlankDecoder = false;
+  OptionSet mOptions = OptionSet(Option::Default);
 
 private:
   void Set(TaskQueue* aTaskQueue) { mTaskQueue = aTaskQueue; }
@@ -96,6 +105,7 @@ private:
   void Set(GMPCrashHelper* aCrashHelper) { mCrashHelper = aCrashHelper; }
 #endif
   void Set(bool aUseBlankDecoder) { mUseBlankDecoder = aUseBlankDecoder; }
+  void Set(OptionSet aOptions) { mOptions = aOptions; }
   void Set(layers::KnowsCompositor* aKnowsCompositor) { mKnowsCompositor = aKnowsCompositor; }
   template <typename T1, typename T2, typename... Ts>
   void Set(T1&& a1, T2&& a2, Ts&&... args)

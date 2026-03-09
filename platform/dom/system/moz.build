@@ -7,7 +7,7 @@ toolkit = CONFIG['MOZ_WIDGET_TOOLKIT']
 
 if toolkit == 'windows':
     DIRS += ['windows']
-elif toolkit == 'cocoa' and CONFIG['CPU_ARCH'] != 'ppc':
+elif toolkit == 'cocoa' and [int(x) for x in CONFIG['MACOSX_DEPLOYMENT_TARGET'].split('.')] >= [10, 6]:
     DIRS += ['mac']
 elif toolkit in ('gtk2', 'gtk3'):
     DIRS += ['linux']

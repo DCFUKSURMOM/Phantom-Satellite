@@ -549,6 +549,10 @@ pref("dom.disable_window_flip",                   true);
 // supported (bug 736048)
 pref("dom.w3c_touch_events.enabled",        0);
 
+// Whether performanceObservers are enabled by default.
+// While this can be used for fingerprinting (and regularly is), its widespread
+// use forces our hand here for web compatibility reasons.
+pref("dom.enable_performance_observer", true);
 // Whether performance.GetEntries* will contain an entry for the active document
 // Disabled by default in Pale Moon (unlike in UXP) since it can be used for
 // tracking/profiling.
@@ -1078,6 +1082,7 @@ pref("services.sync.prefs.sync.browser.urlbar.maxRichResults", true);
 pref("services.sync.prefs.sync.dom.disable_open_during_load", true);
 pref("services.sync.prefs.sync.dom.disable_window_flip", true);
 pref("services.sync.prefs.sync.dom.disable_window_move_resize", true);
+pref("services.sync.prefs.sync.dom.enable_performance_observer", true);
 pref("services.sync.prefs.sync.dom.event.contextmenu.enabled", true);
 pref("services.sync.prefs.sync.extensions.personas.current", true);
 pref("services.sync.prefs.sync.extensions.update.enabled", true);

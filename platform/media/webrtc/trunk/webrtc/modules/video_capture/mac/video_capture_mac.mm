@@ -19,8 +19,13 @@
 #include "webrtc/system_wrappers/interface/ref_count.h"
 #include "webrtc/system_wrappers/interface/trace.h"
 
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
 #include "webrtc/modules/video_capture/mac/avfoundation/video_capture_avfoundation.h"
 #include "webrtc/modules/video_capture/mac/avfoundation/video_capture_avfoundation_info.h"
+#else
+#include "webrtc/modules/video_capture/mac/qtkit/video_capture_qtkit.h"
+#include "webrtc/modules/video_capture/mac/qtkit/video_capture_qtkit_info.h"
+#endif
 
 namespace webrtc
 {
@@ -49,7 +54,7 @@ bool CheckOSVersion()
     {
       return false;
     }
-    if ((major == 10) && (minor < 7)) {
+    if ((major == 10) && (minor < 5)) {
       return false;
     }
 
@@ -84,6 +89,7 @@ VideoCaptureModule* VideoCaptureImpl::Create(
         return NULL;
     }
 
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
     WEBRTC_TRACE(webrtc::kTraceInfo, webrtc::kTraceVideoCapture, id,
                  "Using AVFoundation framework to capture video", id);
 
@@ -111,6 +117,24 @@ VideoCaptureModule* VideoCaptureImpl::Create(
                  "Module created for unique device %s, will use AVFoundation "
                  "framework",deviceUniqueIdUTF8);
     return newCaptureModule;
+#else // QTKit version
+    WEBRTC_TRACE(webrtc::kTraceInfo, webrtc::kTraceVideoCapture, id,
+                 "Using QTKit framework to capture video", id);
+    rtc::scoped_refptr<VideoCaptureMacQTKit> newCaptureModule(
+        new rtc::RefCountedObject<VideoCaptureMacQTKit>(id));
+    if(newCaptureModule->Init(id, deviceUniqueIdUTF8) != 0)
+    {
+        WEBRTC_TRACE(webrtc::kTraceDebug, webrtc::kTraceVideoCapture, id,
+                     "could not Create for unique device %s, "
+                     "newCaptureModule->Init()!=0", deviceUniqueIdUTF8);
+        return nullptr;
+    }
+    // Successfully created VideoCaptureMacQuicktime. Return it
+    WEBRTC_TRACE(webrtc::kTraceInfo, webrtc::kTraceVideoCapture, id,
+                 "Module created for unique device %s, will use QTKit "
+                 "framework",deviceUniqueIdUTF8);
+    return newCaptureModule;
+#endif
 }
 
 /**************************************************************************
@@ -132,6 +156,7 @@ VideoCaptureImpl::CreateDeviceInfo(const int32_t id)
         return NULL;
     }
 
+#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
     webrtc::videocapturemodule::VideoCaptureMacAVFoundationInfo* newCaptureInfoModule =
         new webrtc::videocapturemodule::VideoCaptureMacAVFoundationInfo(id);
 
@@ -148,7 +173,23 @@ VideoCaptureImpl::CreateDeviceInfo(const int32_t id)
     WEBRTC_TRACE(webrtc::kTraceInfo, webrtc::kTraceVideoCapture, id,
                  "VideoCaptureModule created for id", id);
     return newCaptureInfoModule;
-
+#else // QTKit version
+    webrtc::videocapturemodule::VideoCaptureMacQTKitInfo* newCaptureInfoModule =
+        new webrtc::videocapturemodule::VideoCaptureMacQTKitInfo(id);
+    if(!newCaptureInfoModule || newCaptureInfoModule->Init() != 0)
+    {
+        //Destroy(newCaptureInfoModule);
+        delete newCaptureInfoModule;
+        newCaptureInfoModule = NULL;
+        WEBRTC_TRACE(webrtc::kTraceInfo, webrtc::kTraceVideoCapture, id,
+                     "Failed to Init newCaptureInfoModule created with id %d "
+                     "and device \"\" ", id);
+        return NULL;
+    }
+    WEBRTC_TRACE(webrtc::kTraceInfo, webrtc::kTraceVideoCapture, id,
+                 "VideoCaptureModule created for id", id);
+    return newCaptureInfoModule;
+#endif
 }
 
 /**************************************************************************

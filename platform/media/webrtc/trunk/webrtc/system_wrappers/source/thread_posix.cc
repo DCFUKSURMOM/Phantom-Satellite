@@ -26,6 +26,10 @@
 #include <pthread_np.h>
 #endif
 
+#ifdef __APPLE__
+#include <AvailabilityMacros.h>
+#endif
+
 #include "webrtc/base/checks.h"
 #include "webrtc/system_wrappers/interface/critical_section_wrapper.h"
 #include "webrtc/system_wrappers/interface/event_wrapper.h"
@@ -162,7 +166,7 @@ void ThreadPosix::Run() {
     pthread_setname_np(pthread_self(), "%s", (void *)name_.c_str());
 #elif defined(WEBRTC_BSD)
     pthread_set_name_np(pthread_self(), name_.c_str());
-#elif defined(WEBRTC_MAC) || defined(WEBRTC_IOS)
+#elif (defined(WEBRTC_MAC) && defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)) || defined(WEBRTC_IOS)
     pthread_setname_np(name_.substr(0, 63).c_str());
 #endif
   }

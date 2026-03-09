@@ -10,6 +10,7 @@
 #include "mozilla/RefPtr.h"
 #include "mozilla/Assertions.h"
 #include "GLConsts.h"
+#include <AvailabilityMacros.h>
 
 using namespace mozilla;
 // IOSurface signatures
@@ -72,6 +73,9 @@ CFStringRef                   MacIOSurfaceLib::kPropIsGlobal;
 bool MacIOSurfaceLib::isInit() {
   // Guard against trying to reload the library
   // if it is not available.
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+  return false;
+#endif
   if (!isLoaded)
     LoadLibrary();
   MOZ_ASSERT(sIOSurfaceFramework);
@@ -186,7 +190,7 @@ CFStringRef MacIOSurfaceLib::GetIOConst(const char* symbole) {
 void MacIOSurfaceLib::LoadLibrary() {
   if (isLoaded) {
     return;
-  } 
+  }
   isLoaded = true;
   sIOSurfaceFramework = dlopen(IOSURFACE_FRAMEWORK_PATH,
                             RTLD_LAZY | RTLD_LOCAL);
@@ -320,10 +324,10 @@ already_AddRefed<MacIOSurface> MacIOSurface::CreateIOSurface(int aWidth, int aHe
   ::CFDictionaryAddValue(props, MacIOSurfaceLib::kPropHeight,
                                 cfHeight);
   ::CFRelease(cfHeight);
-  ::CFDictionaryAddValue(props, MacIOSurfaceLib::kPropBytesPerElem, 
+  ::CFDictionaryAddValue(props, MacIOSurfaceLib::kPropBytesPerElem,
                                 cfBytesPerElem);
   ::CFRelease(cfBytesPerElem);
-  ::CFDictionaryAddValue(props, MacIOSurfaceLib::kPropIsGlobal, 
+  ::CFDictionaryAddValue(props, MacIOSurfaceLib::kPropIsGlobal,
                                 kCFBooleanTrue);
 
   IOSurfacePtr surfaceRef = MacIOSurfaceLib::IOSurfaceCreate(props);
@@ -346,7 +350,7 @@ already_AddRefed<MacIOSurface> MacIOSurface::CreateIOSurface(int aWidth, int aHe
 
 already_AddRefed<MacIOSurface> MacIOSurface::LookupSurface(IOSurfaceID aIOSurfaceID,
                                                        double aContentsScaleFactor,
-                                                       bool aHasAlpha) { 
+                                                       bool aHasAlpha) {
   if (!MacIOSurfaceLib::isInit() || aContentsScaleFactor <= 0)
     return nullptr;
 
@@ -366,11 +370,11 @@ already_AddRefed<MacIOSurface> MacIOSurface::LookupSurface(IOSurfaceID aIOSurfac
   return ioSurface.forget();
 }
 
-IOSurfaceID MacIOSurface::GetIOSurfaceID() { 
+IOSurfaceID MacIOSurface::GetIOSurfaceID() {
   return MacIOSurfaceLib::IOSurfaceGetID(mIOSurfacePtr);
 }
 
-void* MacIOSurface::GetBaseAddress() { 
+void* MacIOSurface::GetBaseAddress() {
   return MacIOSurfaceLib::IOSurfaceGetBaseAddress(mIOSurfacePtr);
 }
 
@@ -598,6 +602,9 @@ already_AddRefed<MacIOSurface> MacIOSurface::IOSurfaceContextGetSurface(CGContex
 
 CGContextType GetContextType(CGContextRef ref)
 {
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+  return CG_CONTEXT_TYPE_UNKNOWN;
+#endif
   if (!MacIOSurfaceLib::isInit() || !MacIOSurfaceLib::sCGContextGetTypePtr)
     return CG_CONTEXT_TYPE_UNKNOWN;
 

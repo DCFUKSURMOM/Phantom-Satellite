@@ -35,6 +35,20 @@
 extern "C" MOZ_MEMORY_API char *strdup_impl(const char *);
 extern "C" MOZ_MEMORY_API char *strndup_impl(const char *, size_t);
 
+#elif defined(MOZ_MIMALLOC)
+#include "mimalloc.h"
+
+#define malloc_impl mi_malloc
+#define posix_memalign_impl mi_posix_memalign
+#define calloc_impl mi_calloc
+#define realloc_impl mi_realloc
+#define free_impl mi_free
+#define memalign_impl mi_memalign
+#define valloc_impl mi_valloc
+#define malloc_usable_size_impl mi_usable_size
+#define strdup_impl mi_strdup
+#define strndup_impl mi_strndup
+
 #else
 // When jemalloc is disabled, or when building the static runtime variant,
 // we need not to use the suffixes.
@@ -187,7 +201,9 @@ moz_malloc_usable_size(void *ptr)
     if (!ptr)
         return 0;
 
-#if defined(XP_DARWIN)
+#if defined(MOZ_MIMALLOC)
+    return malloc_usable_size_impl(ptr);
+#elif defined(XP_DARWIN)
     return malloc_size(ptr);
 #elif defined(HAVE_MALLOC_USABLE_SIZE) || defined(MOZ_MEMORY)
     return malloc_usable_size_impl(ptr);

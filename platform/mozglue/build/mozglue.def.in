@@ -37,3 +37,20 @@ EXPORTS
   ; A hack to work around the CRT (see giant comment in Makefile.in)
   frex=dumb_free_thunk
 #endif
+
+#ifdef MOZ_MIMALLOC
+  ; mimalloc symbols used by mozalloc inlines
+  ; Forward to mimalloc.dll since it's built as a shared library on Windows.
+  mi_malloc=mimalloc.mi_malloc
+  mi_calloc=mimalloc.mi_calloc
+  mi_realloc=mimalloc.mi_realloc
+  mi_free=mimalloc.mi_free
+  mi_posix_memalign=mimalloc.mi_posix_memalign
+  mi_memalign=mimalloc.mi_memalign
+  mi_valloc=mimalloc.mi_valloc
+  mi_malloc_usable_size=mimalloc.mi_malloc_usable_size
+  mi_malloc_good_size=mimalloc.mi_malloc_good_size
+  mi_strdup=mimalloc.mi_strdup
+  mi_strndup=mimalloc.mi_strndup
+  mi_wcsdup=mimalloc.mi_wcsdup
+#endif

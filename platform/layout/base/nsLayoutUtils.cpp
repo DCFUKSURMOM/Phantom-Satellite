@@ -8091,12 +8091,8 @@ UpdateCompositionBoundsForRCDRSF(ParentLayerRect& aCompBounds,
     return false;
   }
 
-#if defined(MOZ_WIDGET_UIKIT)
-  nsIWidget* widget = rootFrame->GetNearestWidget();
-#else
   nsView* view = rootFrame->GetView();
   nsIWidget* widget = view ? view->GetWidget() : nullptr;
-#endif
 
   if (widget) {
     LayoutDeviceIntRect widgetBounds = widget->GetBounds();

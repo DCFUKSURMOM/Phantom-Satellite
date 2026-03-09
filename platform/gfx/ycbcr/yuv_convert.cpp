@@ -148,7 +148,11 @@ void ConvertYCbCrToRGB32(const uint8_t* y_buf,
       src_u = u_buf + uv_pitch * pic_y + pic_x / 2;
       src_v = v_buf + uv_pitch * pic_y + pic_x / 2;
 
+#if MOZ_BIG_ENDIAN
+      fConvertYUVToARGB = libyuv::I422ToRGBAMatrix;
+#else
       fConvertYUVToARGB = libyuv::I422ToARGBMatrix;
+#endif
       break;
     }
     case YV12: {
@@ -156,7 +160,11 @@ void ConvertYCbCrToRGB32(const uint8_t* y_buf,
       src_u = u_buf + (uv_pitch * pic_y + pic_x) / 2;
       src_v = v_buf + (uv_pitch * pic_y + pic_x) / 2;
 
+#if MOZ_BIG_ENDIAN
+      fConvertYUVToARGB = libyuv::I420ToRGBAMatrix;
+#else
       fConvertYUVToARGB = libyuv::I420ToARGBMatrix;
+#endif
       break;
     }
     default:
@@ -164,6 +172,13 @@ void ConvertYCbCrToRGB32(const uint8_t* y_buf,
   }
 
   auto yuv_constant = libyuv::GetYUVConstants(yuv_color_space, color_range);
+
+#if MOZ_BIG_ENDIAN
+  const uint8_t* temp_u = src_u;
+  src_u = src_v;
+  src_v = temp_u;
+  yuv_constant = libyuv::GetYVUConstants(yuv_color_space, color_range);
+#endif
 
   DebugOnly<int> err =
     fConvertYUVToARGB(src_y, y_pitch, src_u, uv_pitch, src_v, uv_pitch,

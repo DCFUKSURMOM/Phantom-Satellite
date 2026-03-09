@@ -1137,6 +1137,14 @@ dnl default mode that relies on relative symlinks being handled a certain way.
     fi
     ;;
 
+*-freebsd*)
+    if test -z "$NSDISTMODE"; then
+       NSDISTMODE=copy
+    fi
+
+    MOZ_FIX_LINK_PATHS="-Wl,-rpath,'\$\$ORIGIN' -Wl,-z,origin"
+    ;;
+
 esac
 
 AC_SUBST_LIST(MMX_FLAGS)
@@ -2164,21 +2172,11 @@ cocoa)
     # Use -Wl as a trick to avoid -framework and framework names from
     # being separated by AC_SUBST_LIST.
     TK_LIBS='-Wl,-framework,QuartzCore -Wl,-framework,Carbon -Wl,-framework,CoreAudio -Wl,-framework,AudioToolbox -Wl,-framework,AudioUnit -Wl,-framework,AddressBook -Wl,-framework,OpenGL -Wl,-framework,Security'
-    if test "$CPU_ARCH" != "ppc"
+    if test -n "$MACOSX_DEPLOYMENT_TARGET" -a "$MACOSX_DEPLOYMENT_TARGET" \> "10.5"
     then
         TK_LIBS="-Wl,-framework,CoreLocation $TK_LIBS -Wl,-framework,ServiceManagement"
     fi
     TK_CFLAGS=""
-    CFLAGS="$CFLAGS $TK_CFLAGS"
-    CXXFLAGS="$CXXFLAGS $TK_CFLAGS"
-    MOZ_USER_DIR="Mozilla"
-    MOZ_FS_LAYOUT=bundle
-    ;;
-
-uikit)
-    LDFLAGS="$LDFLAGS -framework UIKit -lobjc"
-    TK_CFLAGS=""
-    TK_LIBS='-Wl,-framework,Foundation -Wl,-framework,CoreFoundation -Wl,-framework,CoreGraphics -Wl,-framework,CoreText -Wl,-framework,AVFoundation -Wl,-framework,AudioToolbox -Wl,-framework,CoreMedia -Wl,-framework,CoreVideo -Wl,-framework,OpenGLES -Wl,-framework,QuartzCore'
     CFLAGS="$CFLAGS $TK_CFLAGS"
     CXXFLAGS="$CXXFLAGS $TK_CFLAGS"
     MOZ_USER_DIR="Mozilla"
@@ -3201,6 +3199,9 @@ dnl Detect if we can use yasm to enable FFmpeg's ffvpx assembly decoder.
 if test -n "$MOZ_FFVPX" -a -n "$COMPILE_ENVIRONMENT"; then
   AC_DEFINE(MOZ_FFVPX)
   case "$OS_ARCH:$CPU_ARCH" in
+  Darwin:x86)
+    FFVPX_ASFLAGS="-DPIC -DMACHO"
+  ;;
   Darwin:x86_64)
     FFVPX_ASFLAGS="-D__x86_64__ -DPIC -DMACHO"
   ;;
@@ -4825,10 +4826,6 @@ HOST_CMFLAGS=-fobjc-exceptions
 HOST_CMMFLAGS=-fobjc-exceptions
 OS_COMPILE_CMFLAGS=-fobjc-exceptions
 OS_COMPILE_CMMFLAGS=-fobjc-exceptions
-if test "$MOZ_WIDGET_TOOLKIT" = uikit; then
-  OS_COMPILE_CMFLAGS="$OS_COMPILE_CMFLAGS -fobjc-abi-version=2 -fobjc-legacy-dispatch"
-  OS_COMPILE_CMMFLAGS="$OS_COMPILE_CMMFLAGS -fobjc-abi-version=2 -fobjc-legacy-dispatch"
-fi
 AC_SUBST(HOST_CMFLAGS)
 AC_SUBST(HOST_CMMFLAGS)
 AC_SUBST(OS_COMPILE_CMFLAGS)

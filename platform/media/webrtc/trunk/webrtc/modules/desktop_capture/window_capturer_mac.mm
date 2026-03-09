@@ -178,8 +178,12 @@ bool WindowCapturerMac::BringSelectedWindowToFront() {
   // TODO(jiayl): this will bring the process main window to the front. We
   // should find a way to bring only the window to the front.
   bool result =
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
       [[NSRunningApplication runningApplicationWithProcessIdentifier: pid]
           activateWithOptions: NSApplicationActivateIgnoringOtherApps];
+#else
+      false;
+#endif
 
   CFRelease(window_id_array);
   CFRelease(window_array);

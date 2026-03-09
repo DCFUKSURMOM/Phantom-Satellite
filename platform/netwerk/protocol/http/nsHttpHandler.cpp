@@ -853,17 +853,7 @@ nsHttpHandler::InitUserAgentComponents()
             buf += " i686 on x86_64";
         } else {
             buf += ' ';
-
-#ifdef AIX
-            // AIX uname returns machine specific info in the uname.machine
-            // field and does not return the cpu type like other platforms.
-            // We use the AIX version and release numbers instead.
-            buf += (char*)name.version;
-            buf += '.';
-            buf += (char*)name.release;
-#else
             buf += (char*)name.machine;
-#endif
         }
 
         mOscpu.Assign(buf);

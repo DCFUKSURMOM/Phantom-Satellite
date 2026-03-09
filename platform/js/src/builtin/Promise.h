@@ -168,6 +168,11 @@ AsyncFunctionThrown(JSContext* cx, Handle<PromiseObject*> resultPromise);
 [[nodiscard]] bool
 AsyncFunctionAwait(JSContext* cx, Handle<PromiseObject*> resultPromise, HandleValue value);
 
+class ModuleObject;
+
+[[nodiscard]] bool
+AsyncModuleAwait(JSContext* cx, Handle<ModuleObject*> module, HandleValue value);
+
 class AsyncGeneratorObject;
 
 [[nodiscard]] bool
@@ -184,6 +189,10 @@ AsyncGeneratorReject(JSContext* cx, Handle<AsyncGeneratorObject*> asyncGenObj,
 [[nodiscard]] bool
 AsyncGeneratorEnqueue(JSContext* cx, HandleValue asyncGenVal, CompletionKind completionKind,
                       HandleValue completionValue, MutableHandleValue result);
+
+[[nodiscard]] bool
+PerformPromiseThenWithoutResult(JSContext* cx, Handle<PromiseObject*> promise,
+                                HandleValue onFulfilled, HandleValue onRejected);
 
 bool
 AsyncFromSyncIteratorMethod(JSContext* cx, CallArgs& args, CompletionKind completionKind);

@@ -241,6 +241,8 @@ public:
 
   /**
    * Call @aFunction for each property or until @aFunction returns false.
+   * Values must be accessed via ReinterpretHelper<T>::FromInternalValue(),
+   * or you will have problems on Big Endian.
    */
   template<class F>
   void ForEach(F aFunction) const
@@ -281,27 +283,7 @@ public:
   return mProperties.ShallowSizeOfExcludingThis(aMallocSizeOf);
   }
 
-private:
-  friend class ::nsIFrame;
-
-  // Prevent copying of FrameProperties; we should always return/pass around
-  // references to it, not copies!
-  FrameProperties(const FrameProperties&) = delete;
-  FrameProperties& operator=(const FrameProperties&) = delete;
-
-  inline void
-  SetInternal(UntypedDescriptor aProperty, uint64_t aValue,
-              const nsIFrame* aFrame);
-
-  inline uint64_t
-  GetInternal(UntypedDescriptor aProperty, bool* aFoundResult) const;
-
-  inline uint64_t
-  RemoveInternal(UntypedDescriptor aProperty, bool* aFoundResult);
-
-  inline void
-  DeleteInternal(UntypedDescriptor aProperty, const nsIFrame* aFrame);
-
+  // This needs to be public because of bad ForEach interface.
   template<typename T>
   struct ReinterpretHelper
   {
@@ -322,6 +304,27 @@ private:
       return value;
     }
   };
+
+private:
+  friend class ::nsIFrame;
+
+  // Prevent copying of FrameProperties; we should always return/pass around
+  // references to it, not copies!
+  FrameProperties(const FrameProperties&) = delete;
+  FrameProperties& operator=(const FrameProperties&) = delete;
+
+  inline void
+  SetInternal(UntypedDescriptor aProperty, uint64_t aValue,
+              const nsIFrame* aFrame);
+
+  inline uint64_t
+  GetInternal(UntypedDescriptor aProperty, bool* aFoundResult) const;
+
+  inline uint64_t
+  RemoveInternal(UntypedDescriptor aProperty, bool* aFoundResult);
+
+  inline void
+  DeleteInternal(UntypedDescriptor aProperty, const nsIFrame* aFrame);
 
   /**
    * Stores a property descriptor/value pair.

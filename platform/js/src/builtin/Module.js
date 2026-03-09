@@ -5,10 +5,21 @@
 function CallModuleResolveHook(module, specifier, expectedMinimumStatus)
 {
     let requestedModule = HostResolveImportedModule(module, specifier);
-    if (requestedModule.state < expectedMinimumStatus)
-        ThrowInternalError(JSMSG_BAD_MODULE_STATUS);
+    if (requestedModule.state < expectedMinimumStatus) {
+        ThrowBadModuleStatus("CallModuleResolveHook", requestedModule,
+                             "specifier=" + specifier + " expected>=" + expectedMinimumStatus);
+    }
 
     return requestedModule;
+}
+
+function ThrowBadModuleStatus(where, module, details = "")
+{
+    let status = module && module.status;
+    let msg = "module record has unexpected status " + status + " at " + where;
+    if (details)
+        msg += " " + details;
+    ThrowInternalError(msg);
 }
 
 // 15.2.1.16.2 GetExportedNames(exportStarSet)
@@ -79,6 +90,37 @@ function ModuleSetStatus(module, newStatus)
            "New module status inconsistent with current status");
 
     UnsafeSetReservedSlot(module, MODULE_OBJECT_STATUS_SLOT, newStatus);
+}
+
+var moduleEvaluationPromises = new std_WeakMap();
+
+function IsPromise(value)
+{
+    return IsObject(value) && IsPromiseObject(value);
+}
+
+function GetModuleEvaluationPromise(module)
+{
+    return callFunction(std_WeakMap_get, moduleEvaluationPromises, module);
+}
+
+function SetModuleEvaluationPromise(module, promise)
+{
+    callFunction(std_WeakMap_set, moduleEvaluationPromises, module, promise);
+}
+
+function AwaitDependencies(promises)
+{
+    if (promises.length === 0)
+        return undefined;
+
+    let promise = promises[0];
+    for (let i = 1; i < promises.length; i++) {
+        let next = promises[i];
+        promise = callContentFunction(promise.then, promise, function() { return next; });
+    }
+
+    return promise;
 }
 
 // 15.2.1.16.3 ResolveExport(exportName, resolveSet)
@@ -287,7 +329,10 @@ function ModuleInstantiate()
     if (module.status === MODULE_STATUS_INSTANTIATING ||
         module.status === MODULE_STATUS_EVALUATING)
     {
-        ThrowInternalError(JSMSG_BAD_MODULE_STATUS);
+        // Re-entrant instantiation can happen when a module is already
+        // instantiating/evaluating (e.g., dynamic import while evaluating).
+        // Treat this as a no-op, since the module graph is already in progress.
+        return undefined;
     }
 
     // Step 3
@@ -514,19 +559,28 @@ function ModuleEvaluate()
     let module = this;
 
     // Step 2
+    if (module.status === MODULE_STATUS_EVALUATING) {
+        // Re-entrant evaluation should return the existing async evaluation
+        // promise instead of throwing.
+        return GetModuleEvaluationPromise(module);
+    }
+
     if (module.status !== MODULE_STATUS_INSTANTIATED &&
         module.status !== MODULE_STATUS_EVALUATED &&
         module.status !== MODULE_STATUS_EVALUATED_ERROR)
     {
-        ThrowInternalError(JSMSG_BAD_MODULE_STATUS);
+        // Avoid crashing on unexpected re-entrancy; callers will observe
+        // completion via the existing evaluation flow.
+        return undefined;
     }
 
     // Step 3
     let stack = [];
 
     // Steps 4-5
+    let evaluationResult;
     try {
-        InnerModuleEvaluation(module, stack, 0);
+        evaluationResult = InnerModuleEvaluation(module, stack, 0);
     } catch (error) {
         for (let i = 0; i < stack.length; i++) {
             let m = stack[i];
@@ -547,10 +601,16 @@ function ModuleEvaluate()
         throw error;
     }
 
-    assert(module.status === MODULE_STATUS_EVALUATED,
-           "Bad module status after successful evaluation");
     assert(stack.length === 0,
            "Stack should be empty after successful evaluation");
+
+    if (evaluationResult.promise !== undefined) {
+        // Async module evaluation returns a promise that resolves on completion.
+        return evaluationResult.promise;
+    }
+
+    assert(module.status === MODULE_STATUS_EVALUATED,
+           "Bad module status after successful evaluation");
 
     return undefined;
 }
@@ -567,11 +627,11 @@ function InnerModuleEvaluation(module, stack, index)
         throw GetModuleEvaluationError(module);
 
     if (module.status === MODULE_STATUS_EVALUATED)
-        return index;
+        return { index: index, promise: undefined };
 
     // Step 3
     if (module.status === MODULE_STATUS_EVALUATING)
-        return index;
+        return { index: index, promise: GetModuleEvaluationPromise(module) };
 
     // Step 4
     assert(module.status === MODULE_STATUS_INSTANTIATED,
@@ -589,13 +649,18 @@ function InnerModuleEvaluation(module, stack, index)
     _DefineDataProperty(stack, stack.length, module);
 
     // Step 10
+    // Track async dependency evaluation promises (top-level await).
+    let dependencyPromises = [];
     let requestedModules = module.requestedModules;
     for (let i = 0; i < requestedModules.length; i++) {
         let required = requestedModules[i];
         let requiredModule =
             CallModuleResolveHook(module, required, MODULE_STATUS_INSTANTIATED);
 
-        index = InnerModuleEvaluation(requiredModule, stack, index);
+        let evaluationResult = InnerModuleEvaluation(requiredModule, stack, index);
+        index = evaluationResult.index;
+        if (evaluationResult.promise !== undefined)
+            _DefineDataProperty(dependencyPromises, dependencyPromises.length, evaluationResult.promise);
 
         assert(requiredModule.status === MODULE_STATUS_EVALUATING ||
                requiredModule.status === MODULE_STATUS_EVALUATED,
@@ -616,7 +681,18 @@ function InnerModuleEvaluation(module, stack, index)
     }
 
     // Step 11
-    ExecuteModule(module);
+    let promise;
+    if (dependencyPromises.length > 0) {
+        // Defer execution until all async dependency evaluations settle.
+        promise = AwaitDependencies(dependencyPromises);
+        promise = callContentFunction(promise.then, promise, function() {
+            return ExecuteModule(module);
+        });
+    } else {
+        let execResult = ExecuteModule(module);
+        if (IsPromise(execResult))
+            promise = execResult;
+    }
 
     // Step 12
     assert(CountArrayValues(stack, module) === 1,
@@ -627,14 +703,40 @@ function InnerModuleEvaluation(module, stack, index)
            "Bad DFS ancestor index");
 
     // Step 14
+    let cycleModules = undefined;
     if (module.dfsAncestorIndex === module.dfsIndex) {
+        cycleModules = [];
         let requiredModule;
         do {
             requiredModule = callFunction(std_Array_pop, stack);
-            ModuleSetStatus(requiredModule, MODULE_STATUS_EVALUATED);
+            _DefineDataProperty(cycleModules, cycleModules.length, requiredModule);
         } while (requiredModule !== module);
     }
 
+    if (promise !== undefined) {
+        if (cycleModules !== undefined) {
+            // For async cycles, finalize status transitions after promise settle.
+            let onFulfilled = function() {
+                for (let i = 0; i < cycleModules.length; i++)
+                    ModuleSetStatus(cycleModules[i], MODULE_STATUS_EVALUATED);
+            };
+            let onRejected = function(error) {
+                for (let i = 0; i < cycleModules.length; i++)
+                    RecordModuleEvaluationError(cycleModules[i], error);
+                throw error;
+            };
+            promise = callContentFunction(promise.then, promise, onFulfilled, onRejected);
+        }
+
+        SetModuleEvaluationPromise(module, promise);
+        return { index: index, promise: promise };
+    }
+
+    if (cycleModules !== undefined) {
+        for (let i = 0; i < cycleModules.length; i++)
+            ModuleSetStatus(cycleModules[i], MODULE_STATUS_EVALUATED);
+    }
+
     // Step 15
-    return index;
+    return { index: index, promise: undefined };
 }

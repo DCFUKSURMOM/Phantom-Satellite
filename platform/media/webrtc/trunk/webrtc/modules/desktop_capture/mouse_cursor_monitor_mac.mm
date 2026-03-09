@@ -231,6 +231,44 @@ void MouseCursorMonitorMac::Capture() {
   callback_->OnMouseCursorPosition(state, position);
 }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+CGImageRef NSImageToCGImageRef(NSImage *image) {
+    NSSize imageSize = [image size];
+
+    // Create a bitmap context
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(NULL,
+                                                 imageSize.width,
+                                                 imageSize.height,
+                                                 8,       // bits per component
+                                                 0,       // bytes per row (0 for default)
+                                                 colorSpace,
+                                                 kCGImageAlphaPremultipliedLast); // or other bitmap info
+    CGColorSpaceRelease(colorSpace);
+
+    if (context == NULL) return NULL;
+
+    // Set up the graphics context for drawing the NSImage
+    [NSGraphicsContext saveGraphicsState];
+    NSGraphicsContext *nsContext = [NSGraphicsContext graphicsContextWithCGContext:context flipped:NO];
+    [NSGraphicsContext setCurrentContext:nsContext];
+
+    // Draw the image into the context
+    [image drawAtPoint:NSZeroPoint fromRect:NSZeroRect operation:NSCompositeCopy fraction:1.0];
+
+    // Restore the previous graphics context
+    [NSGraphicsContext restoreGraphicsState];
+
+    // Create a CGImage from the context
+    CGImageRef cgImage = CGBitmapContextCreateImage(context);
+
+    // Clean up
+    CGContextRelease(context);
+
+    return cgImage; // Caller is responsible for releasing this CGImageRef
+}
+#endif
+
 void MouseCursorMonitorMac::CaptureImage() {
   NSCursor* nscursor = [NSCursor currentSystemCursor];
 
@@ -242,7 +280,11 @@ void MouseCursorMonitorMac::CaptureImage() {
       std::max(0, std::min(size.width(), static_cast<int>(nshotspot.x))),
       std::max(0, std::min(size.height(), static_cast<int>(nshotspot.y))));
   CGImageRef cg_image =
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
       [nsimage CGImageForProposedRect:NULL context:nil hints:nil];
+#else
+      NSImageToCGImageRef(nsimage);
+#endif
   if (!cg_image)
     return;
 

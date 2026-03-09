@@ -1,0 +1,19 @@
+mimalloc vendor snapshot
+
+Source: https://github.com/microsoft/mimalloc
+Commit: b69f9cb39f22b95971a4b9196a9c265a7b474718
+Release: 2.2.7
+
+Notes:
+- Copied include/, src/, LICENSE, and readme.md from upstream.
+- Removed upstream prebuilt binaries under bin/, except Windows
+  x86/x64 mimalloc-redirect DLL/import libs (stored under redirect/)
+  to enable CRT malloc/free redirection when MOZ_MIMALLOC is on.
+- Added mozbuild integration via moz.build for static.c and exports.
+- Adjusted Unix getenv handling to avoid raw environ traversal during process init,
+  using getenv only after preloading to prevent loader-time crashes.
+- On GNU platforms, prefer weak `_environ` over `environ` to handle glibc DSO visibility.
+- Guarded `mi_usable_size` to return 0 for non-mimalloc pointers to avoid early-init crashes.
+- Darwin build uses MI_OSX_ZONE without MI_OSX_INTERPOSE to avoid duplicate
+  interpose definitions.
+- Windows exports mi_* symbols from mozglue to satisfy mozalloc inlines.

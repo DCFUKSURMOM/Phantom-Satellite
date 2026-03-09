@@ -16,6 +16,7 @@
 #include "mozilla/widget/CompositorWidget.h"
 
 #include <OpenGL/OpenGL.h>
+#import <IOKit/IOKitLib.h>
 
 // When running inside a VM, creating an accelerated OpenGL context usually
 // fails. Uncomment this line to emulate that behavior.
@@ -253,13 +254,62 @@ GLContextProviderCGL::CreateForWindow(nsIWidget* aWidget, bool aForceAccelerated
     }
 #endif
 
-    const NSOpenGLPixelFormatAttribute* attribs;
-    if (sCGLLibrary.UseDoubleBufferedWindows()) {
-        attribs = aForceAccelerated ? kAttribs_doubleBuffered_accel : kAttribs_doubleBuffered;
-    } else {
-        attribs = aForceAccelerated ? kAttribs_singleBuffered_accel : kAttribs_singleBuffered;
+    NSOpenGLContext* context = nullptr;
+    bool forceSoftware = false;
+
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    // These old drivers don't support framebuffer objects, we cannot use them.
+    // However, we still need some sort of OpenGL for the basic compositor,
+    // so check for these and force the software renderer.
+    CFMutableDictionaryRef matchingDict = IOServiceMatching("IOAccelerator");
+    io_iterator_t iterator;
+    if (IOServiceGetMatchingServices(kIOMasterPortDefault, matchingDict, &iterator) == kIOReturnSuccess) {
+        io_registry_entry_t registryEntry;
+        while ((registryEntry = IOIteratorNext(iterator))) {
+            CFTypeRef bundleName = IORegistryEntryCreateCFProperty(registryEntry,
+                                                                   CFSTR("IOGLBundleName"),
+                                                                   kCFAllocatorDefault,
+                                                                   0);
+            if (bundleName) {
+                if (CFGetTypeID(bundleName) == CFStringGetTypeID()) {
+                    NSString* str = (NSString*)bundleName;
+                    if ([str isEqualToString:@"GeForce2MXGLDriver"] ||
+                        [str isEqualToString:@"ATIRadeon8500GLDriver"] ||
+                        [str isEqualToString:@"GeForce3GLDriver"]) {
+                        forceSoftware = true;
+                    }
+                }
+                CFRelease(bundleName);
+            }
+            IOObjectRelease(registryEntry);
+            if (forceSoftware) break;
+        }
+        IOObjectRelease(iterator);
     }
-    NSOpenGLContext* context = CreateWithFormat(attribs);
+
+    if (forceSoftware) {
+        NSOpenGLPixelFormatAttribute attribs[] = {
+            NSOpenGLPFARendererID, 0x00020200, // kCGLRendererGenericFloatID
+            NSOpenGLPFAAllowOfflineRenderers,
+            NSOpenGLPFADoubleBuffer,
+            0
+        };
+        NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attribs];
+        context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
+        [pixelFormat release];
+    }
+#endif
+
+    if (!forceSoftware) {
+        const NSOpenGLPixelFormatAttribute* attribs;
+        if (sCGLLibrary.UseDoubleBufferedWindows()) {
+            attribs = aForceAccelerated ? kAttribs_doubleBuffered_accel : kAttribs_doubleBuffered;
+        } else {
+            attribs = aForceAccelerated ? kAttribs_singleBuffered_accel : kAttribs_singleBuffered;
+        }
+        context = CreateWithFormat(attribs);
+    }
+
     if (!context) {
         return nullptr;
     }

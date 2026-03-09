@@ -35,6 +35,8 @@
 #include "config_darwin_aarch64.h"
 #elif defined(__ppc__)
 #include "config_darwin_ppc.h"
+#elif defined(__i386__)
+#include "config_darwin_i386.h"
 #else
 #include "config_darwin64.h"
 #endif

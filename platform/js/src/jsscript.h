@@ -1123,6 +1123,10 @@ class JSScript : public js::gc::TenuredCell
 
     bool isAsync_:1;
 
+    // Script (module) contains top-level await.
+    // Module script contains top-level await; evaluation can suspend.
+    bool hasTopLevelAwait_:1;
+
     bool hasRest_:1;
     bool isExprBody_:1;
 
@@ -1435,6 +1439,14 @@ class JSScript : public js::gc::TenuredCell
 
     void setAsyncKind(js::FunctionAsyncKind kind) {
         isAsync_ = kind == js::AsyncFunction;
+    }
+
+    bool hasTopLevelAwait() const {
+        return hasTopLevelAwait_;
+    }
+
+    void setHasTopLevelAwait(bool hasTopLevelAwait) {
+        hasTopLevelAwait_ = hasTopLevelAwait;
     }
 
     bool hasRest() const {
@@ -1798,7 +1810,7 @@ class JSScript : public js::gc::TenuredCell
     bool hasTrynotes() const     { return hasArray(TRYNOTES); }
     bool hasScopeNotes() const   { return hasArray(SCOPENOTES); }
     bool hasYieldAndAwaitOffsets() const {
-        return isStarGenerator() || isLegacyGenerator() || isAsync();
+        return isStarGenerator() || isLegacyGenerator() || isAsync() || hasTopLevelAwait();
     }
 
 #define OFF(fooOff, hasFoo, t)   (fooOff() + (hasFoo() ? sizeof(t) : 0))

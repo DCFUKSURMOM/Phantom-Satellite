@@ -117,6 +117,34 @@ GfxInfo::GetDeviceInfo()
     mAdapterDeviceID.AppendPrintf("0x%04x", IntValueOfCFData((CFDataRef)device_id_ref));
     CFRelease(device_id_ref);
   }
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+  CFMutableDictionaryRef matchingDict = IOServiceMatching("IOAccelerator");
+  io_iterator_t iterator;
+  if (IOServiceGetMatchingServices(kIOMasterPortDefault, matchingDict, &iterator) == kIOReturnSuccess) {
+    io_registry_entry_t registryEntry;
+    while ((registryEntry = IOIteratorNext(iterator))) {
+      CFTypeRef bundleName = IORegistryEntryCreateCFProperty(registryEntry,
+                                                             CFSTR("IOGLBundleName"),
+                                                             kCFAllocatorDefault,
+                                                             0);
+      if (bundleName) {
+        if (CFGetTypeID(bundleName) == CFStringGetTypeID()) {
+          NSString* str = (NSString*)bundleName;
+          mIOGLBundleName.Assign(NS_ConvertUTF8toUTF16([str UTF8String]));
+          fprintf(stderr, "GfxInfo::GetDeviceInfo: IOGLBundleName: %s\n", NS_ConvertUTF16toUTF8(mIOGLBundleName).get());
+        }
+        CFRelease(bundleName);
+      }
+      IOObjectRelease(registryEntry);
+      if (!mIOGLBundleName.IsEmpty()) break;
+    }
+    IOObjectRelease(iterator);
+  }
+
+  if (mIOGLBundleName.IsEmpty()) {
+    fprintf(stderr, "GfxInfo::GetDeviceInfo: No IOGLBundleName found\n");
+  }
+#endif
 }
 
 nsresult
@@ -309,11 +337,11 @@ GfxInfo::GetGfxDriverInfo()
       (nsAString&) GfxDriverInfo::GetDeviceVendor(VendorATI), GfxDriverInfo::allDevices,
       nsIGfxInfo::FEATURE_WEBGL_MSAA, nsIGfxInfo::FEATURE_BLOCKED_OS_VERSION, "FEATURE_FAILURE_MAC_ATI_NO_MSAA");
     IMPLEMENT_MAC_DRIVER_BLOCKLIST(OperatingSystem::OSX,
-      (nsAString&) GfxDriverInfo::GetDeviceVendor(VendorATI), (GfxDeviceFamily*) GfxDriverInfo::GetDeviceFamily(RadeonX1000),
-      nsIGfxInfo::FEATURE_OPENGL_LAYERS, nsIGfxInfo::FEATURE_BLOCKED_DEVICE, "FEATURE_FAILURE_MAC_RADEONX1000_NO_TEXTURE2D");
-    IMPLEMENT_MAC_DRIVER_BLOCKLIST(OperatingSystem::OSX,
       (nsAString&) GfxDriverInfo::GetDeviceVendor(VendorNVIDIA), (GfxDeviceFamily*) GfxDriverInfo::GetDeviceFamily(Geforce7300GT),
       nsIGfxInfo::FEATURE_WEBGL_OPENGL, nsIGfxInfo::FEATURE_BLOCKED_DEVICE, "FEATURE_FAILURE_MAC_7300_NO_WEBGL");
+    IMPLEMENT_MAC_DRIVER_BLOCKLIST(OperatingSystem::OSX,
+      (nsAString&) GfxDriverInfo::GetDeviceVendor(VendorNVIDIA), (GfxDeviceFamily*) GfxDriverInfo::GetDeviceFamily(GeforceFX),
+      nsIGfxInfo::FEATURE_OPENGL_LAYERS, nsIGfxInfo::FEATURE_BLOCKED_DEVICE, "FEATURE_FAILURE_MAC_GEFORCEFX_NO_LAYERS");
   }
   return *mDriverInfo;
 }
@@ -339,6 +367,29 @@ GfxInfo::GetFeatureStatusImpl(int32_t aFeature,
 
   // Don't evaluate special cases when we're evaluating the downloaded blocklist.
   if (!aDriverInfo.Length()) {
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    // Block the non-QECI drivers for OpenGL. They just crash the browser
+    // We only need this for 10.5 (PPC) as all drivers on Intel work.
+    if (mIOGLBundleName.EqualsLiteral("ATIRadeon8500GLDriver") ||
+        mIOGLBundleName.EqualsLiteral("GeForce2MXGLDriver") ||
+        mIOGLBundleName.EqualsLiteral("GeForce3GLDriver")) {
+      if (aFeature == nsIGfxInfo::FEATURE_OPENGL_LAYERS) {
+        *aStatus = nsIGfxInfo::FEATURE_BLOCKED_DEVICE;
+        aFailureId = "FEATURE_FAILURE_MAC_UNSUPPORTED_GPU";
+        return NS_OK;
+      }
+    }
+
+    // Many WebGL issues on 10.5, especially:
+    //   * bug 631258: WebGL shader paints using textures belonging to other processes on Mac OS 10.5
+    //   * bug 618848: Post process shaders and texture mapping crash OS X 10.5
+    if (aFeature == nsIGfxInfo::FEATURE_WEBGL_OPENGL &&
+        !nsCocoaFeatures::OnSnowLeopardOrLater()) {
+      *aStatus = nsIGfxInfo::FEATURE_BLOCKED_OS_VERSION;
+      aFailureId = "FEATURE_FAILURE_WEBGL_OSX_VERSION";
+      return NS_OK;
+    }
+#endif
     if (aFeature == nsIGfxInfo::FEATURE_WEBGL_MSAA) {
       // Blacklist all ATI cards on OSX, except for
       // 0x6760 and 0x9488

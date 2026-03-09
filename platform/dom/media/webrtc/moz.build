@@ -78,6 +78,9 @@ if CONFIG['GNU_CC'] or CONFIG['CLANG_CL']:
 
 FINAL_LIBRARY = 'xul'
 
+if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'cocoa' and CONFIG['CPU_ARCH'] == 'ppc':
+    CXXFLAGS += ['-fpermissive']
+
 if CONFIG['_MSC_VER']:
     CXXFLAGS += [
         '-wd4275', # non dll-interface class used as base for dll-interface class

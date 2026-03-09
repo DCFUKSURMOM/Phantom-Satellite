@@ -447,6 +447,13 @@ nsMenuItemIconX::OnFrameComplete(imgIRequest* aRequest)
     return NS_ERROR_FAILURE;
   }
 
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+  // Otherwise, scaling of the menu icon will be innefective and only a portion of the icon will be shown
+  if (!nsCocoaFeatures::OnSnowLeopardOrLater()) {
+    [newImage setScalesWhenResized:YES]; // According to Apple's doc, this is deprecated and uneeded in 10.6+
+  }
+#endif
+
   [newImage setSize:NSMakeSize(kIconWidth, kIconHeight)];
   [mNativeMenuItem setImage:newImage];
 

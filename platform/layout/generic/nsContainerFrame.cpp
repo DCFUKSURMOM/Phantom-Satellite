@@ -308,18 +308,19 @@ nsContainerFrame::GetChildLists(nsTArray<ChildList>* aLists) const
   using T = mozilla::FrameProperties::UntypedDescriptor;
   mProperties.ForEach([this, aLists] (const T& aProp, uint64_t aValue) {
     typedef const nsFrameList* L;
+    typedef FrameProperties::ReinterpretHelper<RemovePointer<L>::Type> H;
     if (aProp == OverflowProperty()) {
-      reinterpret_cast<L>(aValue)->AppendIfNonempty(aLists, kOverflowList);
+      H::FromInternalValue(aValue)->AppendIfNonempty(aLists, kOverflowList);
     } else if (aProp == OverflowContainersProperty()) {
       MOZ_ASSERT(IsFrameOfType(nsIFrame::eCanContainOverflowContainers),
                                "found unexpected OverflowContainersProperty");
-      reinterpret_cast<L>(aValue)->AppendIfNonempty(aLists, kOverflowContainersList);
+      H::FromInternalValue(aValue)->AppendIfNonempty(aLists, kOverflowContainersList);
     } else if (aProp == ExcessOverflowContainersProperty()) {
       MOZ_ASSERT(IsFrameOfType(nsIFrame::eCanContainOverflowContainers),
                                "found unexpected ExcessOverflowContainersProperty");
-      reinterpret_cast<L>(aValue)->AppendIfNonempty(aLists, kExcessOverflowContainersList);
+      H::FromInternalValue(aValue)->AppendIfNonempty(aLists, kExcessOverflowContainersList);
     } else if (aProp == BackdropProperty()) {
-      reinterpret_cast<L>(aValue)->AppendIfNonempty(aLists, kBackdropList);
+      H::FromInternalValue(aValue)->AppendIfNonempty(aLists, kBackdropList);
     }
     return true;
   });

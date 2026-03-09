@@ -28,11 +28,6 @@ elif CONFIG['MOZ_WIDGET_TOOLKIT'] == 'cocoa':
         'nsNativeAppSupportCocoa.mm',
         'updaterfileutils_osx.mm',
     ]
-elif CONFIG['MOZ_WIDGET_TOOLKIT'] == 'uikit':
-    UNIFIED_SOURCES += [
-        'nsNativeAppSupportDefault.cpp',
-        'UIKitDirProvider.mm',
-    ]
 elif 'gtk' in CONFIG['MOZ_WIDGET_TOOLKIT']:
     UNIFIED_SOURCES += ['nsNativeAppSupportUnix.cpp']
 else:

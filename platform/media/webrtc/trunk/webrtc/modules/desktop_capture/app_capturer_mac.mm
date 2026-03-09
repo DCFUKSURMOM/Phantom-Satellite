@@ -85,8 +85,26 @@ void AppCapturerMac::Stop() {
 
 void AppCapturerMac::Capture(const DesktopRegion& region) {
   // Check that selected process exists
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   NSRunningApplication *ra = [NSRunningApplication runningApplicationWithProcessIdentifier:process_id_];
   if (!ra) {
+#else
+  NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+  NSArray *launchedApps = [workspace launchedApplications];
+  bool found = false;
+
+  // Iterate through the array
+  for (NSUInteger x=0; x < [launchedApps count]; x++) {
+    NSDictionary *appInfo = [launchedApps objectAtIndex:x];
+    // Retrieve the process identifier (PID)
+    NSNumber *pidNumber = [appInfo objectForKey:@"NSApplicationProcessIdentifier"];
+    if([pidNumber intValue] == process_id_) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+#endif
     callback_->OnCaptureCompleted(NULL);
     return;
   }

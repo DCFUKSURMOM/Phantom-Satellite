@@ -46,6 +46,7 @@ const char* kApplicationServicesLibraryName =
 typedef void* (*CGDisplayBaseAddressFunc)(CGDirectDisplayID);
 typedef size_t (*CGDisplayBytesPerRowFunc)(CGDirectDisplayID);
 typedef size_t (*CGDisplayBitsPerPixelFunc)(CGDirectDisplayID);
+typedef CGImageRef (*CGDisplayCreateImageFunc)(CGDirectDisplayID);
 const char* kOpenGlLibraryName =
     "/System/Library/Frameworks/OpenGL.framework/OpenGL";
 typedef CGLError (*CGLSetFullScreenFunc)(CGLContextObj);
@@ -111,13 +112,13 @@ CFArrayRef CreateWindowListWithExclusion(CGWindowID window_to_exclude) {
     CFNumberRef id_ref = reinterpret_cast<CFNumberRef>(
         CFDictionaryGetValue(window, kCGWindowNumber));
 
-    CGWindowID id;
-    CFNumberGetValue(id_ref, kCFNumberIntType, &id);
-    if (id == window_to_exclude) {
+    CGWindowID wid;
+    CFNumberGetValue(id_ref, kCFNumberIntType, &wid);
+    if (wid == window_to_exclude) {
       found = true;
       continue;
     }
-    CFArrayAppendValue(returned_array, reinterpret_cast<void *>(id));
+    CFArrayAppendValue(returned_array, reinterpret_cast<void *>(wid));
   }
   CFRelease(all_windows);
 
@@ -286,6 +287,7 @@ class ScreenCapturerMac : public ScreenCapturer {
   CGDisplayBaseAddressFunc cg_display_base_address_;
   CGDisplayBytesPerRowFunc cg_display_bytes_per_row_;
   CGDisplayBitsPerPixelFunc cg_display_bits_per_pixel_;
+  CGDisplayCreateImageFunc cg_display_create_image_;
   void* opengl_library_;
   CGLSetFullScreenFunc cgl_set_full_screen_;
 
@@ -331,6 +333,7 @@ ScreenCapturerMac::ScreenCapturerMac(
       cg_display_base_address_(NULL),
       cg_display_bytes_per_row_(NULL),
       cg_display_bits_per_pixel_(NULL),
+      cg_display_create_image_(NULL),
       opengl_library_(NULL),
       cgl_set_full_screen_(NULL),
       excluded_window_(0) {
@@ -384,6 +387,7 @@ void ScreenCapturerMac::Start(Callback* callback) {
 
   callback_ = callback;
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   // Create power management assertions to wake the display and prevent it from
   // going to sleep on user idle.
   // TODO(jamiewalch): Use IOPMAssertionDeclareUserActivity on 10.7.3 and above
@@ -398,6 +402,7 @@ void ScreenCapturerMac::Start(Callback* callback) {
                               kIOPMAssertionLevelOn,
                               CFSTR("Chrome Remote Desktop connection active"),
                               &power_assertion_id_user_);
+#endif
 }
 
 void ScreenCapturerMac::Stop() {
@@ -504,19 +509,19 @@ bool ScreenCapturerMac::GetScreenList(ScreenList* screens) {
   return true;
 }
 
-bool ScreenCapturerMac::SelectScreen(ScreenId id) {
+bool ScreenCapturerMac::SelectScreen(ScreenId sid) {
   if (rtc::GetOSVersionName() < rtc::kMacOSLion) {
     // Ignore the screen selection on unsupported OS.
     assert(!current_display_);
-    return id == kFullDesktopScreenId;
+    return sid == kFullDesktopScreenId;
   }
 
-  if (id == kFullDesktopScreenId) {
+  if (sid == kFullDesktopScreenId) {
     current_display_ = 0;
   } else {
     const MacDisplayConfiguration* config =
         desktop_config_.FindDisplayConfigurationById(
-            static_cast<CGDirectDisplayID>(id));
+            static_cast<CGDirectDisplayID>(sid));
     if (!config)
       return false;
     current_display_ = config->id;
@@ -740,7 +745,7 @@ bool ScreenCapturerMac::CgBlitPostLion(const DesktopFrame& frame,
     }
 
     // Create an image containing a snapshot of the display.
-    CGImageRef image = CGDisplayCreateImage(display_config.id);
+    CGImageRef image = cg_display_create_image_(display_config.id);
     if (image == NULL)
       continue;
 
@@ -854,6 +859,8 @@ void ScreenCapturerMac::ScreenConfigurationChanged() {
       dlsym(app_services_library_, "CGDisplayBytesPerRow"));
   cg_display_bits_per_pixel_ = reinterpret_cast<CGDisplayBitsPerPixelFunc>(
       dlsym(app_services_library_, "CGDisplayBitsPerPixel"));
+  cg_display_create_image_ = reinterpret_cast<CGDisplayCreateImageFunc>(
+      dlsym(app_services_library_, "CGDisplayCreateImage"));
   cgl_set_full_screen_ = reinterpret_cast<CGLSetFullScreenFunc>(
       dlsym(opengl_library_, "CGLSetFullScreen"));
   if (!(cg_display_base_address_ && cg_display_bytes_per_row_ &&

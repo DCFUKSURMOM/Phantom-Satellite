@@ -11,9 +11,14 @@ def moz_jemalloc4(value):
 
 option('--enable-jemalloc', env='MOZ_MEMORY',
        help='Replace system memory allocator with jemalloc')
+option('--enable-mimalloc',
+       help='Replace system memory allocator with mimalloc')
 
-@depends('--enable-jemalloc', target, build_project, c_compiler)
-def jemalloc(value, target, build_project, c_compiler):
+@depends('--enable-jemalloc', '--enable-mimalloc', target, build_project,
+         c_compiler)
+def jemalloc(value, mimalloc, target, build_project, c_compiler):
+    if value and mimalloc:
+        die('--enable-jemalloc and --enable-mimalloc cannot be used together')
     if value.origin != 'default':
         return bool(value) or None
 
@@ -30,10 +35,37 @@ def jemalloc(value, target, build_project, c_compiler):
     if target.kernel == 'Linux':
         return True
 
+@depends('--enable-mimalloc', '--enable-jemalloc', target)
+def mimalloc(value, jemalloc, target):
+    if value and jemalloc:
+        die('--enable-jemalloc and --enable-mimalloc cannot be used together')
+    if value.origin != 'default':
+        if not value:
+            return None
+        if target.kernel not in ('Darwin', 'WINNT', 'Linux', 'kFreeBSD', 'FreeBSD',
+                                 'NetBSD', 'OpenBSD', 'DragonFly'):
+            die('--enable-mimalloc is not supported on %s', target.kernel)
+        return True
+
+@depends('--enable-mimalloc', '--enable-jemalloc')
+def mimalloc_requires_disable(mimalloc, jemalloc):
+    if not mimalloc:
+        return
+    if jemalloc or jemalloc.origin not in ('command-line', 'mozconfig'):
+        die('--enable-mimalloc requires --disable-jemalloc to be passed explicitly')
+
 
 set_config('MOZ_MEMORY', jemalloc)
 set_define('MOZ_MEMORY', jemalloc)
 add_old_configure_assignment('MOZ_MEMORY', jemalloc)
+
+@depends(mimalloc)
+def mimalloc_config(mimalloc):
+    return True if mimalloc else False
+
+set_config('MOZ_MIMALLOC', mimalloc_config)
+set_define('MOZ_MIMALLOC', mimalloc)
+add_old_configure_assignment('MOZ_MIMALLOC', mimalloc_config)
 
 
 # Because --enable-jemalloc doesn't use a default because of the dependency

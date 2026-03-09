@@ -132,8 +132,20 @@ init_random(void)
 void
 read_random(void *buf, size_t size)
 {
+#if !defined(__APPLE__) || defined(HAVE_ARC4RANDOM_BUF)
 	arc4random_buf(buf, size);
-	return;
+#else
+	unsigned char *b = buf;
+	/* Make sure that we start out with b at a 4-byte alignment; plenty
+	 * of CPUs care about this for 32-bit access. */
+	if (size >= 4 && ((uintptr_t)b) & 3) {
+		uint32_t u = arc4random();
+		int n_bytes = 4 - (((uintptr_t)b) & 3);
+		memcpy(b, &u, n_bytes);
+		b += n_bytes;
+		size -= n_bytes;
+	}
+#endif
 }
 
 void
@@ -367,7 +379,7 @@ read_random(void *buf, size_t size)
 
 	position = 0;
 	while (position < size) {
-		if (nacl_secure_random((char *)buf + position, size - position, &n) == 0)
+		if (nacl_secure_random((char *)buf + position, size - position, &n) == 0) {
 			position += n;
 		}
 	}

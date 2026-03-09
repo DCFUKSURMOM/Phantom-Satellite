@@ -21,3 +21,6 @@ if CONFIG['MOZ_MEMORY']:
 
     if CONFIG['MOZ_REPLACE_MALLOC']:
         DIRS += ['replace']
+
+if CONFIG['MOZ_MIMALLOC']:
+    DIRS += ['mimalloc']

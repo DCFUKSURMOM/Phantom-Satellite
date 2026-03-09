@@ -94,7 +94,7 @@ MOZ_CHROME_FILE_FORMAT=omni
 JAR_COMPRESSION=brotli
 OMNIJAR_NAME=palemoon.res
 
-# Include bundled fonts
+# Include bundled fonts by default on Windows and GTK
 if test "$MOZ_WIDGET_TOOLKIT" = "windows" -o \
         "$MOZ_WIDGET_TOOLKIT" = "gtk2" -o \
         "$MOZ_WIDGET_TOOLKIT" = "gtk3"; then

@@ -100,6 +100,7 @@ void DesktopDeviceInfoMac::InitializeApplicationList() {
     }
   }
 
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
   NSArray *running = [[NSWorkspace sharedWorkspace] runningApplications];
   for (NSRunningApplication *ra in running) {
     if (ra.activationPolicy != NSApplicationActivationPolicyRegular)
@@ -112,6 +113,16 @@ void DesktopDeviceInfoMac::InitializeApplicationList() {
     if (pid == getpid()) {
       continue;
     }
+#else
+  NSArray *launchedApps = [[NSWorkspace sharedWorkspace] launchedApplications];
+
+  // Iterate through the array
+  for (NSUInteger x=0; x < [launchedApps count]; x++) {
+    NSDictionary *appInfo = [launchedApps objectAtIndex:x];
+    // Retrieve the process identifier (PID)
+    NSNumber *pidNumber = [appInfo objectForKey:@"NSApplicationProcessIdentifier"];
+	ProcessId pid = [pidNumber intValue];
+#endif
 
     DesktopApplication *pDesktopApplication = new DesktopApplication;
     if (!pDesktopApplication) {
@@ -122,12 +133,20 @@ void DesktopDeviceInfoMac::InitializeApplicationList() {
     pDesktopApplication->setWindowCount(appWins[pid]);
 
     NSString *str;
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     str = [ra.executableURL absoluteString];
+#else
+	str = [appInfo objectForKey:@"NSApplicationPath"];
+#endif
     pDesktopApplication->setProcessPathName([str UTF8String]);
 
     // Record <window count> then <localized name>
     // NOTE: localized names can get *VERY* long
+#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     str = ra.localizedName;
+#else
+	str = [appInfo objectForKey:@"NSApplicationName"];
+#endif
     char nameStr[BUFSIZ];
     snprintf(nameStr, sizeof(nameStr), "%d\x1e%s", pDesktopApplication->getWindowCount(), [str UTF8String]);
     pDesktopApplication->setProcessAppName(nameStr);

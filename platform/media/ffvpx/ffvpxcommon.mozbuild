@@ -22,10 +22,16 @@ if CONFIG['FFVPX_ASFLAGS']:
                 ASFLAGS += ['-Pconfig_win64.asm']
         elif CONFIG['OS_ARCH'] == 'Darwin':
             # 64-bit macosx assemblers need to prefix symbols with an underscore.
-            ASFLAGS += [
-                '-Pconfig_darwin64.asm',
-                '-DPREFIX'
-                ]
+            if CONFIG['CPU_ARCH'] == 'x86':
+                ASFLAGS += [
+                    '-Pconfig_darwin_i386.asm',
+                    '-DPREFIX'
+                    ]
+            else:
+                ASFLAGS += [
+                    '-Pconfig_darwin64.asm',
+                    '-DPREFIX'
+                    ]
         else:
             # Default to unix, similar to how ASFLAGS setup works in configure.in
             ASFLAGS += ['-Pconfig_unix64.asm']

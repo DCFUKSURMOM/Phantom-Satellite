@@ -228,11 +228,11 @@ if toolkit in ('cocoa', 'windows'):
         'nsBaseClipboard.cpp',
     ]
 
-if toolkit in {'gtk2', 'gtk3', 'cocoa', 'windows', 'uikit'}:
-    UNIFIED_SOURCES += ['nsBaseFilePicker.cpp']
-
-if toolkit in ('gtk2', 'gtk3', 'windows', 'cocoa'):
-    UNIFIED_SOURCES += ['nsNativeTheme.cpp']
+if toolkit in {'gtk2', 'gtk3', 'cocoa', 'windows'}:
+    UNIFIED_SOURCES += [
+        'nsBaseFilePicker.cpp',
+        'nsNativeTheme.cpp',
+    ]
 
 if toolkit == 'gtk3':
     XPIDL_SOURCES += ['nsIApplicationChooser.idl']

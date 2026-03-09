@@ -323,6 +323,7 @@ static bool supports_LCD() {
     AutoCFRelease<CGColorSpaceRef> colorspace(CGColorSpaceCreateDeviceRGB());
     AutoCFRelease<CGContextRef> cgContext(CGBitmapContextCreate(&rgb, 1, 1, 8, 4,
                                                                 colorspace, BITMAP_INFO_RGB));
+ #if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
     AutoCFRelease<CTFontRef> ctFont(CTFontCreateWithName(CFSTR("Helvetica"), 16, nullptr));
     CGContextSetShouldSmoothFonts(cgContext, true);
     CGContextSetShouldAntialias(cgContext, true);
@@ -333,6 +334,14 @@ static bool supports_LCD() {
     CGGlyph pipeGlyph;
     CTFontGetGlyphsForCharacters(ctFont, &pipeChar, &pipeGlyph, 1);
     CTFontDrawGlyphs(ctFont, &pipeGlyph, &point, 1, cgContext);
+#else
+    CGContextSelectFont(cgContext, "Helvetica", 16, kCGEncodingMacRoman);
+    CGContextSetShouldSmoothFonts(cgContext, true);
+    CGContextSetShouldAntialias(cgContext, true);
+    CGContextSetTextDrawingMode(cgContext, kCGTextFill);
+    CGContextSetGrayFillColor(cgContext, 1, 1);
+    CGContextShowTextAtPoint(cgContext, -1, 0, "|", 1);
+#endif
 
     uint32_t r = (rgb >> 16) & 0xFF;
     uint32_t g = (rgb >>  8) & 0xFF;

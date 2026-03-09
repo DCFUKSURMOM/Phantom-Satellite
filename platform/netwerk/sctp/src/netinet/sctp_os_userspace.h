@@ -5,7 +5,6 @@
  * Copyright (c) 2008-2011, by Randall Stewart. All rights reserved.
  * Copyright (c) 2008-2011, by Michael Tuexen. All rights reserved.
  * Copyright (c) 2008-2011, by Brad Penoff. All rights reserved.
- * Copyright (c) 2020 by Moonchild Productions. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -52,13 +51,48 @@
 #include <windows.h>
 #include "user_environment.h"
 typedef CRITICAL_SECTION userland_mutex_t;
+#if WINVER < 0x0600
+typedef CRITICAL_SECTION userland_rwlock_t;
+enum {
+	C_SIGNAL = 0,
+	C_BROADCAST = 1,
+	C_MAX_EVENTS = 2
+};
+typedef struct
+{
+	u_int waiters_count;
+	CRITICAL_SECTION waiters_count_lock;
+	HANDLE events_[C_MAX_EVENTS];
+} userland_cond_t;
+void InitializeXPConditionVariable(userland_cond_t *);
+void DeleteXPConditionVariable(userland_cond_t *);
+int SleepXPConditionVariable(userland_cond_t *, userland_mutex_t *);
+void WakeAllXPConditionVariable(userland_cond_t *);
+#define InitializeConditionVariable(cond) InitializeXPConditionVariable(cond)
+#define DeleteConditionVariable(cond) DeleteXPConditionVariable(cond)
+#define SleepConditionVariableCS(cond, mtx, time) SleepXPConditionVariable(cond, mtx)
+#define WakeAllConditionVariable(cond) WakeAllXPConditionVariable(cond)
+#else
+typedef SRWLOCK userland_rwlock_t;
 #define DeleteConditionVariable(cond)
 typedef CONDITION_VARIABLE userland_cond_t;
+#endif
 typedef HANDLE userland_thread_t;
 #define ADDRESS_FAMILY	unsigned __int8
 #define IPVERSION  4
 #define MAXTTL     255
+/* VS2010 comes with stdint.h */
+#if !defined(_MSC_VER) || (_MSC_VER >= 1600)
 #include <stdint.h>
+#else
+typedef unsigned __int64 uint64_t;
+typedef unsigned __int32 uint32_t;
+typedef __int32          int32_t;
+typedef unsigned __int16 uint16_t;
+typedef __int16          int16_t;
+typedef unsigned __int8  uint8_t;
+typedef __int8           int8_t;
+#endif
 #ifndef _SIZE_T_DEFINED
 #typedef __int32         size_t;
 #endif
@@ -186,10 +220,17 @@ typedef char* caddr_t;
 #define bzero(buf, len) memset(buf, 0, len)
 #define bcopy(srcKey, dstKey, len) memcpy(dstKey, srcKey, len)
 
+#if defined(_MSC_VER) && (_MSC_VER < 1900) && !defined(__MINGW32__)
+#define SCTP_SNPRINTF(data, size, format, ...) 					\
+	if (_snprintf_s(data, size, _TRUNCATE, format, __VA_ARGS__) < 0) {	\
+		data[0] = '\0';							\
+	}
+#else
 #define SCTP_SNPRINTF(data, ...)						\
 	if (snprintf(data, __VA_ARGS__) < 0 ) {					\
 		data[0] = '\0';							\
 	}
+#endif
 
 #define inline __inline
 #define __inline__ __inline
@@ -234,6 +275,12 @@ typedef char* caddr_t;
 
 #define SCTP_GET_IF_INDEX_FROM_ROUTE(ro) 1 /* compiles...  TODO use routing socket to determine */
 
+#if defined(__APPLE__) && defined(__POWERPC__)
+#ifndef WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN
+#endif
+#endif
+
 #define BIG_ENDIAN 1
 #define LITTLE_ENDIAN 0
 #ifdef WORDS_BIGENDIAN
@@ -244,10 +291,15 @@ typedef char* caddr_t;
 
 #else /* !defined(Userspace_os_Windows) */
 #include <sys/socket.h>
-#if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__linux__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__native_client__) || defined(__Fuchsia__) || defined(__EMSCRIPTEN_PTHREADS__)
-#include <pthread.h>
+
+#if defined(__EMSCRIPTEN__) && !defined(__EMSCRIPTEN_PTHREADS__)
+#error "Unsupported build configuration."
 #endif
+
+#include <pthread.h>
+
 typedef pthread_mutex_t userland_mutex_t;
+typedef pthread_rwlock_t userland_rwlock_t;
 typedef pthread_cond_t userland_cond_t;
 typedef pthread_t userland_thread_t;
 #endif
@@ -477,8 +529,6 @@ struct sx {int dummy;};
 #endif
 #if defined(__FreeBSD__)
 #include <netinet6/in6_pcb.h>
-#include <netinet6/ip6protosw.h>
-/* #include <netinet6/nd6.h> was a 0 byte file */
 #include <netinet6/scope6_var.h>
 #endif
 #endif /* INET6 */
@@ -837,13 +887,11 @@ static inline void sctp_userspace_rtfree(sctp_rtentry_t *rt)
 /*************************/
 /*      MTU              */
 /*************************/
-int sctp_userspace_get_mtu_from_ifn(uint32_t if_index, int af);
+int sctp_userspace_get_mtu_from_ifn(uint32_t if_index);
 
-#define SCTP_GATHER_MTU_FROM_IFN_INFO(ifn, ifn_index, af) sctp_userspace_get_mtu_from_ifn(ifn_index, af)
+#define SCTP_GATHER_MTU_FROM_IFN_INFO(ifn, ifn_index) sctp_userspace_get_mtu_from_ifn(ifn_index)
 
 #define SCTP_GATHER_MTU_FROM_ROUTE(sctp_ifa, sa, rt) ((rt != NULL) ? rt->rt_rmx.rmx_mtu : 0)
-
-#define SCTP_GATHER_MTU_FROM_INTFC(sctp_ifn)  sctp_userspace_get_mtu_from_ifn(if_nametoindex(((struct ifaddrs *) (sctp_ifn))->ifa_name), AF_INET)
 
 #define SCTP_SET_MTU_OF_ROUTE(sa, rt, mtu) do { \
                                               if (rt != NULL) \
@@ -916,6 +964,16 @@ int sctp_userspace_get_mtu_from_ifn(uint32_t if_index, int af);
 
 /* wakeup a socket */
 #define SCTP_SOWAKEUP(so)	wakeup(&(so)->so_timeo, so)
+/* number of bytes ready to read */
+#define SCTP_SBAVAIL(sb)	(sb)->sb_cc
+#define SCTP_SB_INCR(sb, incr)			\
+{						\
+	atomic_add_int(&(sb)->sb_cc, incr);	\
+}
+#define SCTP_SB_DECR(sb, decr)					\
+{								\
+	SCTP_SAVE_ATOMIC_DECREMENT(&(sb)->sb_cc, (int)(decr));	\
+}
 /* clear the socket buffer state */
 #define SCTP_SB_CLEAR(sb)	\
 	(sb).sb_cc = 0;		\
@@ -995,13 +1053,13 @@ extern void sctp_userspace_ip_output(int *result, struct mbuf *o_pak,
                                      sctp_route_t *ro, void *stcb,
                                      uint32_t vrf_id);
 
-#define SCTP_IP_OUTPUT(result, o_pak, ro, stcb, vrf_id) sctp_userspace_ip_output(&result, o_pak, ro, stcb, vrf_id);
+#define SCTP_IP_OUTPUT(result, o_pak, ro, inp, vrf_id) sctp_userspace_ip_output(&result, o_pak, ro, inp, vrf_id);
 
 #if defined(INET6)
 extern void sctp_userspace_ip6_output(int *result, struct mbuf *o_pak,
                                       struct route_in6 *ro, void *stcb,
                                       uint32_t vrf_id);
-#define SCTP_IP6_OUTPUT(result, o_pak, ro, ifp, stcb, vrf_id) sctp_userspace_ip6_output(&result, o_pak, ro, stcb, vrf_id);
+#define SCTP_IP6_OUTPUT(result, o_pak, ro, ifp, inp, vrf_id) sctp_userspace_ip6_output(&result, o_pak, ro, inp, vrf_id);
 #endif
 
 
@@ -1092,6 +1150,13 @@ sctp_get_mbuf_for_msg(unsigned int space_needed, int want_header, int how, int a
 #endif
 
 #define SCTP_IS_LISTENING(inp) ((inp->sctp_flags & SCTP_PCB_FLAGS_ACCEPTING) != 0)
+
+static inline bool
+in_broadcast(struct in_addr in)
+{
+	return (in.s_addr == htonl(INADDR_BROADCAST) ||
+	        in.s_addr == htonl(INADDR_ANY));
+}
 
 #if defined(__APPLE__) || defined(__DragonFly__) || defined(__linux__) || defined(__native_client__) || defined(__NetBSD__) || defined(_WIN32) || defined(__Fuchsia__) || defined(__EMSCRIPTEN__)
 int

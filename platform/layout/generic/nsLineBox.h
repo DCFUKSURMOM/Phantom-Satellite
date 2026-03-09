@@ -1301,24 +1301,42 @@ class nsLineList_const_reverse_iterator {
     }
 #endif /* !__MWERKS__ */
 
-    // Passing by value rather than by reference and reference to const
-    // to keep AIX happy.
-    bool operator==(const iterator_self_type aOther) const
+    bool operator==(const iterator_self_type& aOther) const
     {
       NS_ASSERTION(mListLink == aOther.mListLink, "comparing iterators over different lists");
       return mCurrent == aOther.mCurrent;
     }
-    bool operator!=(const iterator_self_type aOther) const
+    bool operator!=(const iterator_self_type& aOther) const
     {
       NS_ASSERTION(mListLink == aOther.mListLink, "comparing iterators over different lists");
       return mCurrent != aOther.mCurrent;
     }
-    bool operator==(const iterator_self_type aOther)
+    bool operator==(const iterator_self_type& aOther)
     {
       NS_ASSERTION(mListLink == aOther.mListLink, "comparing iterators over different lists");
       return mCurrent == aOther.mCurrent;
     }
-    bool operator!=(const iterator_self_type aOther)
+    bool operator!=(const iterator_self_type& aOther)
+    {
+      NS_ASSERTION(mListLink == aOther.mListLink, "comparing iterators over different lists");
+      return mCurrent != aOther.mCurrent;
+    }
+    bool operator==(iterator_self_type& aOther) const
+    {
+      NS_ASSERTION(mListLink == aOther.mListLink, "comparing iterators over different lists");
+      return mCurrent == aOther.mCurrent;
+    }
+    bool operator!=(iterator_self_type& aOther) const
+    {
+      NS_ASSERTION(mListLink == aOther.mListLink, "comparing iterators over different lists");
+      return mCurrent != aOther.mCurrent;
+    }
+    bool operator==(iterator_self_type& aOther)
+    {
+      NS_ASSERTION(mListLink == aOther.mListLink, "comparing iterators over different lists");
+      return mCurrent == aOther.mCurrent;
+    }
+    bool operator!=(iterator_self_type& aOther)
     {
       NS_ASSERTION(mListLink == aOther.mListLink, "comparing iterators over different lists");
       return mCurrent != aOther.mCurrent;

@@ -467,6 +467,11 @@ nsresult nsCocoaWindow::CreateNativeWindow(const NSRect &aRect,
   mWindow = [[windowClass alloc] initWithContentRect:contentRect styleMask:features 
                                  backing:NSBackingStoreBuffered defer:YES];
 
+  // Make sure the window does not have a resize thumb on 10.6 and below
+#if !defined(MAC_OS_X_VERSION_10_7) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7)
+  [mWindow setShowsResizeIndicator:Preferences::GetBool("ui.mouse.resize_grip", false)];
+#endif
+
   // Make sure that window titles don't leak to disk in private browsing mode
   // due to macOS' resume feature.
 #if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
@@ -2939,6 +2944,7 @@ static NSMutableSet *gSwizzledFrameViewClasses = nil;
   mDisabledNeedsDisplay = NO;
   mDPI = GetDPI(self);
   mTrackingArea = nil;
+  mViewWithTrackingArea = nil;
   mDirtyRect = NSZeroRect;
   mBeingShown = NO;
   mDrawTitle = NO;
@@ -3169,25 +3175,28 @@ static const NSString* kStateCollectionBehavior = @"collectionBehavior";
 
 - (void)removeTrackingArea
 {
-  if (mTrackingArea) {
-    [[self trackingAreaView] removeTrackingArea:mTrackingArea];
-    [mTrackingArea release];
-    mTrackingArea = nil;
-  }
+  [mViewWithTrackingArea removeTrackingArea:mTrackingArea];
+
+  [mTrackingArea release];
+  mTrackingArea = nil;
+
+  [mViewWithTrackingArea release];
+  mViewWithTrackingArea = nil;
 }
 
 - (void)updateTrackingArea
 {
   [self removeTrackingArea];
 
-  NSView* view = [self trackingAreaView];
+  mViewWithTrackingArea = [self.trackingAreaView retain];
   const NSTrackingAreaOptions options =
     NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingActiveAlways;
-  mTrackingArea = [[NSTrackingArea alloc] initWithRect:[view bounds]
-                                               options:options
-                                                 owner:self
-                                              userInfo:nil];
-  [view addTrackingArea:mTrackingArea];
+  mTrackingArea =
+      [[NSTrackingArea alloc] initWithRect:[mViewWithTrackingArea bounds]
+                                   options:options
+                                     owner:self
+                                  userInfo:nil];
+  [mViewWithTrackingArea addTrackingArea:mTrackingArea];
 }
 
 - (void)mouseEntered:(NSEvent*)aEvent
@@ -3380,7 +3389,7 @@ static const NSString* kStateCollectionBehavior = @"collectionBehavior";
     // setBottomCornerRounded: is a private API call, so we check to make sure
     // we respond to it just in case.
     if ([self respondsToSelector:@selector(setBottomCornerRounded:)])
-      [self setBottomCornerRounded:YES];
+      [self setBottomCornerRounded:nsCocoaFeatures::OnLionOrLater()];
 
     // setTitlebarAppearsTransparent is only on 10.10+ so make sure it responds
 #if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)

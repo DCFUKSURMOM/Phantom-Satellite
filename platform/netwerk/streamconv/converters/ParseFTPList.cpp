@@ -1169,9 +1169,7 @@ int ParseFTPList(const char *line, struct list_state *state,
        
         } /* time/year */
         
-        // The length of the whole date string should be 12. On AIX the length
-        // is only 11 when the year is present in the date string and there is
-        // 1 padding space at the end of the string. In both cases the filename
+        // The length of the whole date string should be 12. The filename
         // starts at offset 13 from the start of the date string.
         // Don't care about leading spaces when the date string has different
         // format or when old Hellsoft output was detected.
