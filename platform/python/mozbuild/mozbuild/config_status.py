@@ -130,17 +130,24 @@ def config_status(topobjdir='.', topsrcdir='.', defines=None,
         'Rescuing dragon from princess', #orig
         'Judging your hardware', #cust
         'Hiring a hitman', #cust, requested by Selim in the Wii-Linux Discord
-        'Linuxing your Wii', #cust, requested by Selim in the Wii-Linux Discord
-        'Linuxing your Wii-U', #cust, requested by Selim in the Wii-Linux Discord
-        'Linuxing your GameCube', #cust
-        'Linuxing your PS2', #cust
-        'Linuxing your PS3', #cust
+        'Installing Linux on your GameCube', #cust
+        'Installing Linux on your Wii', #cust, requested by Selim in the Wii-Linux Discord
+        'Installing Linux on your Wii-U', #cust, requested by Selim in the Wii-Linux Discord
+        'Installing Linux on your Nintendo Switch', #cust
+        'Installing Linux on your PS2', #cust
+        'Installing Linux on your PS3', #cust
+        'Installing Linux on your PS Vita', #cust
+        'Installing Linux on your PS4', #cust
+        'Installing Linux on your PS5', #cust
+        'Installing Linux on your Original Xbox', #cust
+        'Installing Linux on your Xbox 360', #cust
         'Deleting Filesystem', #cust, requested by Tech64 in the Wii-Linux Discord
         'Causing a Resonance Cascade', #cust, requested by Tech64 in the Wii-Linux Discord
         'Making memes', #cust, requested by Tech64 in the Wii-Linux Discord
         'Installing Haiku', #cust, requested by Tech64 in the Wii-Linux Discord
         'Boiling water for tea', #cust, requested by waterpear in the Wii-Linux Discord
         'Reticulating splines', #cust, requested by waterpear in the Wii-Linux Discord
+        'Speedrunning insanity', #cust
     ]
 
     print('{0}...'.format(random.choice(STATUS_MESSAGES)), file=sys.stderr)
