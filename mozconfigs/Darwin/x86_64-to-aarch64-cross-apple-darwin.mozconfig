@@ -17,22 +17,23 @@ ac_add_options --with-pthreads
 ac_add_options --disable-crashreporter
 ac_add_options --disable-js-shell
 ac_add_options --disable-precompiled-startupcache
-ac_add_options --disable-gold
+ac_add_options --disable-elf-hack
+ac_add_options --disable-gold # Disable ld.gold, does not work on all architectures and I want consistent configs
+
+# Medium optimization (higher seems to make no difference or breaks stuff), suppress warnings, and remove unused function sections.
+ac_add_options --enable-optimize="-O2 -w -ffunction-sections"
 
 # Specify location of MacOS X SDK
 ac_add_options --with-macos-sdk=/Users/daniel/Desktop/PS/MacOSX11.3.sdk
 
 # Use Clang
-export CXX="/usr/bin/clang++ -stdlib=libc++"
+export CC=clang
+export CXX=clang++
 
 # Cross compile for Apple Silicon
 ac_add_options --host=x86_64-apple-darwin
 ac_add_options --target=aarch64-apple-darwin
 
-# Remove unused function sections, this doesnt work when set globally sadly
-ac_add_options --enable-optimize="-ffunction-sections"
-
-# Set Apple M1 as minimum CPU while still tuning for newer, disable strict aliasing, optimize for size, remove unused data sections
-export CFLAGS="-mcpu=apple-m1 -mtune=apple-m4 -fno-strict-aliasing -Os -fdata-sections"
-export CXXFLAGS="-mcpu=apple-m1 -mtune=apple-m4 -fno-strict-aliasing -Os -fdata-sections"
-export LDFLAGS="-mcpu=apple-m1 -mtune=apple-m4 -fno-strict-aliasing -Os -fdata-sections"
+# Set Apple M1 as minimum CPU while still tuning for newer
+export CFLAGS="-mcpu=apple-m1 -mtune=apple-m4"
+export CXXFLAGS="-mcpu=apple-m1 -mtune=apple-m4"

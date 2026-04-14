@@ -17,22 +17,23 @@ ac_add_options --with-pthreads
 ac_add_options --disable-crashreporter
 ac_add_options --disable-js-shell
 ac_add_options --disable-precompiled-startupcache
-ac_add_options --disable-gold
+ac_add_options --disable-elf-hack
+ac_add_options --disable-gold # Disable ld.gold, does not work on all architectures and I want consistent configs
+
+# Medium optimization (higher seems to make no difference or breaks stuff), suppress warnings, and remove unused function sections.
+ac_add_options --enable-optimize="-O2 -w -ffunction-sections"
 
 # Specify location of MacOS X SDK
 ac_add_options --with-macos-sdk=/Users/daniel/Desktop/PS/MacOSX11.3.sdk
 
 # Use Clang
-export CXX="/usr/bin/clang++ -stdlib=libc++"
+export CC=clang
+export CXX=clang++
 
 # Compile for Apple Silicon (this doesn't HAVE to be specified on x86_64, done for consistency)
 ac_add_options --host=x86_64-apple-darwin
 ac_add_options --target=x86_64-apple-darwin
 
-# Remove unused function sections, this doesnt work when set globally sadly
-ac_add_options --enable-optimize="-ffunction-sections"
-
-# Optimize for generic x86_64, optimize for size, remove unused data sections
-export CFLAGS="-march=x86-64 -mtune=generic -Os -fdata-sections"
-export CXXFLAGS="-march=x86-64 -mtune=generic -Os -fdata-sections"
-export LDFLAGS="-march=x86-64 -mtune=generic -Os -fdata-sections"
+# Optimize for generic x86_64 since this should run on any x86_64 CPU
+export CFLAGS="-march=x86-64 -mtune=generic"
+export CXXFLAGS="-march=x86-64 -mtune=generic"
