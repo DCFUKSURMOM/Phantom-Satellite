@@ -1,4 +1,4 @@
-mk_add_options MOZ_MAKE_FLAGS="-j4"
+mk_add_options MOZ_MAKE_FLAGS="-j5"
 
 # Build options for Phantom Satellite
 ac_add_options --enable-application=phantomsatellite
@@ -21,7 +21,7 @@ ac_add_options --disable-precompiled-startupcache
 ac_add_options --disable-parental-controls
 
 # Default options from the sample config at https://developer.palemoon.org/build/windows/
-ac_add_options --enable-optimize="-O2 -GTs -GS- -Qspectre -utf-8"
+ac_add_options --enable-optimize="-O2"
 
 export CC=C:/VisualStudio/18/Community/VC/Tools/MSVC/14.33.31629/bin/HostX64/x64/cl.exe
 export LD=C:/VisualStudio/18/Community/VC/Tools/MSVC/14.33.31629/bin/HostX64/x64/link.exe
