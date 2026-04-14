@@ -1,22 +1,26 @@
 Linux config files used for both my personal builds and the ones in the releases:
 
-i686-gtk2.mozconfig is the x86 (32 bit) GTK 2 config, if building on x86_64, you need to run "setarch i686" before building
+Config files with -package are intended to be used when packaging Phantom Satellite for specific Linux distros, they build some parts of the broweser against system libraries, and are not very portable.
 
-x86_64-gtk2.mozconfig is the x86_64 (64 bit) GTK 2 config
+Config files with -release are the configs used for the builds in the release tab of the Phantom Satellite repo, they build the entire browser against its own bundled libs, and should be portable.
 
-x86_64-gtk3.mozconfig is the x86_64 (64 bit) GTK 3 config 
+i686-gtk2 is the x86 (32 bit) GTK 2 config, if building on x86_64, you need to run "setarch i686" before building
 
-powerpc-gtk2.mozconfig is the PowerPC (32 bit) GTK2 config, if building on PPC64 you need to build in a PPC32 chroot and run "setarch ppc" before building
+x86_64-gtk2 is the x86_64 (64 bit) GTK 2 config
 
-powerpc64-gtk2.mozconfig is the PowerPC (64 bit) GTK2 config
+x86_64-gtk3 is the x86_64 (64 bit) GTK 3 config 
+
+powerpc-gtk2 is the PowerPC (32 bit) GTK2 config, if building on PPC64 you need to build in a PPC32 chroot and run "setarch ppc" before building
+
+powerpc64-gtk2 is the PowerPC (64 bit) GTK2 config
 
 Special x86 config files:
 
-i686-nosse2-gtk2.mozconfig is mostly identical to i686-gtk2.mozconfig, except the compiler have been modified to allow the browser to run without SSE2
+i686-nosse2-gtk2 is mostly identical to i686-gtk2, except the compiler have been modified to allow the browser to run without SSE2
 
-i586-nosse-gtk2.mozconfig is mostly identical to i686-gtk2.mozconfig, except the compiler flags have been modified to allow the browser to run without SSE
+i586-nosse-gtk2 is mostly identical to i686-gtk2, except the compiler flags have been modified to allow the browser to run without SSE
 
-i686-nosse2-gtk2.mozconfig requires at least a Pentium 3. i586-nosse-gtk2.mozconfig requires at least a Pentium MMX.
+i686-nosse2-gtk2 requires at least a Pentium 3. i586-nosse-gtk2 requires at least a Pentium MMX.
 
 I did not disable any features in these configs, I only tweaked compiler flags, they can likely be optimized further.
 
