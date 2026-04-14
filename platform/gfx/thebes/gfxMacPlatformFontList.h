@@ -75,6 +75,7 @@ public:
 
     bool RequiresAATLayout() const { return mRequiresAAT; }
 
+    bool HasVariations();
     bool IsCFF();
 
 protected:
@@ -101,6 +102,8 @@ protected:
     bool mRequiresAAT;
     bool mIsCFF;
     bool mIsCFFInitialized;
+    bool mHasVariations;
+    bool mHasVariationsInitialized;
     nsTHashtable<nsUint32HashKey> mAvailableTables;
 };
 

@@ -21,6 +21,12 @@ enum ChannelInterpretation {
     "discrete"
 };
 
+dictionary AudioNodeOptions {
+             unsigned long         channelCount;
+             ChannelCountMode      channelCountMode;
+             ChannelInterpretation channelInterpretation;
+};
+
 [Pref="dom.webaudio.enabled"]
 interface AudioNode : EventTarget {
 
@@ -61,8 +67,7 @@ partial interface AudioNode {
   [ChromeOnly]
   readonly attribute unsigned long id;
 };
-[NoInterfaceObject]
-interface AudioNodePassThrough {
+interface mixin AudioNodePassThrough {
   [ChromeOnly]
   attribute boolean passThrough;
 };

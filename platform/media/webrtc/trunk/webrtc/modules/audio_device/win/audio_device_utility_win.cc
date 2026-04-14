@@ -152,8 +152,7 @@ BOOL AudioDeviceUtilityWindows::GetOSDisplayString(LPTSTR pszOS)
 
         // Add 64-bit or 32-bit
         //
-        if ((si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64) ||
-            (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64))
+        if ((si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64))
             StringCchCat(pszOS, STRING_MAX_SIZE, TEXT( ", 64-bit" ));
         else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL )
             StringCchCat(pszOS, STRING_MAX_SIZE, TEXT(", 32-bit"));

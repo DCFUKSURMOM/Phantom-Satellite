@@ -10,7 +10,16 @@
  * liability, trademark and document use rules apply.
  */
 
-[Pref="dom.webaudio.enabled"]
+dictionary DynamicsCompressorOptions : AudioNodeOptions {
+             float attack = 0.003;
+             float knee = 30;
+             float ratio = 12;
+             float release = 0.25;
+             float threshold = -24;
+};
+
+[Pref="dom.webaudio.enabled",
+ Constructor(AudioContext context, optional DynamicsCompressorOptions options)]
 interface DynamicsCompressorNode : AudioNode {
 
     readonly attribute AudioParam threshold; // in Decibels
@@ -23,5 +32,5 @@ interface DynamicsCompressorNode : AudioNode {
 };
 
 // Mozilla extension
-DynamicsCompressorNode implements AudioNodePassThrough;
+DynamicsCompressorNode includes AudioNodePassThrough;
 

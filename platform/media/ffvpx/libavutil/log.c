@@ -48,9 +48,11 @@ static AVMutex mutex = AV_MUTEX_INITIALIZER;
 #define LINE_SZ 1024
 
 #if HAVE_VALGRIND_VALGRIND_H
+#ifdef MOZ_VALGRIND
 #include <valgrind/valgrind.h>
 /* this is the log level at which valgrind will output a full backtrace */
 #define BACKTRACE_LOGLEVEL AV_LOG_ERROR
+#endif
 #endif
 
 static int av_log_level = AV_LOG_INFO;
@@ -395,8 +397,10 @@ void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl)
     colored_fputs(av_clip(level >> 3, 0, NB_LEVELS - 1), tint >> 8, part[3].str);
 
 #if CONFIG_VALGRIND_BACKTRACE
+#ifdef MOZ_VALGRIND
     if (level <= BACKTRACE_LOGLEVEL)
         VALGRIND_PRINTF_BACKTRACE("%s", "");
+#endif
 #endif
 end:
     av_bprint_finalize(part+3, NULL);

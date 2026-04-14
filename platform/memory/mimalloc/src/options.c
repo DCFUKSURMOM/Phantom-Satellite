@@ -107,6 +107,18 @@ typedef struct mi_option_desc_s {
 #endif
 #endif
 
+#ifndef MI_DEFAULT_PURGE_DECOMMITS
+#define MI_DEFAULT_PURGE_DECOMMITS 0
+#endif
+
+#ifndef MI_DEFAULT_PURGE_DELAY
+#define MI_DEFAULT_PURGE_DELAY 500
+#endif
+
+#ifndef MI_DEFAULT_GENERIC_COLLECT
+#define MI_DEFAULT_GENERIC_COLLECT 50000
+#endif
+
 // Static options
 static mi_option_desc_t options[_mi_option_last] =
 {
@@ -124,7 +136,7 @@ static mi_option_desc_t options[_mi_option_last] =
        UNINIT, MI_OPTION(eager_commit) },               // commit per segment directly (4MiB)  (but see also `eager_commit_delay`)
   { MI_DEFAULT_ARENA_EAGER_COMMIT,
        UNINIT, MI_OPTION_LEGACY(arena_eager_commit,eager_region_commit) }, // eager commit arena's? 2 is used to enable this only on an OS that has overcommit (i.e. linux)
-  { 1, UNINIT, MI_OPTION_LEGACY(purge_decommits,reset_decommits) },        // purge decommits memory (instead of reset) (note: on linux this uses MADV_DONTNEED for decommit)
+  { MI_DEFAULT_PURGE_DECOMMITS, UNINIT, MI_OPTION_LEGACY(purge_decommits,reset_decommits) }, // 0 prefers reset/MADV_FREE for lower syscall overhead (1 decommits with MADV_DONTNEED)
   { MI_DEFAULT_ALLOW_LARGE_OS_PAGES,
        UNINIT, MI_OPTION_LEGACY(allow_large_os_pages,large_os_pages) },    // use large OS pages, use only with eager commit to prevent fragmentation of VMA's
   { MI_DEFAULT_RESERVE_HUGE_OS_PAGES,
@@ -141,7 +153,7 @@ static mi_option_desc_t options[_mi_option_last] =
 #else
   { 1, UNINIT, MI_OPTION(eager_commit_delay) },         // the first N segments per thread are not eagerly committed (but per page in the segment on demand)
 #endif
-  { 10,  UNINIT, MI_OPTION_LEGACY(purge_delay,reset_delay) },  // purge delay in milli-seconds
+  { MI_DEFAULT_PURGE_DELAY,  UNINIT, MI_OPTION_LEGACY(purge_delay,reset_delay) },  // purge delay in milli-seconds (higher favors throughput over faster rss drop)
   { 0,   UNINIT, MI_OPTION(use_numa_nodes) },           // 0 = use available numa nodes, otherwise use at most N nodes.
   { 0,   UNINIT, MI_OPTION_LEGACY(disallow_os_alloc,limit_os_alloc) },           // 1 = do not use OS memory for allocation (but only reserved arenas)
   { 100, UNINIT, MI_OPTION(os_tag) },                   // only apple specific for now but might serve more or less related purpose
@@ -167,7 +179,7 @@ static mi_option_desc_t options[_mi_option_last] =
          UNINIT, MI_OPTION(guarded_sample_rate)},       // 1 out of N allocations in the min/max range will be guarded (=4000)
   { 0,   UNINIT, MI_OPTION(guarded_sample_seed)},
   { 0,   UNINIT, MI_OPTION(target_segments_per_thread) }, // abandon segments beyond this point, or 0 to disable.
-  { 10000, UNINIT, MI_OPTION(generic_collect) },          // collect heaps every N (=10000) generic allocation calls
+  { MI_DEFAULT_GENERIC_COLLECT, UNINIT, MI_OPTION(generic_collect) }, // collect heaps every N generic allocation calls (higher reduces maintenance frequency)
   { MI_DEFAULT_ALLOW_THP, 
          UNINIT, MI_OPTION(allow_thp) }                 // allow transparent huge pages?
 };

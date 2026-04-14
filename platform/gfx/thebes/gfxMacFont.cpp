@@ -31,16 +31,30 @@ gfxMacFont::gfxMacFont(MacOSFontEntry *aFontEntry, const gfxFontStyle *aFontStyl
     : gfxFont(aFontEntry, aFontStyle),
       mCGFont(nullptr),
       mCTFont(nullptr),
-      mFontFace(nullptr)
+      mFontFace(nullptr),
+      mVariationFont(aFontEntry->HasVariations())
 {
     mApplySyntheticBold = aNeedsBold;
 
-    mCGFont = aFontEntry->GetFontRef();
-    if (!mCGFont) {
-        mIsValid = false;
-        return;
-    }
 
+    if (mVariationFont) {
+        CGFontRef baseFont = aFontEntry->GetFontRef();
+        if (!baseFont) {
+            mIsValid = false;
+            return;
+        }
+
+        ::CFRetain(baseFont);
+        mCGFont = baseFont;
+
+    } else {
+        mCGFont = aFontEntry->GetFontRef();
+        if (!mCGFont) {
+            mIsValid = false;
+            return;
+        }
+        ::CFRetain(mCGFont);
+    }
     // InitMetrics will handle the sizeAdjust factor and set mAdjustedSize
     InitMetrics();
     if (!mIsValid) {
@@ -114,6 +128,9 @@ gfxMacFont::gfxMacFont(MacOSFontEntry *aFontEntry, const gfxFontStyle *aFontStyl
 
 gfxMacFont::~gfxMacFont()
 {
+    if (mCGFont) {
+        ::CFRelease(mCGFont);
+    }
     if (mCTFont) {
         ::CFRelease(mCTFont);
     }
@@ -218,7 +235,7 @@ gfxMacFont::InitMetrics()
     // http://www.opensource.apple.com/source/WebCore/WebCore-7533.16/platform/graphics/mac/SimpleFontDataMac.mm
     CFDataRef headData;
     // This gets used again below
-    ATSFontRef myATSFont = 
+    ATSFontRef myATSFont =
 	static_cast<MacOSFontEntry*>(GetFontEntry())->GetATSFontRef();
     NS_ASSERTION(myATSFont, "GetATSFontRef from GetFontEntry bit the big 1");
 
@@ -444,7 +461,7 @@ gfxMacFont::InitMetrics()
         // letter glyph before concluding it's bogus.
         glyphID = gfxFontUtils::MapCharToGlyph(::CFDataGetBytePtr(cmap),
                 ::CFDataGetLength(cmap), (char16_t)'a');
-        if (!glyphID) hasX = false; // give up        
+        if (!glyphID) hasX = false; // give up
     }
 
     if (cmap) {
@@ -483,7 +500,7 @@ gfxMacFont::GetCharWidth(CFDataRef aCmap, char16_t aUniChar,
                          uint32_t *aGlyphID, gfxFloat aConvFactor)
 {
     CGGlyph glyph = 0;
-    
+
     if (aCmap) {
         glyph = gfxFontUtils::MapCharToGlyph(::CFDataGetBytePtr(aCmap),
                                              ::CFDataGetLength(aCmap),
@@ -504,13 +521,42 @@ gfxMacFont::GetCharWidth(CFDataRef aCmap, char16_t aUniChar,
     return 0;
 }
 
+/* static */
+CTFontRef
+gfxMacFont::CreateCTFontFromCGFontWithVariations(CGFontRef aCGFont,
+                                                 CGFloat aSize,
+                                                 CTFontDescriptorRef aFontDesc)
+{
+    CFDictionaryRef variations = ::CGFontCopyVariations(aCGFont);
+    CTFontRef ctFont;
+    if (variations) {
+        CFDictionaryRef varAttr =
+            ::CFDictionaryCreate(nullptr,
+                                 (const void**)&kCTFontVariationAttribute,
+                                 (const void**)&variations, 1,
+                                 &kCFTypeDictionaryKeyCallBacks,
+                                 &kCFTypeDictionaryValueCallBacks);
+        ::CFRelease(variations);
+
+        CTFontDescriptorRef varDesc = aFontDesc
+            ? ::CTFontDescriptorCreateCopyWithAttributes(aFontDesc, varAttr)
+            : ::CTFontDescriptorCreateWithAttributes(varAttr);
+        ::CFRelease(varAttr);
+
+        ctFont = ::CTFontCreateWithGraphicsFont(aCGFont, aSize, nullptr, varDesc);
+        ::CFRelease(varDesc);
+    } else {
+        ctFont = ::CTFontCreateWithGraphicsFont(aCGFont, aSize, nullptr, nullptr);
+    }
+    return ctFont;
+}
+
 int32_t
 gfxMacFont::GetGlyphWidth(DrawTarget& aDrawTarget, uint16_t aGID)
 {
 #if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
     if (!mCTFont) {
-        mCTFont = ::CTFontCreateWithGraphicsFont(mCGFont, mAdjustedSize,
-                                                 nullptr, nullptr);
+        mCTFont = CreateCTFontFromCGFontWithVariations(mCGFont, mAdjustedSize);
         if (!mCTFont) { // shouldn't happen, but let's be safe
             NS_WARNING("failed to create CTFontRef to measure glyph width");
             return 0;

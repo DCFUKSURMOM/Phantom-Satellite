@@ -7,10 +7,6 @@
 
 #include "xptcprivate.h"
 
-#if _HPUX
-#error "This code is for HP-PA RISC 32 bit mode only"
-#endif
-
 #include <alloca.h>
 
 typedef unsigned nsXPCVariant;
@@ -146,4 +142,3 @@ invoke_copy_to_stack(uint32_t* d,
   }
   return floatflags;
 }
-

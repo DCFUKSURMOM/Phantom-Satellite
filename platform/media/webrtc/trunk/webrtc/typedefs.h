@@ -90,11 +90,6 @@
 #define WEBRTC_ARCH_32_BITS 1
 #define WEBRTC_ARCH_BIG_ENDIAN
 #define WEBRTC_BIG_ENDIAN
-#elif defined(__ia64__)
-#define WEBRTC_ARCH_IA64 1
-#define WEBRTC_ARCH_64_BITS 1
-#define WEBRTC_ARCH_LITTLE_ENDIAN
-#define WEBRTC_LITTLE_ENDIAN
 #elif defined(__s390x__)
 #define WEBRTC_ARCH_S390X 1
 #define WEBRTC_ARCH_64_BITS 1

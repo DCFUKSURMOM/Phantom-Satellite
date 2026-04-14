@@ -356,6 +356,10 @@ GetPointerCapabilities(nsPresContext* aPresContext,
     if (baseWindow) {
       nsCOMPtr<nsIWidget> mainWidget;
       baseWindow->GetMainWidget(getter_AddRefs(mainWidget));
+      if (!mainWidget) {
+        // We don't have a usable widget to query; bail. See Issue #2981
+        return;
+      }
       mainWidget->GetPointerCapabilities(aCaps);
     }
   }

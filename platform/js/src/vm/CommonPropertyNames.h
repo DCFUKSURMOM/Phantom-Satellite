@@ -67,6 +67,7 @@
     macro(case, case_, "case") \
     macro(caseFirst, caseFirst, "caseFirst") \
     macro(catch, catch_, "catch") \
+    macro(cause, cause, "cause") \
     macro(class, class_, "class") \
     macro(close, close, "close") \
     macro(collation, collation, "collation") \
@@ -429,6 +430,7 @@
     macro(toLocaleString, toLocaleString, "toLocaleString") \
     macro(toReversed, toReversed, "toReversed") \
     macro(toSource, toSource, "toSource") \
+    macro(toSpliced, toSpliced, "toSpliced") \
     macro(toSorted, toSorted, "toSorted") \
     macro(toString, toString, "toString") \
     macro(toUTCString, toUTCString, "toUTCString") \

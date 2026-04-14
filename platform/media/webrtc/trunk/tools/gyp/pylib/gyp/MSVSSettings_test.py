@@ -484,7 +484,7 @@ class TestSequenceFunctions(unittest.TestCase):
              'StructMemberAlignment': 'NotSet',
              'SuppressCompilerWarnings': 'true',
              'SuppressStartupBanner': 'true',
-             'TargetEnvironment': 'Itanium',
+             'TargetEnvironment': 'InvalidTarget',
              'TrackerLogDirectory': 'a_folder',
              'TypeLibFormat': 'NewFormat',
              'TypeLibraryName': 'a_file_name',

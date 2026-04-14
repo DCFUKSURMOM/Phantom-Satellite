@@ -804,7 +804,6 @@ _target_machine_enumeration = _Enumeration(
      None,
      'MachineARM',  # /MACHINE:ARM
      'MachineEBC',  # /MACHINE:EBC
-     'MachineIA64',  # /MACHINE:IA64
      None,
      'MachineMIPS',  # /MACHINE:MIPS
      'MachineMIPS16',  # /MACHINE:MIPS16
@@ -904,8 +903,7 @@ _MSBuildOnly(_link, 'ForceFileOutput',
 _MSBuildOnly(_link, 'CreateHotPatchableImage',
              _Enumeration([], new=['Enabled',  # /FUNCTIONPADMIN
                                    'X86Image',  # /FUNCTIONPADMIN:5
-                                   'X64Image',  # /FUNCTIONPADMIN:6
-                                   'ItaniumImage']))  # /FUNCTIONPADMIN:16
+                                   'X64Image']))  # /FUNCTIONPADMIN:6
 _MSBuildOnly(_link, 'CLRSupportLastError',
              _Enumeration([], new=['Enabled',  # /CLRSupportLastError
                                    'Disabled',  # /CLRSupportLastError:NO
@@ -969,7 +967,6 @@ _Same(_midl, 'DefaultCharType',
 _Same(_midl, 'TargetEnvironment',
       _Enumeration(['NotSet',
                     'Win32',  # /env win32
-                    'Itanium',  # /env ia64
                     'X64']))  # /env x64
 _Same(_midl, 'EnableErrorChecks',
       _Enumeration(['EnableCustom',
