@@ -27,7 +27,7 @@ except ImportError:
 
 from . import _common
 from ._common import memoize
-from ._compat import callable, long
+from ._compat import callable, int
 from ._compat import PY3 as _PY3
 
 from ._common import (STATUS_RUNNING,  # NOQA
@@ -341,7 +341,7 @@ class Process(object):
         if pid is None:
             pid = os.getpid()
         else:
-            if not _PY3 and not isinstance(pid, (int, long)):
+            if not _PY3 and not isinstance(pid, (int, int)):
                 raise TypeError('pid must be an integer (got %r)' % pid)
             if pid < 0:
                 raise ValueError('pid must be a positive integer (got %s)'
@@ -799,7 +799,7 @@ class Process(object):
                         pass
             else:
                 # Windows only (faster)
-                for pid, ppid in ppid_map.items():
+                for pid, ppid in list(ppid_map.items()):
                     if ppid == self.pid:
                         try:
                             child = Process(pid)
@@ -820,7 +820,7 @@ class Process(object):
                     except (NoSuchProcess, ZombieProcess):
                         pass
             else:
-                for pid, ppid in ppid_map.items():
+                for pid, ppid in list(ppid_map.items()):
                     try:
                         p = Process(pid)
                         table[ppid].append(p)
@@ -972,7 +972,7 @@ class Process(object):
                 path = tupl[2]
                 nums = tupl[3:]
                 try:
-                    d[path] = map(lambda x, y: x + y, d[path], nums)
+                    d[path] = list(map(lambda x, y: x + y, d[path], nums))
                 except KeyError:
                     d[path] = nums
             nt = _psplatform.pmmap_grouped
@@ -1674,11 +1674,11 @@ def disk_io_counters(perdisk=False):
     if not rawdict:
         raise RuntimeError("couldn't find any physical disk")
     if perdisk:
-        for disk, fields in rawdict.items():
+        for disk, fields in list(rawdict.items()):
             rawdict[disk] = _common.sdiskio(*fields)
         return rawdict
     else:
-        return _common.sdiskio(*[sum(x) for x in zip(*rawdict.values())])
+        return _common.sdiskio(*[sum(x) for x in zip(*list(rawdict.values()))])
 
 
 # =====================================================================
@@ -1709,11 +1709,11 @@ def net_io_counters(pernic=False):
     if not rawdict:
         raise RuntimeError("couldn't find any network interface")
     if pernic:
-        for nic, fields in rawdict.items():
+        for nic, fields in list(rawdict.items()):
             rawdict[nic] = _common.snetio(*fields)
         return rawdict
     else:
-        return _common.snetio(*[sum(x) for x in zip(*rawdict.values())])
+        return _common.snetio(*[sum(x) for x in zip(*list(rawdict.values()))])
 
 
 def net_connections(kind='inet'):
@@ -1836,8 +1836,8 @@ def test():
     if _POSIX:
         attrs.append('uids')
         attrs.append('terminal')
-    print(templ % ("USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY",
-                   "START", "TIME", "COMMAND"))
+    print((templ % ("USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY",
+                   "START", "TIME", "COMMAND")))
     for p in process_iter():
         try:
             pinfo = p.as_dict(attrs, ad_value='')
@@ -1866,7 +1866,7 @@ def test():
                 int(pinfo['memory_info'].rss / 1024) or '?'
             memp = pinfo['memory_percent'] and \
                 round(pinfo['memory_percent'], 1) or '?'
-            print(templ % (
+            print((templ % (
                 user[:10],
                 pinfo['pid'],
                 pinfo['cpu_percent'],
@@ -1876,7 +1876,7 @@ def test():
                 pinfo.get('terminal', '') or '?',
                 ctime,
                 cputime,
-                pinfo['name'].strip() or '?'))
+                pinfo['name'].strip() or '?')))
 
 
 del memoize, division

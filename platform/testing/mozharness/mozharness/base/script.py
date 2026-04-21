@@ -31,10 +31,10 @@ import sys
 import tarfile
 import time
 import traceback
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import zipfile
-import httplib
-import urlparse
+import http.client
+import urllib.parse
 import hashlib
 if os.name == 'nt':
     try:
@@ -316,7 +316,7 @@ class ScriptMixin(PlatformMixin):
                  of the url.
         """
 
-        parsed = urlparse.urlsplit(url.rstrip('/'))
+        parsed = urllib.parse.urlsplit(url.rstrip('/'))
         if parsed.path != '':
             return parsed.path.rsplit('/', 1)[-1]
         else:
@@ -342,8 +342,8 @@ class ScriptMixin(PlatformMixin):
         https://docs.python.org/2/library/urllib2.html#urllib2.urlopen
         """
         # http://bugs.python.org/issue13359 - urllib2 does not automatically quote the URL
-        url_quoted = urllib2.quote(url, safe='%/:=&?~#+!$,;\'@()*[]|')
-        return urllib2.urlopen(url_quoted, **kwargs)
+        url_quoted = urllib.parse.quote(url, safe='%/:=&?~#+!$,;\'@()*[]|')
+        return urllib.request.urlopen(url_quoted, **kwargs)
 
 
 
@@ -363,7 +363,7 @@ class ScriptMixin(PlatformMixin):
             BytesIO: contents of url
         '''
         self.info('Fetch {} into memory'.format(url))
-        parsed_url = urlparse.urlparse(url)
+        parsed_url = urllib.parse.urlparse(url)
 
         if parsed_url.scheme in ('', 'file'):
             if not os.path.isfile(url):
@@ -374,9 +374,9 @@ class ScriptMixin(PlatformMixin):
             # In case we're referrencing a file without file://
             if parsed_url.scheme == '':
                 url = 'file://%s' % os.path.abspath(url)
-                parsed_url = urlparse.urlparse(url)
+                parsed_url = urllib.parse.urlparse(url)
 
-        request = urllib2.Request(url)
+        request = urllib.request.Request(url)
         # When calling fetch_url_into_memory() you should retry when we raise one of these exceptions:
         # * Bug 1300663 - HTTPError: HTTP Error 404: Not Found
         # * Bug 1300413 - HTTPError: HTTP Error 500: Internal Server Error
@@ -389,7 +389,7 @@ class ScriptMixin(PlatformMixin):
         # * Bug 1301807 - BadStatusLine: ''
         #
         # Bug 1309912 - Adding timeout in hopes to solve blocking on response.read() (bug 1300413)
-        response = urllib2.urlopen(request, timeout=30)
+        response = urllib.request.urlopen(request, timeout=30)
 
         if parsed_url.scheme in ('http', 'https'):
             expected_file_size = int(response.headers.get('Content-Length'))
@@ -453,17 +453,17 @@ class ScriptMixin(PlatformMixin):
                 block = f.read(1024 ** 2)
                 if not block:
                     if f_length is not None and got_length != f_length:
-                        raise urllib2.URLError("Download incomplete; content-length was %d, but only received %d" % (f_length, got_length))
+                        raise urllib.error.URLError("Download incomplete; content-length was %d, but only received %d" % (f_length, got_length))
                     break
                 local_file.write(block)
                 if f_length is not None:
                     got_length += len(block)
             local_file.close()
             return file_name
-        except urllib2.HTTPError, e:
+        except urllib.error.HTTPError as e:
             self.warning("Server returned status %s %s for %s" % (str(e.code), str(e), url))
             raise
-        except urllib2.URLError, e:
+        except urllib.error.URLError as e:
             self.warning("URL Error: %s" % url)
 
             # Failures due to missing local files won't benefit from retry.
@@ -471,7 +471,7 @@ class ScriptMixin(PlatformMixin):
             if isinstance(e.args[0], OSError) and e.args[0].errno == errno.ENOENT:
                 raise e.args[0]
 
-            remote_host = urlparse.urlsplit(url)[1]
+            remote_host = urllib.parse.urlsplit(url)[1]
             if remote_host:
                 nslookup = self.query_exe('nslookup')
                 error_list = [{
@@ -482,10 +482,10 @@ class ScriptMixin(PlatformMixin):
                 self.run_command([nslookup, remote_host],
                                  error_list=error_list)
             raise
-        except socket.timeout, e:
+        except socket.timeout as e:
             self.warning("Timed out accessing %s: %s" % (url, str(e)))
             raise
-        except socket.error, e:
+        except socket.error as e:
             self.warning("Socket error when accessing %s: %s" % (url, str(e)))
             raise
 
@@ -511,8 +511,8 @@ class ScriptMixin(PlatformMixin):
         """
         retry_args = dict(
             failure_status=None,
-            retry_exceptions=(urllib2.HTTPError, urllib2.URLError,
-                              httplib.BadStatusLine,
+            retry_exceptions=(urllib.error.HTTPError, urllib.error.URLError,
+                              http.client.BadStatusLine,
                               socket.timeout, socket.error),
             error_message="Can't download from %s to %s!" % (url, file_name),
             error_level=error_level,
@@ -537,7 +537,7 @@ class ScriptMixin(PlatformMixin):
     def _filter_entries(self, namelist, extract_dirs):
         """Filter entries of the archive based on the specified list of to extract dirs."""
         filter_partial = functools.partial(fnmatch.filter, namelist)
-        entries = itertools.chain(*map(filter_partial, extract_dirs or ['*']))
+        entries = itertools.chain(*list(map(filter_partial, extract_dirs or ['*'])))
 
         for entry in entries:
             yield entry
@@ -666,9 +666,9 @@ class ScriptMixin(PlatformMixin):
         # 1) Let's fetch the file
         retry_args = dict(
             retry_exceptions=(
-                urllib2.HTTPError,
-                urllib2.URLError,
-                httplib.BadStatusLine,
+                urllib.error.HTTPError,
+                urllib.error.URLError,
+                http.client.BadStatusLine,
                 socket.timeout,
                 socket.error,
                 FetchedIncorrectFilesize,
@@ -768,11 +768,11 @@ class ScriptMixin(PlatformMixin):
         try:
             shutil.move(src, dest)
         # http://docs.python.org/tutorial/errors.html
-        except IOError, e:
+        except IOError as e:
             self.log("IO error: %s" % str(e),
                      level=error_level, exit_code=exit_code)
             return -1
-        except shutil.Error, e:
+        except shutil.Error as e:
             self.log("shutil error: %s" % str(e),
                      level=error_level, exit_code=exit_code)
             return -1
@@ -819,7 +819,7 @@ class ScriptMixin(PlatformMixin):
                 outfile.writelines(infile)
                 outfile.close()
                 infile.close()
-            except IOError, e:
+            except IOError as e:
                 self.log("Can't compress %s to %s: %s!" % (src, dest, str(e)),
                          level=error_level)
                 return -1
@@ -827,7 +827,7 @@ class ScriptMixin(PlatformMixin):
             self.log("Copying %s to %s" % (src, dest), level=log_level)
             try:
                 shutil.copyfile(src, dest)
-            except (IOError, shutil.Error), e:
+            except (IOError, shutil.Error) as e:
                 self.log("Can't copy %s to %s: %s!" % (src, dest, str(e)),
                          level=error_level)
                 return -1
@@ -835,7 +835,7 @@ class ScriptMixin(PlatformMixin):
         if copystat:
             try:
                 shutil.copystat(src, dest)
-            except (IOError, shutil.Error), e:
+            except (IOError, shutil.Error) as e:
                 self.log("Can't copy attributes of %s to %s: %s!" % (src, dest, str(e)),
                          level=error_level)
                 return -1
@@ -968,7 +968,7 @@ class ScriptMixin(PlatformMixin):
         self.info("Reading from file %s" % file_path)
         try:
             fh = open(file_path, open_mode)
-        except IOError, err:
+        except IOError as err:
             self.log("unable to open %s: %s" % (file_path, err.strerror),
                      level=error_level)
             yield None, err
@@ -1111,7 +1111,7 @@ class ScriptMixin(PlatformMixin):
                 status = action(*args, **kwargs)
                 if good_statuses and status not in good_statuses:
                     retry = True
-            except retry_exceptions, e:
+            except retry_exceptions as e:
                 retry = True
                 error_message = "%s\nCaught exception: %s" % (error_message, str(e))
                 self.log('retry: attempt #%d caught exception: %s' % (n, str(e)), level=INFO)
@@ -1183,7 +1183,7 @@ class ScriptMixin(PlatformMixin):
             for key in default_replace_dict:
                 if key not in replace_dict:
                     replace_dict[key] = default_replace_dict[key]
-        for key in partial_env.keys():
+        for key in list(partial_env.keys()):
             env[key] = partial_env[key] % replace_dict
             self.log("ENV: %s is now %s" % (key, env[key]), level=log_level)
         for k in purge_env:
@@ -1232,7 +1232,7 @@ class ScriptMixin(PlatformMixin):
         if isinstance(exe, dict):
             found = False
             # allow for searchable paths of the buildbot exe
-            for name, path in exe.iteritems():
+            for name, path in exe.items():
                 if isinstance(path, list) or isinstance(path, tuple):
                     path = [x % repl_dict for x in path]
                     if all([os.path.exists(section) for section in path]):
@@ -1390,7 +1390,7 @@ class ScriptMixin(PlatformMixin):
                             break
                         parser.add_lines(line)
                 returncode = p.returncode
-        except OSError, e:
+        except OSError as e:
             level = error_level
             if halt_on_failure:
                 level = FATAL
@@ -1919,7 +1919,7 @@ class BaseScript(ScriptMixin, LogMixin, object):
         """Copies logs to the upload directory"""
         self.info("Copying logs to upload dir...")
         log_files = ['localconfig.json']
-        for log_name in self.log_obj.log_files.keys():
+        for log_name in list(self.log_obj.log_files.keys()):
             log_files.append(self.log_obj.log_files[log_name])
         dirs = self.query_abs_dirs()
         for log_file in log_files:
@@ -2122,7 +2122,7 @@ class BaseScript(ScriptMixin, LogMixin, object):
             "append_to_log": False,
         }
         log_type = self.config.get("log_type", "multi")
-        for key in log_config.keys():
+        for key in list(log_config.keys()):
             value = self.config.get(key, None)
             if value is not None:
                 log_config[key] = value
@@ -2149,7 +2149,7 @@ class BaseScript(ScriptMixin, LogMixin, object):
                 except ValueError:
                     """log is closed; print as a default. Ran into this
                     when calling from __del__()"""
-                    print "### Log is closed! (%s)" % item['message']
+                    print("### Log is closed! (%s)" % item['message'])
 
     def add_summary(self, message, level=INFO):
         self.summary_list.append({'message': message, 'level': level})

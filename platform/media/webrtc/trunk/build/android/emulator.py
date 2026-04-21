@@ -82,7 +82,7 @@ class PortPool(object):
     a killed emulator "hangs on" to a port long enough to prevent
     relaunch.  This is especially true on slow machines (like a bot).
     Cycling through a port start position helps make us resilient."""
-    ports = range(cls._port_min, cls._port_max, 2)
+    ports = list(range(cls._port_min, cls._port_max, 2))
     n = cls._port_current_index
     cls._port_current_index = (n + 1) % len(ports)
     return ports[n:] + ports[:n]

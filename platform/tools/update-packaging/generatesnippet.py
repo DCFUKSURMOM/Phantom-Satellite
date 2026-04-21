@@ -9,7 +9,7 @@ and determine the MAR's filename
 """
 import sys, os, platform, sha
 from optparse import OptionParser
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 from stat import ST_SIZE
 
 def main():
@@ -80,7 +80,7 @@ def main():
 
     if options.verbose:
         # Show in our logs what the contents of the snippet are
-        print snippet
+        print(snippet)
 
 def generateSnippet(abstDistDir, applicationIniFile, locale,
                     downloadBaseURL, product, platform, branch):
@@ -88,7 +88,7 @@ def generateSnippet(abstDistDir, applicationIniFile, locale,
     c = ConfigParser()
     try:
         c.readfp(open(applicationIniFile))
-    except IOError, (stderror):
+    except IOError as stderror:
        sys.exit(stderror)
     buildid = c.get("App", "BuildID")
     appVersion = c.get("App", "Version")
@@ -141,7 +141,7 @@ def getFileHashAndSize(filepath):
         shaObj = sha.new(f.read())
         sha1Hash = shaObj.hexdigest()
         size = os.stat(filepath)[ST_SIZE]
-    except IOError, (stderror):
+    except IOError as stderror:
        sys.exit(stderror)
 
     return (sha1Hash, size)

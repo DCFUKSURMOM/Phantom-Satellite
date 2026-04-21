@@ -91,7 +91,7 @@ static const char16_t kBig5LowBitsTable[] = {
 ''')
 
 for (low, high) in ranges:
-  for i in xrange(low, high):
+  for i in range(low, high):
     classFile.write('  0x%04X,\n' % (index[i] & 0xFFFF))
 
 classFile.write('''};
@@ -104,15 +104,15 @@ static const uint32_t kBig5AstralnessTable[] = {
 
 bits = []
 for (low, high) in astralRanges:
-  for i in xrange(low, high):
+  for i in range(low, high):
     bits.append(1 if index[i] > 0xFFFF else 0)
 # pad length to multiple of 32
-for i in xrange(32 - (len(bits) % 32)):
+for i in range(32 - (len(bits) % 32)):
   bits.append(0)
 i = 0
 while i < len(bits):
   accu = 0
-  for j in xrange(32):
+  for j in range(32):
     accu |= bits[i + j] << j
   classFile.write('  0x%08X,\n' % accu)
   i += 32
@@ -190,7 +190,7 @@ preferLast = [
 
 for codePoint in preferLast:
   # Python lists don't have .rindex() :-(
-  for i in xrange(len(index) - 1, -1, -1):
+  for i in range(len(index) - 1, -1, -1):
     candidate = index[i]
     if candidate == codePoint:
        classFile.write('''      case 0x%04X:

@@ -9,7 +9,7 @@
 
 import os
 import sys
-import xpidl
+from . import xpidl
 import xpt
 
 # A map of xpidl.py types to xpt.py types
@@ -274,14 +274,14 @@ if __name__ == '__main__':
 
     if options.regen:
         if options.cachedir is None:
-            print >>sys.stderr, "--regen requires --cachedir"
+            print("--regen requires --cachedir", file=sys.stderr)
             sys.exit(1)
 
         p = xpidl.IDLParser(outputdir=options.cachedir, regen=True)
         sys.exit(0)
 
     if options.depfile is not None and options.outfile is None:
-        print >>sys.stderr, "-d requires -o"
+        print("-d requires -o", file=sys.stderr)
         sys.exit(1)
 
     if options.outfile is not None:
@@ -302,6 +302,6 @@ if __name__ == '__main__':
         depfd = open(options.depfile, 'w')
         deps = [dep.replace('\\', '/') for dep in idl.deps]
 
-        print >>depfd, "%s: %s" % (options.outfile, " ".join(deps))
+        print("%s: %s" % (options.outfile, " ".join(deps)), file=depfd)
         for dep in deps:
-            print >>depfd, "%s:" % dep
+            print("%s:" % dep, file=depfd)

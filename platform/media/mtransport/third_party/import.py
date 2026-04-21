@@ -30,7 +30,7 @@ for l in f:
     FILES.append(l)
 
 for f in FILES:
-    print f
+    print(f)
     SOURCE_PATH = "%s/%s"%(DISTRO,f)
     DEST_PATH = "%s/%s"%(IMPORT_DIR,f)
     if not os.path.exists(SOURCE_PATH):

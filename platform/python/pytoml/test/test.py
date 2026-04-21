@@ -51,7 +51,7 @@ def _main():
 
     for path in args.dir:
         if not os.path.isdir(path):
-            print('error: not a dir: {0}'.format(path))
+            print(('error: not a dir: {0}'.format(path)))
             return 2
         for top, dirnames, fnames in os.walk(path):
             for fname in fnames:
@@ -90,10 +90,10 @@ def _main():
                     succeeded.append(fname)
 
     for f, parsed, bench, e in failed:
-        print('failed: {}\n{}\n{}'.format(f, json.dumps(parsed, indent=4), json.dumps(bench, indent=4)))
+        print(('failed: {}\n{}\n{}'.format(f, json.dumps(parsed, indent=4), json.dumps(bench, indent=4))))
         if e:
             traceback.print_exception(*e)
-    print('succeeded: {0}'.format(len(succeeded)))
+    print(('succeeded: {0}'.format(len(succeeded))))
     return 1 if failed or not succeeded else 0
 
 if __name__ == '__main__':

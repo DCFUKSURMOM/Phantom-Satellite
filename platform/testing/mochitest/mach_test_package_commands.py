@@ -25,7 +25,7 @@ def run_mochitest(context, **kwargs):
     if args.test_paths:
         test_root = os.path.join(context.package_root, 'mochitest', 'tests')
         normalize = partial(context.normalize_test_path, test_root)
-        args.test_paths = map(normalize, args.test_paths)
+        args.test_paths = list(map(normalize, args.test_paths))
 
     import mozinfo
     return run_mochitest_desktop(context, args)

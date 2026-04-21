@@ -113,6 +113,11 @@ else
     *-mingw*)
       # Work around the conftest.exe access problem on Windows
       sleep 2
+
+      # Python 3 ported this problem to Windows somehow.
+      if test -z "$NSDISTMODE"; then
+         NSDISTMODE=copy
+      fi
     esac
     AC_PROG_CXX
     AC_PROG_RANLIB
@@ -3636,7 +3641,7 @@ if test -f "${srcdir}/${MOZ_BUILD_APP}/configure.in" ; then
     _subconfigure_subdir="$1"
     _subconfigure_config_args="$ac_configure_args"
   }
-  tmpscript=`$PYTHON -c 'import os, tempfile; print tempfile.mktemp(prefix="subscript.").replace(os.sep, "/")'` || exit 1
+  tmpscript=`$PYTHON -c "import os, tempfile; print(tempfile.mktemp().replace(os.sep, '/'))"` || exit 1
   ${TOOLCHAIN_PREFIX}m4 "${srcdir}/build/autoconf/subconfigure.m4" \
      "${srcdir}/build/autoconf/altoptions.m4" \
      "${srcdir}/${MOZ_BUILD_APP}/configure.in" > $tmpscript

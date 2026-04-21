@@ -11,6 +11,7 @@ import errno
 import hashlib
 import json
 import logging
+import io
 import os
 import sys
 
@@ -99,7 +100,7 @@ class WebIDLCodegenManagerState(dict):
         self['version'] = state['version']
         self['global_depends'] = state['global_depends']
 
-        for k, v in state['webidls'].items():
+        for k, v in list(state['webidls'].items()):
             self['webidls'][k] = v
 
             # Sets are converted to lists for serialization because JSON
@@ -111,12 +112,12 @@ class WebIDLCodegenManagerState(dict):
         """Dump serialized state to a file handle."""
         normalized = deepcopy(self)
 
-        for k, v in self['webidls'].items():
+        for k, v in list(self['webidls'].items()):
             # Convert sets to lists because JSON doesn't support sets.
             normalized['webidls'][k]['outputs'] = sorted(v['outputs'])
             normalized['webidls'][k]['inputs'] = sorted(v['inputs'])
-
-        json.dump(normalized, fh, sort_keys=True)
+        fh_text = io.TextIOWrapper(fh, encoding='utf-8', errors='replace')
+        json.dump(normalized, fh_text, sort_keys=True)
 
 
 class WebIDLCodegenManager(LoggingMixin):
@@ -199,7 +200,7 @@ class WebIDLCodegenManager(LoggingMixin):
         self._state = WebIDLCodegenManagerState()
 
         if os.path.exists(state_path):
-            with open(state_path, 'rb') as fh:
+            with open(state_path, 'r', encoding='utf-8') as fh:
                 try:
                     self._state = WebIDLCodegenManagerState(fh=fh)
                 except Exception as e:
@@ -270,7 +271,7 @@ class WebIDLCodegenManager(LoggingMixin):
         # Generate bindings from .webidl files.
         for filename in sorted(changed_inputs):
             basename = mozpath.basename(filename)
-            print basename
+            print(basename)
             sys.stdout.flush()
             result.inputs.add(filename)
             written, deps = self._generate_build_files_for_webidl(filename)
@@ -296,7 +297,7 @@ class WebIDLCodegenManager(LoggingMixin):
         if self._make_deps_path:
             mk = Makefile()
             codegen_rule = mk.create_rule([self._make_deps_target])
-            codegen_rule.add_dependencies(global_hashes.keys())
+            codegen_rule.add_dependencies(list(global_hashes.keys()))
             codegen_rule.add_dependencies(self._input_paths)
 
             with FileAvoidWrite(self._make_deps_path) as fh:
@@ -314,7 +315,7 @@ class WebIDLCodegenManager(LoggingMixin):
 
         example_paths = self._example_paths(interface)
         for path in example_paths:
-            print "Generating %s" % path
+            print("Generating %s" % path)
 
         return self._maybe_write_codegen(root, *example_paths)
 
@@ -333,7 +334,7 @@ class WebIDLCodegenManager(LoggingMixin):
             with open(path, 'rb') as fh:
                 data = fh.read()
                 hashes[path] = hashlib.sha1(data).hexdigest()
-                parser.parse(data, path)
+                parser.parse(data.decode('utf-8'), path)
 
         self._parser_results = parser.finish()
         self._config = Configuration(self._config_path, self._parser_results,
@@ -382,7 +383,7 @@ class WebIDLCodegenManager(LoggingMixin):
 
         # Now we move on to the input files.
         old_hashes = {v['filename']: v['sha1']
-                      for v in self._state['webidls'].values()}
+                      for v in list(self._state['webidls'].values())}
 
         old_filenames = set(old_hashes.keys())
         new_filenames = self._input_paths
@@ -403,7 +404,7 @@ class WebIDLCodegenManager(LoggingMixin):
         # Inherit dependencies from previous run. The full set of dependencies
         # is associated with each record, so we don't need to perform any fancy
         # graph traversal.
-        for v in self._state['webidls'].values():
+        for v in list(self._state['webidls'].values()):
             if any(dep for dep in v['inputs'] if dep in changed_inputs):
                 changed_inputs.add(v['filename'])
 
@@ -512,7 +513,7 @@ class WebIDLCodegenManager(LoggingMixin):
             return True, current_hashes
 
         # Compare hashes.
-        for f, sha1 in current_hashes.items():
+        for f, sha1 in list(current_hashes.items()):
             if sha1 != self._state['global_depends'][f]:
                 return True, current_hashes
 
@@ -550,7 +551,8 @@ def create_build_system_manager(topsrcdir, topobjdir, dist_dir):
     src_dir = os.path.join(topsrcdir, 'dom', 'bindings')
     obj_dir = os.path.join(topobjdir, 'dom', 'bindings')
 
-    with open(os.path.join(obj_dir, 'file-lists.json'), 'rb') as fh:
+    with open(os.path.join(obj_dir, 'file-lists.json'), 'r',
+              encoding='utf-8', errors='replace') as fh:
         files = json.load(fh)
 
     inputs = (files['webidls'], files['exported_stems'],

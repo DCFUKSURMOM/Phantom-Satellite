@@ -110,7 +110,7 @@ def _RunCommand(command, working_dir=None, ignore_exit_code=False,
   logging.debug('CMD: %s CWD: %s', ' '.join(command), working_dir)
   env = os.environ.copy()
   if extra_env:
-    assert all(isinstance(value, str) for value in extra_env.values())
+    assert all(isinstance(value, str) for value in list(extra_env.values()))
     logging.debug('extra env: %s', extra_env)
     env.update(extra_env)
   p = subprocess.Popen(command,
@@ -195,7 +195,7 @@ def GetMatchingDepsEntries(depsentry_dict, dir_path):
     A list of DepsEntry objects.
   """
   result = []
-  for path, depsentry in depsentry_dict.items():
+  for path, depsentry in list(depsentry_dict.items()):
     if path == dir_path:
       result.append(depsentry)
     else:
@@ -210,7 +210,7 @@ def BuildDepsentryDict(deps_dict):
   result = {}
 
   def AddDepsEntries(deps_subdict):
-    for path, deps_url_spec in deps_subdict.items():
+    for path, deps_url_spec in list(deps_subdict.items()):
       if isinstance(deps_url_spec, dict):
         if deps_url_spec.get('dep_type') == 'cipd':
           continue
@@ -245,7 +245,7 @@ def CalculateChangedDeps(libyuv_deps, new_cr_deps):
   result = []
   libyuv_entries = BuildDepsentryDict(libyuv_deps)
   new_cr_entries = BuildDepsentryDict(new_cr_deps)
-  for path, libyuv_deps_entry in libyuv_entries.items():
+  for path, libyuv_deps_entry in list(libyuv_entries.items()):
     if path in DONT_AUTOROLL_THESE:
       continue
     cr_deps_entry = new_cr_entries.get(path)

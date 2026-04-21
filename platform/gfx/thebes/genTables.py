@@ -8,10 +8,10 @@ def table_generator(f):
 
 def generate(output):
     output.write("const uint8_t gfxUtils::sPremultiplyTable[256*256] = {\n");
-    output.write(table_generator(lambda i: ((i / 256) * (i % 256) + 254) / 255) + "\n")
+    output.write(table_generator(lambda i: ((i // 256) * (i % 256) + 254) // 255) + "\n")
     output.write("};\n");
     output.write("const uint8_t gfxUtils::sUnpremultiplyTable[256*256] = {\n");
-    output.write(table_generator(lambda i: (i % 256) * 255 / ((i / 256) if (i / 256) > 0 else 255) % 256) + "\n")
+    output.write(table_generator(lambda i: (i % 256) * 255 // ((i // 256) if (i // 256) > 0 else 255) % 256) + "\n")
     output.write("};\n");
 
 if __name__ == '__main__':

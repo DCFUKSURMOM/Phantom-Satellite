@@ -95,12 +95,12 @@ def count_lines():
   """Keep track of the amount of times individual lines occur, in order to
      prioritize the errors which occur most frequently."""
   counts = {}
-  for string,count in blacklist.items():
+  for string,count in list(blacklist.items()):
     for line in string.split("\n"):
       counts[line] = counts.get(line, 0) + count
 
   lines = []
-  for k,v in counts.items():
+  for k,v in list(counts.items()):
     lines.append("{0:6}: {1}".format(v, k))
 
   lines.sort()

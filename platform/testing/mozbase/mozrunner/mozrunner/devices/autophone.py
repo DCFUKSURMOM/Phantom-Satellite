@@ -13,8 +13,8 @@ import sys
 import threading
 import time
 import which
-import BaseHTTPServer
-import SimpleHTTPServer
+import http.server
+import http.server
 
 from mozbuild.virtualenv import VirtualenvManager
 from mozdevice import DeviceManagerADB
@@ -47,7 +47,7 @@ class AutophoneRunner(object):
             self.build_obj.log(logging.WARN, "autophone", {},
                                "*** This will delete %s and reset your "
                                "'mach autophone' configuration! ***" % dir)
-            response = raw_input(
+            response = input(
                 "Proceed with deletion? (y/N) ").strip()
             if response.lower().startswith('y'):
                 os.remove(self.CONFIG_FILE)
@@ -64,7 +64,7 @@ class AutophoneRunner(object):
             with open(self.CONFIG_FILE, 'w') as f:
                 json.dump(self.config, f)
             if self.verbose:
-                print("saved configuration: %s" % self.config)
+                print(("saved configuration: %s" % self.config))
         except:
             self.build_obj.log(logging.ERROR, "autophone", {},
                                "unable to save 'mach autophone' "
@@ -82,7 +82,7 @@ class AutophoneRunner(object):
                 with open(self.CONFIG_FILE, 'r') as f:
                     self.config = json.load(f)
                 if self.verbose:
-                    print("loaded configuration: %s" % self.config)
+                    print(("loaded configuration: %s" % self.config))
             except:
                 self.build_obj.log(logging.ERROR, "autophone", {},
                                    "unable to load 'mach autophone' "
@@ -100,7 +100,7 @@ class AutophoneRunner(object):
         if not dir:
             dir = os.path.join(os.path.expanduser('~'), 'mach-autophone')
         if os.path.exists(os.path.join(dir, '.git')):
-            response = raw_input(
+            response = input(
                 "Run autophone from existing directory, %s (Y/n) " % dir).strip()
             if 'n' not in response.lower():
                 self.build_obj.log(logging.INFO, "autophone", {},
@@ -109,7 +109,7 @@ class AutophoneRunner(object):
         self.build_obj.log(logging.INFO, "autophone", {},
                            "Unable to find an existing autophone directory. "
                            "Let's setup a new one...")
-        response = raw_input(
+        response = input(
             "Enter location of new autophone directory: [%s] " % dir).strip()
         if response != '':
             dir = response
@@ -160,7 +160,7 @@ class AutophoneRunner(object):
         keep_going = True
         device_ini = os.path.join(self.config['base-dir'], 'devices.ini')
         if os.path.exists(device_ini):
-            response = raw_input(
+            response = input(
                 "Use existing device configuration at %s? (Y/n) " % device_ini).strip()
             if 'n' not in response.lower():
                 self.build_obj.log(logging.INFO, "autophone", {},
@@ -170,10 +170,10 @@ class AutophoneRunner(object):
         self.build_obj.log(logging.INFO, "autophone", {},
                            "You must configure at least one Android device "
                            "before running autophone.")
-        response = raw_input(
+        response = input(
             "Configure devices now? (Y/n) ").strip()
         if response.lower().startswith('y') or response == '':
-            response = raw_input(
+            response = input(
                 "Connect your rooted Android test device(s) with usb and press Enter ")
             adb_path = 'adb'
             try:
@@ -187,10 +187,10 @@ class AutophoneRunner(object):
                 try:
                     adb_path = which.which('adb')
                 except which.WhichError:
-                    adb_path = raw_input(
+                    adb_path = input(
                         "adb not found. Enter path to adb: ").strip()
             if self.verbose:
-                print("Using adb at %s" % adb_path)
+                print(("Using adb at %s" % adb_path))
             dm = DeviceManagerADB(autoconnect=False, adbPath=adb_path, retryLimit=1)
             device_index = 1
             try:
@@ -248,14 +248,14 @@ class AutophoneRunner(object):
                                "These test manifests are available:")
             index = 1
             for option in test_options:
-                print("%d. %s" % (index, option[0]))
+                print(("%d. %s" % (index, option[0])))
                 index += 1
             highest = index - 1
             path = None
             while not path:
                 path = None
                 self.webserver_required = False
-                response = raw_input(
+                response = input(
                     "Select test manifest (1-%d, or path to test manifest) " % highest).strip()
                 if os.path.isfile(response):
                     path = response
@@ -284,7 +284,7 @@ class AutophoneRunner(object):
             response = ""
             default = self.config['test-manifest'] or ""
             while not os.path.isfile(response):
-                response = raw_input(
+                response = input(
                     "Enter path to a test manifest: [%s] " % default).strip()
                 if response == "":
                     response = default
@@ -311,7 +311,7 @@ console_level = DEBUG
 log_level = DEBUG
 time_out = 300""" % (xre_path, xre_path))
             if self.verbose:
-                print("Created %s with host utilities path %s" % (defaults_path, xre_path))
+                print(("Created %s with host utilities path %s" % (defaults_path, xre_path)))
         except:
             self.build_obj.log(logging.ERROR, "autophone", {},
                                "Unable to create %s" % defaults_path)
@@ -325,7 +325,7 @@ time_out = 300""" % (xre_path, xre_path))
         """
         defaults_path = os.path.join(self.config['base-dir'], 'configs', 'unittest-defaults.ini')
         if os.path.isfile(defaults_path):
-            response = raw_input(
+            response = input(
                 "Use existing unit test configuration at %s? (Y/n) " % defaults_path).strip()
             if 'n' in response.lower():
                 os.remove(defaults_path)
@@ -343,7 +343,7 @@ time_out = 300""" % (xre_path, xre_path))
                 self.build_obj.log(logging.INFO, "autophone", {},
                                    "Some tests require access to 'host utilities' "
                                    "such as xpcshell.")
-                xre_path = raw_input(
+                xre_path = input(
                     "Enter path to host utilities directory: ").strip()
                 if not xre_path or not os.path.isdir(xre_path) or \
                    not os.path.isfile(os.path.join(xre_path, 'xpcshell')):
@@ -366,7 +366,7 @@ time_out = 300""" % (xre_path, xre_path))
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 0))
         ip = s.getsockname()[0]
-        response = raw_input(
+        response = input(
             "IP address of interface to use for phone callbacks [%s] " % ip).strip()
         if response == "":
             response = ip
@@ -381,10 +381,10 @@ time_out = 300""" % (xre_path, xre_path))
         if self.webserver_required:
             self.build_obj.log(logging.INFO, "autophone", {},
                                "Some of your selected tests require a webserver.")
-            response = raw_input("Start a webserver now? [Y/n] ").strip()
+            response = input("Start a webserver now? [Y/n] ").strip()
             parts = []
             while len(parts) != 2:
-                response2 = raw_input(
+                response2 = input(
                     "Webserver address? [%s:8100] " % self.ipaddr).strip()
                 if response2 == "":
                     parts = [self.ipaddr, "8100"]
@@ -496,7 +496,7 @@ time_out = 300""" % (xre_path, xre_path))
                 "Type 'trigger', 'help', 'quit', or an autophone command.")
         quitting = False
         while self.thread.isAlive() and not quitting:
-            response = raw_input(
+            response = input(
                 "autophone command? ").strip().lower()
             if response == "help":
                 self.run_process(['./ap.sh', 'autophone-help'], cwd=dir, dump=True)
@@ -545,7 +545,7 @@ quit
         highest = 4
         choice = 0
         while (choice < 1 or choice > highest):
-            response = raw_input(
+            response = input(
                 "Build selection type? (1-%d) " % highest).strip()
             try:
                 choice = int(response)
@@ -556,18 +556,18 @@ quit
         if choice == 1:
             options = ["latest"]
         elif choice == 2:
-            url = raw_input(
+            url = input(
                 "Enter url of build to test; may be an http or file schema ").strip()
             options = ["--build-url=%s" % url]
         elif choice == 3:
-            response = raw_input(
+            response = input(
                 "Enter Build ID, eg 20120403063158 ").strip()
             options = [response]
         elif choice == 4:
-            start = raw_input(
+            start = input(
                 "Enter start build date or date-time, "
                 "e.g. 2012-04-03 or 2012-04-03T06:31:58 ").strip()
-            end = raw_input(
+            end = input(
                 "Enter end build date or date-time, "
                 "e.g. 2012-04-03 or 2012-04-03T06:31:58 ").strip()
             options = [start, end]
@@ -577,7 +577,7 @@ quit
         self.build_obj.log(
             logging.INFO, "autophone", {},
             "If not specified, 'mozilla-central' is assumed.")
-        repo = raw_input(
+        repo = input(
             "Enter repository name: ").strip()
         if len(repo) > 0:
             options.extend(["--repo=%s" % repo])
@@ -585,7 +585,7 @@ quit
             self.build_obj.log(
                 logging.INFO, "autophone", {},
                 "You may optionally specify the build location, like 'nightly' or 'tinderbox'.")
-            location = raw_input(
+            location = input(
                 "Enter build location: ").strip()
             if len(location) > 0:
                 options.extend(["--build-location=%s" % location])
@@ -612,7 +612,7 @@ quit
         self.threadweb.start()
 
     def run_webserver(self):
-        class AutoHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+        class AutoHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # A simple request handler with logging suppressed.
 
             def log_message(self, format, *args):
@@ -620,7 +620,7 @@ quit
 
         os.chdir(self.config['base-dir'])
         address = (self.webserver_addr, self.webserver_port)
-        self.httpd = BaseHTTPServer.HTTPServer(address, AutoHTTPRequestHandler)
+        self.httpd = http.server.HTTPServer(address, AutoHTTPRequestHandler)
         try:
             self.httpd.serve_forever()
         except KeyboardInterrupt:
@@ -647,5 +647,5 @@ quit
                 proc.kill(signal.SIGTERM)
         if not proc_complete:
             if not self.verbose:
-                print(proc.output)
+                print((proc.output))
         return proc_complete

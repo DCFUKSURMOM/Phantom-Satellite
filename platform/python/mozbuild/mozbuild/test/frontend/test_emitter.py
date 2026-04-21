@@ -204,7 +204,7 @@ class TestEmitterBasic(unittest.TestCase):
     def test_use_yasm(self):
         # When yasm is not available, this should raise.
         reader = self.reader('use-yasm')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
             'yasm is not available'):
             self.read_topsrcdir(reader)
 
@@ -267,25 +267,25 @@ class TestEmitterBasic(unittest.TestCase):
         o = objs[0]
         self.assertIsInstance(o, GeneratedFile)
         self.assertEqual(o.outputs, ('bar.c',))
-        self.assertRegexpMatches(o.script, 'script.py$')
+        self.assertRegex(o.script, 'script.py$')
         self.assertEqual(o.method, 'make_bar')
         self.assertEqual(o.inputs, [])
 
     def test_generated_files_no_script(self):
         reader = self.reader('generated-files-no-script')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
             'Script for generating bar.c does not exist'):
             self.read_topsrcdir(reader)
 
     def test_generated_files_no_inputs(self):
         reader = self.reader('generated-files-no-inputs')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
             'Input for generating foo.c does not exist'):
             self.read_topsrcdir(reader)
 
     def test_generated_files_no_python_script(self):
         reader = self.reader('generated-files-no-python-script')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
             'Script for generating bar.c does not end in .py'):
             self.read_topsrcdir(reader)
 
@@ -314,7 +314,7 @@ class TestEmitterBasic(unittest.TestCase):
         Missing files in EXPORTS is an error.
         '''
         reader = self.reader('exports-missing')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
              'File listed in EXPORTS does not exist:'):
             self.read_topsrcdir(reader)
 
@@ -323,7 +323,7 @@ class TestEmitterBasic(unittest.TestCase):
         An objdir file in EXPORTS that is not in GENERATED_FILES is an error.
         '''
         reader = self.reader('exports-missing-generated')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
              'Objdir file listed in EXPORTS not in GENERATED_FILES:'):
             self.read_topsrcdir(reader)
 
@@ -360,7 +360,7 @@ class TestEmitterBasic(unittest.TestCase):
 
     def test_test_harness_files_root(self):
         reader = self.reader('test-harness-files-root')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
             'Cannot install files to the root of TEST_HARNESS_FILES'):
             self.read_topsrcdir(reader)
 
@@ -413,14 +413,14 @@ class TestEmitterBasic(unittest.TestCase):
         """A missing manifest file should result in an error."""
         reader = self.reader('test-manifest-missing-manifest')
 
-        with self.assertRaisesRegexp(BuildReaderError, 'IOError: Missing files'):
+        with self.assertRaisesRegex(BuildReaderError, 'IOError: Missing files'):
             self.read_topsrcdir(reader)
 
     def test_empty_test_manifest_rejected(self):
         """A test manifest without any entries is rejected."""
         reader = self.reader('test-manifest-empty')
 
-        with self.assertRaisesRegexp(SandboxValidationError, 'Empty test manifest'):
+        with self.assertRaisesRegex(SandboxValidationError, 'Empty test manifest'):
             self.read_topsrcdir(reader)
 
 
@@ -428,7 +428,7 @@ class TestEmitterBasic(unittest.TestCase):
         """A test manifest with no tests but support-files is not supported."""
         reader = self.reader('test-manifest-just-support')
 
-        with self.assertRaisesRegexp(SandboxValidationError, 'Empty test manifest'):
+        with self.assertRaisesRegex(SandboxValidationError, 'Empty test manifest'):
             self.read_topsrcdir(reader)
 
     def test_test_manifest_dupe_support_files(self):
@@ -437,7 +437,7 @@ class TestEmitterBasic(unittest.TestCase):
         """
         reader = self.reader('test-manifest-dupes')
 
-        with self.assertRaisesRegexp(SandboxValidationError, 'bar.js appears multiple times '
+        with self.assertRaisesRegex(SandboxValidationError, 'bar.js appears multiple times '
             'in a test manifest under a support-files field, please omit the duplicate entry.'):
             self.read_topsrcdir(reader)
 
@@ -454,7 +454,7 @@ class TestEmitterBasic(unittest.TestCase):
             mozpath.join(o.install_prefix, "absolute-support.ini"),
             mozpath.join(o.install_prefix, "test_file.js"),
         ]
-        paths = sorted([v[0] for v in o.installs.values()])
+        paths = sorted([v[0] for v in list(o.installs.values())])
         self.assertEqual(paths, expected)
 
     @unittest.skip('Bug 1304316 - Items in the second set but not the first')
@@ -481,7 +481,7 @@ class TestEmitterBasic(unittest.TestCase):
         """A non-existent shared support file reference produces an error."""
         reader = self.reader('test-manifest-shared-missing')
 
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
                                      'entry in support-files not present in the srcdir'):
             self.read_topsrcdir(reader)
 
@@ -500,7 +500,7 @@ class TestEmitterBasic(unittest.TestCase):
             mozpath.normpath(mozpath.join(o.install_prefix, "subdir/support.txt")),
             mozpath.normpath(mozpath.join(o.install_prefix, "subdir/test_foo.html")),
         ]
-        paths = sorted([v[0] for v in o.installs.values()])
+        paths = sorted([v[0] for v in list(o.installs.values())])
         self.assertEqual(paths, expected)
 
     def test_test_manifest_install_includes(self):
@@ -518,7 +518,7 @@ class TestEmitterBasic(unittest.TestCase):
             mozpath.normpath(mozpath.join(o.install_prefix, "subdir/mochitest.ini")),
             mozpath.normpath(mozpath.join(o.install_prefix, "subdir/test_foo.html")),
         ]
-        paths = sorted([v[0] for v in o.installs.values()])
+        paths = sorted([v[0] for v in list(o.installs.values())])
         self.assertEqual(paths, expected)
 
     def test_test_manifest_includes(self):
@@ -541,7 +541,7 @@ class TestEmitterBasic(unittest.TestCase):
     def test_python_unit_test_missing(self):
         """Missing files in PYTHON_UNIT_TESTS should raise."""
         reader = self.reader('test-python-unit-test-missing')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
             'Path specified in PYTHON_UNIT_TESTS does not exist:'):
             self.read_topsrcdir(reader)
 
@@ -635,7 +635,7 @@ class TestEmitterBasic(unittest.TestCase):
             self.assertEqual(external_normalized, m.get('external', set()))
 
             self.assertEqual(len(o.installs), len(m['installs']))
-            for path in o.installs.keys():
+            for path in list(o.installs.keys()):
                 self.assertTrue(path.startswith(o.directory))
                 relpath = path[len(o.directory)+1:]
 
@@ -648,7 +648,7 @@ class TestEmitterBasic(unittest.TestCase):
     def test_test_manifest_unmatched_generated(self):
         reader = self.reader('test-manifest-unmatched-generated')
 
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
             'entry in generated-files not present elsewhere'):
             self.read_topsrcdir(reader),
 
@@ -672,7 +672,7 @@ class TestEmitterBasic(unittest.TestCase):
         """Missing test files should result in error."""
         reader = self.reader('test-manifest-missing-test-file')
 
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
             'lists test that does not exist: test_missing.html'):
             self.read_topsrcdir(reader)
 
@@ -680,7 +680,7 @@ class TestEmitterBasic(unittest.TestCase):
         """Missing test files should result in error, even when the test list is not filtered."""
         reader = self.reader('test-manifest-missing-test-file-unfiltered')
 
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
             'lists test that does not exist: missing.js'):
             self.read_topsrcdir(reader)
 
@@ -802,20 +802,20 @@ class TestEmitterBasic(unittest.TestCase):
             self.assertIsInstance(obj.path, Path)
 
     def test_jar_manifests_multiple_files(self):
-        with self.assertRaisesRegexp(SandboxValidationError, 'limited to one value'):
+        with self.assertRaisesRegex(SandboxValidationError, 'limited to one value'):
             reader = self.reader('jar-manifests-multiple-files')
             self.read_topsrcdir(reader)
 
     def test_xpidl_module_no_sources(self):
         """XPIDL_MODULE without XPIDL_SOURCES should be rejected."""
-        with self.assertRaisesRegexp(SandboxValidationError, 'XPIDL_MODULE '
+        with self.assertRaisesRegex(SandboxValidationError, 'XPIDL_MODULE '
             'cannot be defined'):
             reader = self.reader('xpidl-module-no-sources')
             self.read_topsrcdir(reader)
 
     def test_missing_local_includes(self):
         """LOCAL_INCLUDES containing non-existent directories should be rejected."""
-        with self.assertRaisesRegexp(SandboxValidationError, 'Path specified in '
+        with self.assertRaisesRegex(SandboxValidationError, 'Path specified in '
             'LOCAL_INCLUDES does not exist'):
             reader = self.reader('missing-local-includes')
             self.read_topsrcdir(reader)
@@ -860,7 +860,7 @@ class TestEmitterBasic(unittest.TestCase):
             '.S': ['g.S'],
             '.s': ['h.s', 'i.asm'],
         }
-        for suffix, files in expected.items():
+        for suffix, files in list(expected.items()):
             sources = suffix_map[suffix]
             self.assertEqual(
                 sources.files,
@@ -913,7 +913,7 @@ class TestEmitterBasic(unittest.TestCase):
             '.S': ['g.S'],
             '.s': ['h.s', 'i.asm'],
         }
-        for suffix, files in expected.items():
+        for suffix, files in list(expected.items()):
             sources = suffix_map[suffix]
             self.assertEqual(
                 sources.files,
@@ -939,7 +939,7 @@ class TestEmitterBasic(unittest.TestCase):
             '.c': ['d.c'],
             '.mm': ['e.mm', 'f.mm'],
         }
-        for suffix, files in expected.items():
+        for suffix, files in list(expected.items()):
             sources = suffix_map[suffix]
             self.assertEqual(
                 sources.files,
@@ -964,7 +964,7 @@ class TestEmitterBasic(unittest.TestCase):
             '.mm': ['objc1.mm', 'objc2.mm'],
             '.c': ['c1.c', 'c2.c'],
         }
-        for suffix, files in expected.items():
+        for suffix, files in list(expected.items()):
             sources = suffix_map[suffix]
             self.assertEqual(
                 sources.files,
@@ -990,7 +990,7 @@ class TestEmitterBasic(unittest.TestCase):
             '.mm': ['objc1.mm', 'objc2.mm'],
             '.c': ['c1.c', 'c2.c'],
         }
-        for suffix, files in expected.items():
+        for suffix, files in list(expected.items()):
             sources = suffix_map[suffix]
             self.assertEqual(
                 sources.files,
@@ -1013,11 +1013,11 @@ class TestEmitterBasic(unittest.TestCase):
 
             expected = {'install.rdf', 'main.js'}
             for f in files:
-                self.assertTrue(unicode(f) in expected)
+                self.assertTrue(str(f) in expected)
 
     def test_missing_final_target_pp_files(self):
         """Test that FINAL_TARGET_PP_FILES with missing files throws errors."""
-        with self.assertRaisesRegexp(SandboxValidationError, 'File listed in '
+        with self.assertRaisesRegex(SandboxValidationError, 'File listed in '
             'FINAL_TARGET_PP_FILES does not exist'):
             reader = self.reader('dist-files-missing')
             self.read_topsrcdir(reader)
@@ -1025,7 +1025,7 @@ class TestEmitterBasic(unittest.TestCase):
     def test_final_target_pp_files_non_srcdir(self):
         '''Test that non-srcdir paths in FINAL_TARGET_PP_FILES throws errors.'''
         reader = self.reader('final-target-pp-files-non-srcdir')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
              'Only source directory paths allowed in FINAL_TARGET_PP_FILES:'):
             self.read_topsrcdir(reader)
 
@@ -1043,7 +1043,7 @@ class TestEmitterBasic(unittest.TestCase):
             mozpath.join(reader.config.topobjdir, 'dir2'),
             '/dir3',
         ]
-        self.assertEquals([p.full_path for p in objs[0].paths], expected)
+        self.assertEqual([p.full_path for p in objs[0].paths], expected)
 
     def test_binary_components(self):
         """Test that IS_COMPONENT/NO_COMPONENTS_MANIFEST work properly."""
@@ -1099,7 +1099,7 @@ class TestEmitterBasic(unittest.TestCase):
         from GENERATED_FILES is an error.
         """
         reader = self.reader('test-symbols-file-objdir-missing-generated')
-        with self.assertRaisesRegexp(SandboxValidationError,
+        with self.assertRaisesRegex(SandboxValidationError,
              'Objdir file specified in SYMBOLS_FILE not in GENERATED_FILES:'):
             self.read_topsrcdir(reader)
 

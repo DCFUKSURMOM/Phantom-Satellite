@@ -9,7 +9,7 @@ import signal
 import sys
 import traceback
 from collections import defaultdict
-from Queue import Empty
+from queue import Empty
 from multiprocessing import (
     Manager,
     Pool,
@@ -120,7 +120,7 @@ class LintRoller(object):
         if workdir:
             paths.extend(self.vcs.by_workdir())
         paths = paths or ['.']
-        paths = map(os.path.abspath, paths)
+        paths = list(map(os.path.abspath, paths))
 
         # Set up multiprocessing
         m = Manager()
@@ -149,6 +149,6 @@ class LintRoller(object):
             results, return_code = worker.get()
             if results or return_code:
                 self.return_code = 1
-            for k, v in results.iteritems():
+            for k, v in results.items():
                 all_results[k].extend(v)
         return all_results

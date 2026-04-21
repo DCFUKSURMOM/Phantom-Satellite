@@ -236,7 +236,7 @@ def get_compiler_info(compiler, language):
         ('CPU', CPU_preprocessor_checks),
         ('KERNEL', kernel_preprocessor_checks),
     ):
-        for n, (value, condition) in enumerate(preprocessor_checks.iteritems()):
+        for n, (value, condition) in enumerate(preprocessor_checks.items()):
             check += dedent('''\
                 #%(if)s %(condition)s
                 %%%(name)s "%(value)s"
@@ -269,7 +269,7 @@ def get_compiler_info(compiler, language):
     # have non-ASCII characters. Treat the output as bytearray.
     data = {}
     for line in result.splitlines():
-        if line.startswith(b'%'):
+        if line.startswith('%'):
             k, _, v = line.partition(' ')
             k = k.lstrip('%')
             data[k] = v.replace(' ', '').lstrip('"').rstrip('"')
@@ -397,10 +397,11 @@ def check_compiler(compiler, language, target):
 @imports('json')
 @imports('subprocess')
 @imports('sys')
+@imports(_from='locale', _import='getpreferredencoding')
 def get_vc_paths(topsrcdir):
+    encoding = getpreferredencoding(False)
     def vswhere(args):
-        encoding = 'mbcs' if sys.platform == 'win32' else 'utf-8'
-        return json.loads(subprocess.check_output([os.path.join(topsrcdir, 'build/win32/vswhere.exe'), '-format', 'json'] + args).decode(encoding, 'replace'))
+        return json.loads(subprocess.check_output([os.path.join(topsrcdir, 'build/win32/vswhere.exe'), '-format', 'json'] + args).decode(encoding, errors='replace'))
 
     # Can't pass -requires with -legacy, so query each separately.
     # Legacy versions first (VS2015)
@@ -419,7 +420,7 @@ def get_vc_paths(topsrcdir):
     # Then VS2017 and newer.
     for install in vswhere(['-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64']):
         path = install['installationPath']
-        tools_version = open(os.path.join(path, r'VC\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt'), 'rb').read().strip()
+        tools_version = open(os.path.join(path, r'VC\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt'), 'r', encoding=encoding, errors='replace').read().strip()
         tools_path = os.path.join(path, r'VC\Tools\MSVC', tools_version, r'bin\HostX64')
         yield (Version(install['installationVersion']), {
             'x64': [os.path.join(tools_path, 'x64')],
@@ -601,7 +602,7 @@ def compiler(language, host_or_target, c_compiler=None, other_compiler=None,
             if cross_compiling and other_compiler.type == 'clang':
                 return namespace(**{
                     k: [] if k == 'flags' else v
-                    for k, v in other_compiler.__dict__.iteritems()
+                    for k, v in other_compiler.__dict__.items()
                 })
 
     # Normally, we'd use `var` instead of `_var`, but the interaction with

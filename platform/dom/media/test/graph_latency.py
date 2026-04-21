@@ -22,10 +22,10 @@ def compute_sum(data):
     out = ([],[])
 
     for i in data:
-        if i[0] not in last_values.keys():
+        if i[0] not in list(last_values.keys()):
           last_values[i[0]] = 0
         last_values[i[0]] = float(i[3])
-        print last_values
+        print(last_values)
         out[0].append(i[2])
         out[1].append(sum(last_values.values()))
     return out
@@ -59,12 +59,12 @@ if len(sys.argv) == 3:
     name = sys.argv[1]
     channels = int(sys.argv[2])
 else:
-    print sys.argv[0] + "latency_log"
+    print(sys.argv[0] + "latency_log")
 
 try:
     f = open(sys.argv[1])
 except:
-    print "cannot open " + name
+    print("cannot open " + name)
 
 raw_lines = f.readlines()
 lines = clean_data(raw_lines)
@@ -76,7 +76,7 @@ for tupl in data:
     name = tupl[0]
     if tupl[1] != 0:
         name = name+tupl[1]
-    if name not in final_data.keys():
+    if name not in list(final_data.keys()):
         final_data[name] = ([], [])
 # sanity-check values
     if float(tupl[3]) < 10*1000:
@@ -89,7 +89,7 @@ for tupl in data:
 pprint(final_data)
 
 fig = plt.figure()
-for i in final_data.keys():
+for i in list(final_data.keys()):
     plt.plot(final_data[i][0], final_data[i][1], label=i)
 
 plt.legend()

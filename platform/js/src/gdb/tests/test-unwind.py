@@ -21,7 +21,7 @@ def do_unwinder_test():
     found_outer = False
     frames = list(gdb.frames.execute_frame_filters(gdb.newest_frame(), 0, -1))
     for frame in frames:
-        print("examining " + frame.function())
+        print(("examining " + frame.function()))
         if first:
             assert_eq(frame.function().startswith("Something"), True)
             first = False

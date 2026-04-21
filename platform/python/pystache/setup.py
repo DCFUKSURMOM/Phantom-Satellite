@@ -170,7 +170,7 @@ def write(u, path):
     Write a unicode string to a file (as utf-8).
 
     """
-    print("writing to: %s" % path)
+    print(("writing to: %s" % path))
     # This function implementation was chosen to be compatible across Python 2/3.
     f = open(path, "wb")
     try:
@@ -200,7 +200,7 @@ def strip_html_comments(text):
     lines = text.splitlines(True)  # preserve line endings.
 
     # Remove HTML comments (which we only allow to take a special form).
-    new_lines = filter(lambda line: not line.startswith("<!--"), lines)
+    new_lines = [line for line in lines if not line.startswith("<!--")]
 
     return "".join(new_lines)
 
@@ -222,8 +222,8 @@ def convert_md_to_rst(md_path, rst_temp_path):
     """
     # Pandoc uses the UTF-8 character encoding for both input and output.
     command = "pandoc --write=rst --output=%s %s" % (rst_temp_path, md_path)
-    print("converting with pandoc: %s to %s\n-->%s" % (md_path, rst_temp_path,
-                                                       command))
+    print(("converting with pandoc: %s to %s\n-->%s" % (md_path, rst_temp_path,
+                                                       command)))
 
     if os.path.exists(rst_temp_path):
         os.remove(rst_temp_path)
@@ -290,17 +290,17 @@ def publish():
     long_description = make_long_description()
 
     if long_description != read(RST_DESCRIPTION_PATH):
-        print("""\
+        print(("""\
 Description file not up-to-date: %s
 Run the following command and commit the changes--
 
     python setup.py %s
-""" % (RST_DESCRIPTION_PATH, PREP_COMMAND))
+""" % (RST_DESCRIPTION_PATH, PREP_COMMAND)))
         sys.exit()
 
-    print("Description up-to-date: %s" % RST_DESCRIPTION_PATH)
+    print(("Description up-to-date: %s" % RST_DESCRIPTION_PATH))
 
-    answer = raw_input("Are you sure you want to publish to PyPI (yes/no)?")
+    answer = input("Are you sure you want to publish to PyPI (yes/no)?")
 
     if answer != "yes":
         exit("Aborted: nothing published")

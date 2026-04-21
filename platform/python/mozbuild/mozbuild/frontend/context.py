@@ -49,6 +49,8 @@ from types import FunctionType
 
 import itertools
 
+def cmp(a, b):
+    return (a > b) - (a < b)
 
 class ContextDerivedValue(object):
     """Classes deriving from this one receive a special treatment in a
@@ -234,15 +236,15 @@ class Context(KeyedDefaultDict):
         This function is transactional: if setitem fails for one of the values,
         the context is not updated at all."""
         if isinstance(iterable, dict):
-            iterable = iterable.items()
+            iterable = list(iterable.items())
 
         update = {}
-        for key, value in itertools.chain(iterable, kwargs.items()):
+        for key, value in itertools.chain(iterable, list(kwargs.items())):
             stored_type = self._validate(key, value)
             # Don't create an instance of stored_type if coercion is needed,
             # until all values are validated.
             update[key] = (value, stored_type)
-        for key, (value, stored_type) in update.items():
+        for key, (value, stored_type) in list(update.items()):
             if not isinstance(value, stored_type):
                 update[key] = stored_type(value)
             else:
@@ -297,7 +299,7 @@ class InitializedDefines(ContextDerivedValue, OrderedDict):
             self.update(value)
 
 
-class FinalTargetValue(ContextDerivedValue, unicode):
+class FinalTargetValue(ContextDerivedValue, str):
     def __new__(cls, context, value=""):
         if not value:
             value = 'dist/'
@@ -307,7 +309,7 @@ class FinalTargetValue(ContextDerivedValue, unicode):
                 value += 'bin'
             if context['DIST_SUBDIR']:
                 value += '/' + context['DIST_SUBDIR']
-        return unicode.__new__(cls, value)
+        return str.__new__(cls, value)
 
 
 def Enum(*values):
@@ -355,7 +357,7 @@ class PathMeta(type):
                 cls = SourcePath
         return super(PathMeta, cls).__call__(context, value)
 
-class Path(ContextDerivedValue, unicode):
+class Path(ContextDerivedValue, str, metaclass=PathMeta):
     """Stores and resolves a source path relative to a given context
 
     This class is used as a backing type for some of the sandbox variables.
@@ -366,7 +368,6 @@ class Path(ContextDerivedValue, unicode):
       - '!objdir/relative/paths'
       - '%/filesystem/absolute/paths'
     """
-    __metaclass__ = PathMeta
 
     def __new__(cls, context, value=None):
         return super(Path, cls).__new__(cls, value)
@@ -386,7 +387,7 @@ class Path(ContextDerivedValue, unicode):
     def __cmp__(self, other):
         if isinstance(other, Path) and self.srcdir != other.srcdir:
             return cmp(self.full_path, other.full_path)
-        return cmp(unicode(self), other)
+        return cmp(str(self), other)
 
     # __cmp__ is not enough because unicode has __eq__, __ne__, etc. defined
     # and __cmp__ is only used for those when they don't exist.
@@ -544,7 +545,7 @@ def ContextDerivedTypedRecord(*fields):
         __slots__ = tuple([name for name, _ in fields])
 
         def __init__(self, context):
-            for fname, ftype in self._fields.items():
+            for fname, ftype in list(self._fields.items()):
                 if issubclass(ftype, ContextDerivedValue):
                     setattr(self, fname, self._fields[fname](context))
                 else:
@@ -614,8 +615,8 @@ def TypedListWithAction(typ, action):
     return _TypedListWithAction
 
 WebPlatformTestManifest = TypedNamedTuple("WebPlatformTestManifest",
-                                          [("manifest_path", unicode),
-                                           ("test_root", unicode)])
+                                          [("manifest_path", str),
+                                           ("test_root", str)])
 ManifestparserManifestList = OrderedListWithAction(read_manifestparser_manifest)
 ReftestManifestList = OrderedListWithAction(read_reftest_manifest)
 WptManifestList = TypedListWithAction(WebPlatformTestManifest, read_wpt_manifest)
@@ -623,12 +624,12 @@ WptManifestList = TypedListWithAction(WebPlatformTestManifest, read_wpt_manifest
 OrderedSourceList = ContextDerivedTypedList(SourcePath, StrictOrderingOnAppendList)
 OrderedTestFlavorList = TypedList(Enum(*all_test_flavors()),
                                   StrictOrderingOnAppendList)
-OrderedStringList = TypedList(unicode, StrictOrderingOnAppendList)
+OrderedStringList = TypedList(str, StrictOrderingOnAppendList)
 DependentTestsEntry = ContextDerivedTypedRecord(('files', OrderedSourceList),
                                                 ('tags', OrderedStringList),
                                                 ('flavors', OrderedTestFlavorList))
 BugzillaComponent = TypedNamedTuple('BugzillaComponent',
-                        [('product', unicode), ('component', unicode)])
+                        [('product', str), ('component', str)])
 
 
 class Files(SubContext):
@@ -764,7 +765,7 @@ class Files(SubContext):
         self.test_tags |= other.test_tags
         self.test_flavors |= other.test_flavors
 
-        for k, v in other.items():
+        for k, v in list(other.items()):
             if k == 'IMPACTED_TESTS':
                 self.test_files |= set(mozpath.relpath(e.full_path, e.context.config.topsrcdir)
                                        for e in v.files)
@@ -818,7 +819,7 @@ class Files(SubContext):
 
         bug_components = Counter()
 
-        for f in files.values():
+        for f in list(files.values()):
             bug_component = f.get('BUG_COMPONENT')
             if bug_component:
                 bug_components[bug_component] += 1
@@ -909,7 +910,7 @@ VARIABLES = {
         """),
 
     'GENERATED_FILES': (StrictOrderingOnAppendListWithFlagsFactory({
-                'script': unicode,
+                'script': str,
                 'inputs': list }), list,
         """Generic generated files.
 
@@ -1054,7 +1055,7 @@ VARIABLES = {
         """Like ``OBJDIR_FILES``, with preprocessing. Use sparingly.
         """),
 
-    'FINAL_LIBRARY': (unicode, unicode,
+    'FINAL_LIBRARY': (str, str,
         """Library in which the objects of the current directory will be linked.
 
         This variable contains the name of a library, defined elsewhere with
@@ -1105,7 +1106,7 @@ VARIABLES = {
         """A list of python unit tests.
         """),
 
-    'HOST_LIBRARY_NAME': (unicode, unicode,
+    'HOST_LIBRARY_NAME': (str, str,
         """Name of target library generated when cross compiling.
         """),
 
@@ -1123,7 +1124,7 @@ VARIABLES = {
         libraries that link into this library via FINAL_LIBRARY.
         """),
 
-    'LIBRARY_NAME': (unicode, unicode,
+    'LIBRARY_NAME': (str, str,
         """The code name of the library generated for a directory.
 
         By default STATIC_LIBRARY_NAME and SHARED_LIBRARY_NAME take this name.
@@ -1135,7 +1136,7 @@ VARIABLES = {
         ``example/components/xpcomsample.lib`` on Windows.
         """),
 
-    'SHARED_LIBRARY_NAME': (unicode, unicode,
+    'SHARED_LIBRARY_NAME': (str, str,
         """The name of the static library generated for a directory, if it needs to
         differ from the library code name.
 
@@ -1149,7 +1150,7 @@ VARIABLES = {
         Implies FORCE_SHARED_LIB.
         """),
 
-    'STATIC_LIBRARY_NAME': (unicode, unicode,
+    'STATIC_LIBRARY_NAME': (str, str,
         """The name of the static library generated for a directory, if it needs to
         differ from the library code name.
 
@@ -1185,37 +1186,37 @@ VARIABLES = {
 
         This variable contains a list of system libaries to link against.
         """),
-    'RCFILE': (unicode, unicode,
+    'RCFILE': (str, str,
         """The program .rc file.
 
         This variable can only be used on Windows.
         """),
 
-    'RESFILE': (unicode, unicode,
+    'RESFILE': (str, str,
         """The program .res file.
 
         This variable can only be used on Windows.
         """),
 
-    'RCINCLUDE': (unicode, unicode,
+    'RCINCLUDE': (str, str,
         """The resource script file to be included in the default .res file.
 
         This variable can only be used on Windows.
         """),
 
-    'DEFFILE': (unicode, unicode,
+    'DEFFILE': (str, str,
         """The program .def (module definition) file.
 
         This variable can only be used on Windows.
         """),
 
-    'LD_VERSION_SCRIPT': (unicode, unicode,
+    'LD_VERSION_SCRIPT': (str, str,
         """The linker version script for shared libraries.
 
         This variable can only be used on Linux.
         """),
 
-    'SYMBOLS_FILE': (Path, unicode,
+    'SYMBOLS_FILE': (Path, str,
         """A file containing a list of symbols to export from a shared library.
 
         The given file contains a list of symbols to be exported, and is
@@ -1270,7 +1271,7 @@ VARIABLES = {
         ``BIN_SUFFIX``, the name will remain unchanged.
         """),
 
-    'SONAME': (unicode, unicode,
+    'SONAME': (str, str,
         """The soname of the shared object currently being linked
 
         soname is the "logical name" of a shared object, often used to provide
@@ -1326,7 +1327,7 @@ VARIABLES = {
         ``GENERATED_FILES``.
         """),
 
-    'PROGRAM' : (unicode, unicode,
+    'PROGRAM' : (str, str,
         """Compiled executable name.
 
         If the configuration token ``BIN_SUFFIX`` is set, its value will be
@@ -1334,7 +1335,7 @@ VARIABLES = {
         ``BIN_SUFFIX``, ``PROGRAM`` will remain unchanged.
         """),
 
-    'HOST_PROGRAM' : (unicode, unicode,
+    'HOST_PROGRAM' : (str, str,
         """Compiled host executable name.
 
         If the configuration token ``HOST_BIN_SUFFIX`` is set, its value will be
@@ -1372,7 +1373,7 @@ VARIABLES = {
         files.
         """),
 
-    'XPIDL_MODULE': (unicode, unicode,
+    'XPIDL_MODULE': (str, str,
         """XPCOM Interface Definition Module Name.
 
         This is the name of the ``.xpt`` file that is created by linking
@@ -1444,7 +1445,7 @@ VARIABLES = {
         """Names of example WebIDL interfaces to build as part of the build.
 
         Names in this list correspond to WebIDL interface names defined in
-        WebIDL files included in the build from one of the \*WEBIDL_FILES
+        WebIDL files included in the build from one of the \\*WEBIDL_FILES
         variables.
         """),
 
@@ -1526,14 +1527,14 @@ VARIABLES = {
         """),
 
     # The following variables are used to control the target of installed files.
-    'XPI_NAME': (unicode, unicode,
+    'XPI_NAME': (str, str,
         """The name of an extension XPI to generate.
 
         When this variable is present, the results of this directory will end up
         being packaged into an extension instead of the main dist/bin results.
         """),
 
-    'DIST_SUBDIR': (unicode, unicode,
+    'DIST_SUBDIR': (str, str,
         """The name of an alternate directory to install files to.
 
         When this variable is present, the results of this directory will end up
@@ -1541,7 +1542,7 @@ VARIABLES = {
         otherwise be placed.
         """),
 
-    'FINAL_TARGET': (FinalTargetValue, unicode,
+    'FINAL_TARGET': (FinalTargetValue, str,
         """The name of the directory to install targets to.
 
         The directory is relative to the top of the object directory. The
@@ -1572,7 +1573,7 @@ VARIABLES = {
 
     'GYP_DIRS': (StrictOrderingOnAppendListWithFlagsFactory({
             'variables': dict,
-            'input': unicode,
+            'input': str,
             'sandbox_vars': dict,
             'no_chromium': bool,
             'no_unified': bool,
@@ -1758,7 +1759,7 @@ VARIABLES = {
 }
 
 # Sanity check: we don't want any variable above to have a list as storage type.
-for name, (storage_type, input_types, docs) in VARIABLES.items():
+for name, (storage_type, input_types, docs) in list(VARIABLES.items()):
     if storage_type == list:
         raise RuntimeError('%s has a "list" storage type. Use "List" instead.'
             % name)
@@ -1975,7 +1976,7 @@ SPECIAL_VARIABLES = {
         """),
 
     'CONFIG': (lambda context: ReadOnlyKeyedDefaultDict(
-            lambda key: context.config.substs_unicode.get(key)), dict,
+            lambda key: context.config.substs.get(key)), dict,
         """Dictionary containing the current configuration variables.
 
         All the variables defined by the configuration system are available

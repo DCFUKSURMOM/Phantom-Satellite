@@ -6,9 +6,9 @@
 
 import os
 import time
-import urlparse
+import urllib.parse
 import string
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import json
 import re
 import platform
@@ -136,7 +136,7 @@ def urlsplit(url, default_scheme='file'):
         return ['file', '', url[len('file://'):], '', '']
 
     # split the URL and return a list
-    return [i for i in urlparse.urlsplit(url)]
+    return [i for i in urllib.parse.urlsplit(url)]
 
 
 def parse_pref(value):
@@ -170,9 +170,9 @@ def GenerateBrowserCommandLine(browser_path, extra_args, profile_dir,
             command_args.extend(['-tpprofilinginfo',
                                  json.dumps(profiling_info)])
         elif url.find('?') != -1:
-            url += '&' + urllib.urlencode(profiling_info)
+            url += '&' + urllib.parse.urlencode(profiling_info)
         else:
-            url += '?' + urllib.urlencode(profiling_info)
+            url += '?' + urllib.parse.urlencode(profiling_info)
 
     command_args.extend(url.split(' '))
 
@@ -184,7 +184,7 @@ def indexed_items(itr):
     Generator that allows us to figure out which item is the last one so
     that we can serialize this data properly
     """
-    prev_i, prev_val = 0, itr.next()
+    prev_i, prev_val = 0, next(itr)
     for i, val in enumerate(itr, start=1):
         yield prev_i, prev_val
         prev_i, prev_val = i, val

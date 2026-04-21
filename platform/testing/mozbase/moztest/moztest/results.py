@@ -46,7 +46,7 @@ class TestContext(object):
         def get(attr):
             value = getattr(self, attr)
             if isinstance(value, dict):
-                value = frozenset(value.items())
+                value = frozenset(list(value.items()))
             return value
         return hash(frozenset([get(a) for a in self.attrs]))
 

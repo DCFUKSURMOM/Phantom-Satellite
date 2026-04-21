@@ -8,14 +8,14 @@ def file_byte_generator(filename, block_size = 512):
       block = f.read(block_size)
       if block:
         for byte in block:
-          yield byte
+          yield bytes([byte])
       else:
         break
 
 def create_header(out_fh, in_filename):
   assert out_fh.name.endswith('.h')
   array_name = out_fh.name[:-2] + 'Data'
-  hexified = ["0x" + binascii.hexlify(byte) for byte in file_byte_generator(in_filename)]
+  hexified = ["0x" + binascii.hexlify(byte).decode("ascii") for byte in file_byte_generator(in_filename)]
   print("const uint8_t " + array_name + "[] = {", file=out_fh)
   print(", ".join(hexified), file=out_fh)
   print("};", file=out_fh)

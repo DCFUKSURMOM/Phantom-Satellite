@@ -27,7 +27,7 @@ from mozpack.packager.formats import (
     FlatFormatter,
     STARTUP_CACHE_PATHS,
 )
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 
 class UnpackFinder(BaseFinder):
@@ -82,7 +82,10 @@ class UnpackFinder(BaseFinder):
             if is_manifest(p):
                 m = self.files[p] if self.files.contains(p) \
                     else ManifestFile(base)
-                for e in parse_manifest(self.base, p, f.open()):
+                fh = f.open()
+                raw = fh.read()
+                text = raw.decode('utf-8')
+                for e in parse_manifest(self.base, p, text.splitlines(True)):
                     m.add(self._handle_manifest_entry(e, jars))
                 if self.files.contains(p):
                     continue
@@ -131,8 +134,12 @@ class UnpackFinder(BaseFinder):
             if not jarpath in jars:
                 base = mozpath.splitext(jarpath)[0]
                 for j in self._open_jar(jarpath, jar):
+                    name = j.filename
+                    if isinstance(name, bytes):
+                        # JAR filenames in UXP are always ASCII/UTF-8
+                        name = name.decode('utf-8')
                     self.files.add(mozpath.join(base,
-                                                     j.filename),
+                                                     name),
                                    DeflatedFile(j))
             jars.add(jarpath)
             self.kind = 'jar'
@@ -148,7 +155,7 @@ class UnpackFinder(BaseFinder):
             self.optimizedjars = True
         self.compressed = max(self.compressed, jar.compression)
         if jar.last_preloaded:
-            jarlog = jar.entries.keys()
+            jarlog = list(jar.entries.keys())
             self.jarlogs[path] = jarlog[:jarlog.index(jar.last_preloaded) + 1]
         return jar
 

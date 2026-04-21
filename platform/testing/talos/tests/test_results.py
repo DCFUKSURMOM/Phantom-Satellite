@@ -44,7 +44,7 @@ class TestPageloaderResults(unittest.TestCase):
 
         # test the indices
         indices = [i['index'] for i in results.results]
-        self.assertEqual(indices, range(12))
+        self.assertEqual(indices, list(range(12)))
 
         # test some pages
         pages = [i['page'] for i in results.results]

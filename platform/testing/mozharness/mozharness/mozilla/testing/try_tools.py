@@ -109,7 +109,7 @@ class TryToolsMixin(TransferMixin):
                 url = '{}json-pushes?changeset={}&full=1'.format(repo_url, rev)
 
                 pushinfo = self.load_json_from_url(url)
-                for k, v in pushinfo.items():
+                for k, v in list(pushinfo.items()):
                     if isinstance(v, dict) and 'changesets' in v:
                         msg = v['changesets'][-1]['desc']
 
@@ -188,7 +188,7 @@ class TryToolsMixin(TransferMixin):
                 return label_dict[val]
             return '--%s' % val.replace('_', '-')
 
-        for label, (opts, _) in self.known_try_arguments.iteritems():
+        for label, (opts, _) in self.known_try_arguments.items():
             if 'action' in opts and opts['action'] not in ('append', 'store',
                                                            'store_true', 'store_false'):
                 self.fatal('Try syntax does not support passing custom or store_const '
@@ -207,7 +207,7 @@ class TryToolsMixin(TransferMixin):
         # This is a pretty hacky way to echo arguments down to the harness.
         # Hopefully this can be improved once we have a configuration system
         # in tree for harnesses that relies less on a command line.
-        for arg, value in vars(args).iteritems():
+        for arg, value in vars(args).items():
             if value:
                 label = label_from_val(arg)
                 _, flavors = self.known_try_arguments[label]

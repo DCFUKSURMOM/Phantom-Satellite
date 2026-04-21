@@ -43,8 +43,8 @@ class TestGenerateBrowserSearch(unittest.TestCase):
 
     def test_valid_unicode(self):
         o = self._test_one('valid-zh-CN')
-        self.assertEquals(o['default'], '百度')
-        self.assertEquals(o['engines'], ['百度', 'Google'])
+        self.assertEqual(o['default'], '百度')
+        self.assertEqual(o['engines'], ['百度', 'Google'])
 
     def test_invalid_unicode(self):
         with self.assertRaises(UnicodeDecodeError):

@@ -4,10 +4,10 @@
 
 import os.path
 import os
-from ConfigParser import ConfigParser, NoSectionError, NoOptionError
-from urlparse import urlparse, urljoin
-from urllib import pathname2url, url2pathname
-from urllib2 import urlopen
+from configparser import ConfigParser, NoSectionError, NoOptionError
+from urllib.parse import urlparse, urljoin
+from urllib.request import pathname2url, url2pathname
+from urllib.request import urlopen
 from collections import defaultdict
 from compare_locales import util
 
@@ -58,7 +58,7 @@ class L10nConfigParser(object):
         filterurl = urljoin(self.inipath, 'filter.py')
         try:
             l = {}
-            execfile(url2pathname(urlparse(filterurl).path), {}, l)
+            exec(compile(open(url2pathname(urlparse(filterurl).path), "rb").read(), url2pathname(urlparse(filterurl).path), 'exec'), {}, l)
             if 'test' in l and callable(l['test']):
                 filters = [l['test']]
             else:
@@ -355,7 +355,7 @@ class EnumerateApp(object):
         code and an directory enumerator will be given.
         '''
         dirmap = dict(self.config.directories())
-        mods = dirmap.keys()
+        mods = list(dirmap.keys())
         mods.sort()
         for mod in mods:
             if self.reference == 'en-US':

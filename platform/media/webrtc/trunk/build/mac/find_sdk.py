@@ -20,7 +20,7 @@ from optparse import OptionParser
 
 def parse_version(version_str):
   """'10.5' => [10, 5]"""
-  return map(int, re.findall(r'(\d+)', version_str))
+  return list(map(int, re.findall(r'(\d+)', version_str)))
 
 
 def main():
@@ -40,8 +40,8 @@ def main():
                            stderr=subprocess.STDOUT)
     out, err = job.communicate()
     if job.returncode != 0:
-      print >>sys.stderr, out
-      print >>sys.stderr, err
+      print(out, file=sys.stderr)
+      print(err, file=sys.stderr)
       raise Exception(('Error %d running xcode-select, you might have to run '
                        '|sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer| '
                        'if you are using Xcode 4.') % job.returncode)
@@ -63,21 +63,19 @@ def main():
     best_sdk = ""
 
   if options.verify and best_sdk != min_sdk_version and not options.sdk_path:
-    print >>sys.stderr, ''
-    print >>sys.stderr, '                                           vvvvvvv'
-    print >>sys.stderr, ''
-    print >>sys.stderr, \
-        'This build requires the %s SDK, but it was not found on your system.' \
-        % min_sdk_version
-    print >>sys.stderr, \
-        'Either install it, or explicitly set mac_sdk in your GYP_DEFINES.'
-    print >>sys.stderr, ''
-    print >>sys.stderr, '                                           ^^^^^^^'
-    print >>sys.stderr, ''
+    print('', file=sys.stderr)
+    print('                                           vvvvvvv', file=sys.stderr)
+    print('', file=sys.stderr)
+    print('This build requires the %s SDK, but it was not found on your system.' \
+        % min_sdk_version, file=sys.stderr)
+    print('Either install it, or explicitly set mac_sdk in your GYP_DEFINES.', file=sys.stderr)
+    print('', file=sys.stderr)
+    print('                                           ^^^^^^^', file=sys.stderr)
+    print('', file=sys.stderr)
     return min_sdk_version
 
   return best_sdk
 
 
 if __name__ == '__main__':
-  print main()
+  print(main())

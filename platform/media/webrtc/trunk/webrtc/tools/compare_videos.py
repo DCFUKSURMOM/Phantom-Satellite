@@ -122,7 +122,7 @@ def main():
 
   shutil.rmtree(png_working_directory)
   if barcode_decoder.returncode != 0:
-    print 'Failed to run barcode decoder script.'
+    print('Failed to run barcode decoder script.')
     return 1
 
   # Run frame analyzer to compare the videos and print output.
@@ -139,7 +139,7 @@ def main():
                                     stdout=sys.stdout, stderr=sys.stderr)
   frame_analyzer.wait()
   if frame_analyzer.returncode != 0:
-    print 'Failed to run frame analyzer.'
+    print('Failed to run frame analyzer.')
     return 1
 
   return 0

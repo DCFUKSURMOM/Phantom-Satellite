@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import argparse
-import unstable
-import format as formatlog
-import logmerge
+from . import unstable
+from . import format as formatlog
+from . import logmerge
 
 
 def get_parser():
@@ -16,7 +16,7 @@ def get_parser():
 
     sub_parser = parser.add_subparsers(title='Subcommands')
 
-    for command, (parser_func, main_func) in commands.iteritems():
+    for command, (parser_func, main_func) in commands.items():
         parent = parser_func(False)
         command_parser = sub_parser.add_parser(command,
                                                description=parent.description,

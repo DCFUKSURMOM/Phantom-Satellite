@@ -693,7 +693,7 @@ class Scanner:
         # DOCUMENT-START:   ^ '---' (' '|'\n')
         if self.column == 0:
             if self.prefix(3) == '---'  \
-                    and self.peek(3) in '\0 \t\r\n\x85\u2028\u2029':
+                    and self.peek(3) in '\0 \t\r\n\x85\\u2028\\u2029':
                 return True
 
     def check_document_end(self):
@@ -701,13 +701,13 @@ class Scanner:
         # DOCUMENT-END:     ^ '...' (' '|'\n')
         if self.column == 0:
             if self.prefix(3) == '...'  \
-                    and self.peek(3) in '\0 \t\r\n\x85\u2028\u2029':
+                    and self.peek(3) in '\0 \t\r\n\x85\\u2028\\u2029':
                 return True
 
     def check_block_entry(self):
 
         # BLOCK-ENTRY:      '-' (' '|'\n')
-        return self.peek(1) in '\0 \t\r\n\x85\u2028\u2029'
+        return self.peek(1) in '\0 \t\r\n\x85\\u2028\\u2029'
 
     def check_key(self):
 
@@ -717,7 +717,7 @@ class Scanner:
 
         # KEY(block context):   '?' (' '|'\n')
         else:
-            return self.peek(1) in '\0 \t\r\n\x85\u2028\u2029'
+            return self.peek(1) in '\0 \t\r\n\x85\\u2028\\u2029'
 
     def check_value(self):
 
@@ -727,7 +727,7 @@ class Scanner:
 
         # VALUE(block context): ':' (' '|'\n')
         else:
-            return self.peek(1) in '\0 \t\r\n\x85\u2028\u2029'
+            return self.peek(1) in '\0 \t\r\n\x85\\u2028\\u2029'
 
     def check_plain(self):
 
@@ -744,8 +744,8 @@ class Scanner:
         # '-' character) because we want the flow context to be space
         # independent.
         ch = self.peek()
-        return ch not in '\0 \t\r\n\x85\u2028\u2029-?:,[]{}#&*!|>\'\"%@`'  \
-                or (self.peek(1) not in '\0 \t\r\n\x85\u2028\u2029'
+        return ch not in '\0 \t\r\n\x85\\u2028\\u2029-?:,[]{}#&*!|>\'\"%@`'  \
+                or (self.peek(1) not in '\0 \t\r\n\x85\\u2028\\u2029'
                         and (ch == '-' or (not self.flow_level and ch in '?:')))
 
     # Scanners.
@@ -770,14 +770,14 @@ class Scanner:
         # `unwind_indent` before issuing BLOCK-END.
         # Scanners for block, flow, and plain scalars need to be modified.
 
-        if self.index == 0 and self.peek() == '\uFEFF':
+        if self.index == 0 and self.peek() == '\\uFEFF':
             self.forward()
         found = False
         while not found:
             while self.peek() == ' ':
                 self.forward()
             if self.peek() == '#':
-                while self.peek() not in '\0\r\n\x85\u2028\u2029':
+                while self.peek() not in '\0\r\n\x85\\u2028\\u2029':
                     self.forward()
             if self.scan_line_break():
                 if not self.flow_level:
@@ -799,7 +799,7 @@ class Scanner:
             end_mark = self.get_mark()
         else:
             end_mark = self.get_mark()
-            while self.peek() not in '\0\r\n\x85\u2028\u2029':
+            while self.peek() not in '\0\r\n\x85\\u2028\\u2029':
                 self.forward()
         self.scan_directive_ignored_line(start_mark)
         return DirectiveToken(name, value, start_mark, end_mark)
@@ -819,7 +819,7 @@ class Scanner:
         value = self.prefix(length)
         self.forward(length)
         ch = self.peek()
-        if ch not in '\0 \r\n\x85\u2028\u2029':
+        if ch not in '\0 \r\n\x85\\u2028\\u2029':
             raise ScannerError("while scanning a directive", start_mark,
                     "expected alphabetic or numeric character, but found %r"
                     % ch, self.get_mark())
@@ -836,7 +836,7 @@ class Scanner:
                     self.get_mark())
         self.forward()
         minor = self.scan_yaml_directive_number(start_mark)
-        if self.peek() not in '\0 \r\n\x85\u2028\u2029':
+        if self.peek() not in '\0 \r\n\x85\\u2028\\u2029':
             raise ScannerError("while scanning a directive", start_mark,
                     "expected a digit or ' ', but found %r" % self.peek(),
                     self.get_mark())
@@ -878,7 +878,7 @@ class Scanner:
         # See the specification for details.
         value = self.scan_tag_uri('directive', start_mark)
         ch = self.peek()
-        if ch not in '\0 \r\n\x85\u2028\u2029':
+        if ch not in '\0 \r\n\x85\\u2028\\u2029':
             raise ScannerError("while scanning a directive", start_mark,
                     "expected ' ', but found %r" % ch, self.get_mark())
         return value
@@ -888,10 +888,10 @@ class Scanner:
         while self.peek() == ' ':
             self.forward()
         if self.peek() == '#':
-            while self.peek() not in '\0\r\n\x85\u2028\u2029':
+            while self.peek() not in '\0\r\n\x85\\u2028\\u2029':
                 self.forward()
         ch = self.peek()
-        if ch not in '\0\r\n\x85\u2028\u2029':
+        if ch not in '\0\r\n\x85\\u2028\\u2029':
             raise ScannerError("while scanning a directive", start_mark,
                     "expected a comment or a line break, but found %r"
                         % ch, self.get_mark())
@@ -926,7 +926,7 @@ class Scanner:
         value = self.prefix(length)
         self.forward(length)
         ch = self.peek()
-        if ch not in '\0 \t\r\n\x85\u2028\u2029?:,]}%@`':
+        if ch not in '\0 \t\r\n\x85\\u2028\\u2029?:,]}%@`':
             raise ScannerError("while scanning an %s" % name, start_mark,
                     "expected alphabetic or numeric character, but found %r"
                     % ch, self.get_mark())
@@ -946,14 +946,14 @@ class Scanner:
                         "expected '>', but found %r" % self.peek(),
                         self.get_mark())
             self.forward()
-        elif ch in '\0 \t\r\n\x85\u2028\u2029':
+        elif ch in '\0 \t\r\n\x85\\u2028\\u2029':
             handle = None
             suffix = '!'
             self.forward()
         else:
             length = 1
             use_handle = False
-            while ch not in '\0 \r\n\x85\u2028\u2029':
+            while ch not in '\0 \r\n\x85\\u2028\\u2029':
                 if ch == '!':
                     use_handle = True
                     break
@@ -967,7 +967,7 @@ class Scanner:
                 self.forward()
             suffix = self.scan_tag_uri('tag', start_mark)
         ch = self.peek()
-        if ch not in '\0 \r\n\x85\u2028\u2029':
+        if ch not in '\0 \r\n\x85\\u2028\\u2029':
             raise ScannerError("while scanning a tag", start_mark,
                     "expected ' ', but found %r" % ch, self.get_mark())
         value = (handle, suffix)
@@ -1007,7 +1007,7 @@ class Scanner:
             chunks.extend(breaks)
             leading_non_space = self.peek() not in ' \t'
             length = 0
-            while self.peek(length) not in '\0\r\n\x85\u2028\u2029':
+            while self.peek(length) not in '\0\r\n\x85\\u2028\\u2029':
                 length += 1
             chunks.append(self.prefix(length))
             self.forward(length)
@@ -1084,7 +1084,7 @@ class Scanner:
                     chomping = False
                 self.forward()
         ch = self.peek()
-        if ch not in '\0 \r\n\x85\u2028\u2029':
+        if ch not in '\0 \r\n\x85\\u2028\\u2029':
             raise ScannerError("while scanning a block scalar", start_mark,
                     "expected chomping or indentation indicators, but found %r"
                     % ch, self.get_mark())
@@ -1095,10 +1095,10 @@ class Scanner:
         while self.peek() == ' ':
             self.forward()
         if self.peek() == '#':
-            while self.peek() not in '\0\r\n\x85\u2028\u2029':
+            while self.peek() not in '\0\r\n\x85\\u2028\\u2029':
                 self.forward()
         ch = self.peek()
-        if ch not in '\0\r\n\x85\u2028\u2029':
+        if ch not in '\0\r\n\x85\\u2028\\u2029':
             raise ScannerError("while scanning a block scalar", start_mark,
                     "expected a comment or a line break, but found %r" % ch,
                     self.get_mark())
@@ -1109,7 +1109,7 @@ class Scanner:
         chunks = []
         max_indent = 0
         end_mark = self.get_mark()
-        while self.peek() in ' \r\n\x85\u2028\u2029':
+        while self.peek() in ' \r\n\x85\\u2028\\u2029':
             if self.peek() != ' ':
                 chunks.append(self.scan_line_break())
                 end_mark = self.get_mark()
@@ -1125,7 +1125,7 @@ class Scanner:
         end_mark = self.get_mark()
         while self.column < indent and self.peek() == ' ':
             self.forward()
-        while self.peek() in '\r\n\x85\u2028\u2029':
+        while self.peek() in '\r\n\x85\\u2028\\u2029':
             chunks.append(self.scan_line_break())
             end_mark = self.get_mark()
             while self.column < indent and self.peek() == ' ':
@@ -1172,8 +1172,8 @@ class Scanner:
         '\\':   '\\',
         'N':    '\x85',
         '_':    '\xA0',
-        'L':    '\u2028',
-        'P':    '\u2029',
+        'L':    '\\u2028',
+        'P':    '\\u2029',
     }
 
     ESCAPE_CODES = {
@@ -1187,7 +1187,7 @@ class Scanner:
         chunks = []
         while True:
             length = 0
-            while self.peek(length) not in '\'\"\\\0 \t\r\n\x85\u2028\u2029':
+            while self.peek(length) not in '\'\"\\\0 \t\r\n\x85\\u2028\\u2029':
                 length += 1
             if length:
                 chunks.append(self.prefix(length))
@@ -1216,7 +1216,7 @@ class Scanner:
                     code = int(self.prefix(length), 16)
                     chunks.append(chr(code))
                     self.forward(length)
-                elif ch in '\r\n\x85\u2028\u2029':
+                elif ch in '\r\n\x85\\u2028\\u2029':
                     self.scan_line_break()
                     chunks.extend(self.scan_flow_scalar_breaks(double, start_mark))
                 else:
@@ -1237,7 +1237,7 @@ class Scanner:
         if ch == '\0':
             raise ScannerError("while scanning a quoted scalar", start_mark,
                     "found unexpected end of stream", self.get_mark())
-        elif ch in '\r\n\x85\u2028\u2029':
+        elif ch in '\r\n\x85\\u2028\\u2029':
             line_break = self.scan_line_break()
             breaks = self.scan_flow_scalar_breaks(double, start_mark)
             if line_break != '\n':
@@ -1257,12 +1257,12 @@ class Scanner:
             # separators.
             prefix = self.prefix(3)
             if (prefix == '---' or prefix == '...')   \
-                    and self.peek(3) in '\0 \t\r\n\x85\u2028\u2029':
+                    and self.peek(3) in '\0 \t\r\n\x85\\u2028\\u2029':
                 raise ScannerError("while scanning a quoted scalar", start_mark,
                         "found unexpected document separator", self.get_mark())
             while self.peek() in ' \t':
                 self.forward()
-            if self.peek() in '\r\n\x85\u2028\u2029':
+            if self.peek() in '\r\n\x85\\u2028\\u2029':
                 chunks.append(self.scan_line_break())
             else:
                 return chunks
@@ -1288,15 +1288,15 @@ class Scanner:
                 break
             while True:
                 ch = self.peek(length)
-                if ch in '\0 \t\r\n\x85\u2028\u2029'    \
+                if ch in '\0 \t\r\n\x85\\u2028\\u2029'    \
                         or (not self.flow_level and ch == ':' and
-                                self.peek(length+1) in '\0 \t\r\n\x85\u2028\u2029') \
+                                self.peek(length+1) in '\0 \t\r\n\x85\\u2028\\u2029') \
                         or (self.flow_level and ch in ',:?[]{}'):
                     break
                 length += 1
             # It's not clear what we should do with ':' in the flow context.
             if (self.flow_level and ch == ':'
-                    and self.peek(length+1) not in '\0 \t\r\n\x85\u2028\u2029,[]{}'):
+                    and self.peek(length+1) not in '\0 \t\r\n\x85\\u2028\\u2029,[]{}'):
                 self.forward(length)
                 raise ScannerError("while scanning a plain scalar", start_mark,
                     "found unexpected ':'", self.get_mark(),
@@ -1325,22 +1325,22 @@ class Scanner:
         whitespaces = self.prefix(length)
         self.forward(length)
         ch = self.peek()
-        if ch in '\r\n\x85\u2028\u2029':
+        if ch in '\r\n\x85\\u2028\\u2029':
             line_break = self.scan_line_break()
             self.allow_simple_key = True
             prefix = self.prefix(3)
             if (prefix == '---' or prefix == '...')   \
-                    and self.peek(3) in '\0 \t\r\n\x85\u2028\u2029':
+                    and self.peek(3) in '\0 \t\r\n\x85\\u2028\\u2029':
                 return
             breaks = []
-            while self.peek() in ' \r\n\x85\u2028\u2029':
+            while self.peek() in ' \r\n\x85\\u2028\\u2029':
                 if self.peek() == ' ':
                     self.forward()
                 else:
                     breaks.append(self.scan_line_break())
                     prefix = self.prefix(3)
                     if (prefix == '---' or prefix == '...')   \
-                            and self.peek(3) in '\0 \t\r\n\x85\u2028\u2029':
+                            and self.peek(3) in '\0 \t\r\n\x85\\u2028\\u2029':
                         return
             if line_break != '\n':
                 chunks.append(line_break)
@@ -1435,7 +1435,7 @@ class Scanner:
             else:
                 self.forward()
             return '\n'
-        elif ch in '\u2028\u2029':
+        elif ch in '\\u2028\\u2029':
             self.forward()
             return ch
         return ''

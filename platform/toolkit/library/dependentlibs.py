@@ -18,6 +18,7 @@ from mozpack.executables import (
     MACHO,
 )
 from buildconfig import substs
+from locale import getpreferredencoding
 
 def dependentlibs_dumpbin(lib):
     '''Returns the list of dependencies declared in the given DLL'''
@@ -28,8 +29,9 @@ def dependentlibs_dumpbin(lib):
         return dependentlibs_mingw_objdump(lib)
     deps = []
     for line in proc.stdout:
+        line = line.decode(getpreferredencoding(False))
         # Each line containing an imported library name starts with 4 spaces
-        match = re.match('    (\S+)', line)
+        match = re.match(r'    (\S+)', line)
         if match:
              deps.append(match.group(1))
         elif len(deps):
@@ -44,7 +46,8 @@ def dependentlibs_mingw_objdump(lib):
     proc = subprocess.Popen(['objdump', '-x', lib], stdout = subprocess.PIPE)
     deps = []
     for line in proc.stdout:
-        match = re.match('\tDLL Name: (\S+)', line)
+        line = line.decode(getpreferredencoding(False))
+        match = re.match(r'\tDLL Name: (\S+)', line)
         if match:
             deps.append(match.group(1))
     proc.wait()
@@ -55,6 +58,7 @@ def dependentlibs_elfdump(lib):
     proc = subprocess.Popen(['elfdump', '-N', '.dynamic', lib], stdout = subprocess.PIPE)
     deps = []
     for line in proc.stdout:
+        line = line.decode(getpreferredencoding(False))
         # Each line has the following format:
         # index  TYPE            tag             value
         tmp = line
@@ -72,6 +76,7 @@ def dependentlibs_readelf(lib):
     proc = subprocess.Popen([substs.get('TOOLCHAIN_PREFIX', '') + 'readelf', '-d', lib], stdout = subprocess.PIPE)
     deps = []
     for line in proc.stdout:
+        line = line.decode(getpreferredencoding(False))
         # Each line has the following format:
         #  tag (TYPE)          value
         # or with BSD readelf:
@@ -83,7 +88,7 @@ def dependentlibs_readelf(lib):
             # 0x00000001 (NEEDED)             Shared library: [libname]
             # or with BSD readelf:
             # 0x00000001 NEEDED               Shared library: [libname]
-            match = re.search('\[(.*)\]', tmp[3])
+            match = re.search(r'\[(.*)\]', tmp[3])
             if match:
                 deps.append(match.group(1))
     proc.wait()
@@ -95,6 +100,7 @@ def dependentlibs_otool(lib):
     deps= []
     cmd = None
     for line in proc.stdout:
+        line = line.decode(getpreferredencoding(False))
         # otool -l output contains many different things. The interesting data
         # is under "Load command n" sections, with the content:
         #           cmd LC_LOAD_DYLIB
@@ -149,7 +155,7 @@ def gen_list(output, lib):
 
     deps = dependentlibs(lib, libpaths, func)
     deps[lib] = mozpath.join(libpaths[0], lib)
-    output.write('\n'.join(deps.keys()) + '\n')
+    output.write('\n'.join(list(deps.keys())) + '\n')
     return set(deps.values())
 
 def main():

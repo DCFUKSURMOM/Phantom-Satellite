@@ -48,7 +48,7 @@ print (" *")
 print (" * on file with this header:")
 print (" *")
 for l in header:
-	print (" * %s" % (l.strip()))
+	print((" * %s" % (l.strip())))
 print (" */")
 print ()
 print ("#ifndef HB_UNICODE_EMOJI_TABLE_HH")
@@ -57,7 +57,7 @@ print ()
 print ('#include "hb-unicode.hh"')
 print ()
 
-for typ, s in ranges.items():
+for typ, s in list(ranges.items()):
 	if typ != "Extended_Pictographic": continue
 
 	arr = dict()

@@ -33,9 +33,9 @@ class GroundTruth(MotionEST):
     if gt_path:
       with open(gt_path) as gt_file:
         lines = gt_file.readlines()
-        for i in xrange(len(lines)):
+        for i in range(len(lines)):
           info = lines[i].split(';')
-          for j in xrange(len(info)):
+          for j in range(len(info)):
             x, y = info[j].split(',')
             #-, - stands for nothing
             if x == '-' or y == '-':

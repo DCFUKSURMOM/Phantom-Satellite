@@ -54,13 +54,13 @@ import threading
 import shelve
 from optparse import OptionParser, OptionValueError
 
-import SocketServer
-import BaseHTTPServer
+import socketserver
+import http.server
 import socket
-import httplib
-from urlparse import urlsplit, urlunsplit
+import http.client
+from urllib.parse import urlsplit, urlunsplit
 
-class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
   server_version = "TalosProxy/" + __version__
   protocol_version = "HTTP/1.1"
 
@@ -69,16 +69,16 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if content:
       try:
         self.wfile.write(content)
-      except socket.error, e:
+      except socket.error as e:
         if options.verbose:
-          print "Got socket error %s" % e
+          print("Got socket error %s" % e)
     #self.close_connection = 1
   def do_HEAD(self):
     self.send_head()
 
   def getHeaders(self):
     h = {}
-    for name in self.headers.keys():
+    for name in list(self.headers.keys()):
       h[name] = self.headers[name]
 
     return h
@@ -108,8 +108,8 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return None
       else:
         if options.verbose:
-          print "Object %s was not in the cache" % self.path
-        conn = httplib.HTTPConnection(o.netloc)
+          print("Object %s was not in the cache" % self.path)
+        conn = http.client.HTTPConnection(o.netloc)
         conn.request("GET", reqstring, headers=headers)
         res = conn.getresponse()
 
@@ -133,18 +133,18 @@ class HTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       if "Content-Length" not in headers:
         self.send_header("Content-Length", str(len(content)))
       self.end_headers()
-    except socket.error, e:
+    except socket.error as e:
       if options.verbose:
-        print "Got socket error %s" % e
+        print("Got socket error %s" % e)
       return None
     return content
   def log_message(self, format, *args):
     if options.verbose:
-      BaseHTTPServer.BaseHTTPRequestHandler.log_message(self, format, *args)
+      http.server.BaseHTTPRequestHandler.log_message(self, format, *args)
 
-class HTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
   def __init__(self, address, handler):
-    BaseHTTPServer.HTTPServer.__init__(self, address, handler)
+    http.server.HTTPServer.__init__(self, address, handler)
 
 class Cache(object):
   """Multithreaded cache uses the shelve module to store pages"""
@@ -176,7 +176,7 @@ class Cache(object):
     self.sem.acquire()
     self.semlock.release()
     try:
-      if not self.db.has_key(key):
+      if key not in self.db:
         return None
       # returns status, headers, content
       return self.db[key]
@@ -264,6 +264,6 @@ if __name__ == '__main__':
     while 1: time.sleep(1)
   except KeyboardInterrupt:
     if options.verbose:
-      print "Quittin' time..."
+      print("Quittin' time...")
 
 __all__ = ['run_proxy', 'configure_proxy']

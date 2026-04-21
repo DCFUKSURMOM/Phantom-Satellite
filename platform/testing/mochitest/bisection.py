@@ -162,7 +162,7 @@ class Bisect(object):
             # passed.
             if len(self.expectedError) == 0:
                 return -1
-            options.bisectChunk = self.expectedError.keys()[0]
+            options.bisectChunk = list(self.expectedError.keys())[0]
             self.summary.append(
                 "\tFound Error in test: %s" %
                 options.bisectChunk)
@@ -275,6 +275,6 @@ class Bisect(object):
 
     def print_summary(self):
         "This method is used to print the recorded summary."
-        print "Bisection summary:"
+        print("Bisection summary:")
         for line in self.summary:
-            print line
+            print(line)

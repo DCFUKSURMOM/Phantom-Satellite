@@ -71,7 +71,7 @@ def print_has_arabic_joining (scripts, joining_uu):
 	print ("  {")
 
 	for script in sorted ({scripts[u] for u in joining_uu if scripts[u] not in {'Common', 'Inherited'}}):
-		print ("    case HB_SCRIPT_{}:".format (script.upper ()))
+		print(("    case HB_SCRIPT_{}:".format (script.upper ())))
 
 	print ("      return true;")
 	print ()
@@ -91,7 +91,7 @@ print (" * on files with these headers:")
 print (" *")
 for h in headers:
 	for l in h:
-		print (" * %s" % (l.strip ()))
+		print((" * %s" % (l.strip ())))
 print (" */")
 print ()
 print ("#ifndef HB_OT_SHAPER_ARABIC_JOINING_LIST_HH")

@@ -80,7 +80,7 @@ class Manifest(object):
     def load_and_parse(self):
         try:
             manifest = json.load(open(self.file.fullpath))
-        except (ValueError, IOError), e:
+        except (ValueError, IOError) as e:
             if self.watcher:
                 self.watcher.notify('error', self.file, str(e))
             return False
@@ -96,11 +96,11 @@ class Manifest(object):
         rv = defaultdict(dict)
         localizable = manifest_fragment.pop('locales', {})
         if localizable:
-            for locale, keyvalue in localizable.iteritems():
-                for key, value in keyvalue.iteritems():
+            for locale, keyvalue in localizable.items():
+                for key, value in keyvalue.items():
                     key = '.'.join(['locales', 'AB_CD', key])
                     rv[locale][key] = value
-        for key, sub_manifest in manifest_fragment.iteritems():
+        for key, sub_manifest in manifest_fragment.items():
             if not isinstance(sub_manifest, dict):
                 continue
             subdict = self.extract_manifest_strings(sub_manifest)
@@ -108,7 +108,7 @@ class Manifest(object):
                 for locale, keyvalue in subdict:
                     rv[locale].update((key + '.' + subkey, value)
                                       for subkey, value
-                                      in keyvalue.iteritems())
+                                      in keyvalue.items())
         return rv
 
     def compare(self, locales):
@@ -166,7 +166,7 @@ class FileComparison(object):
         '''Get the locales present in the webapp
         '''
         self.files()
-        locales = self._files.keys()
+        locales = list(self._files.keys())
         locales.sort()
         return locales
 

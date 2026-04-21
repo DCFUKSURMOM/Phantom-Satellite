@@ -46,7 +46,7 @@ def get_local_dirname(dirname):
             return LOCAL_DIRNAME_SUBSTITUTIONS[variable] + dirname[sep_idx:]
     print(
         "Error: Local directory must be absolute, or relative to one of: " +
-        (", ".join("$%s" % v for v in LOCAL_DIRNAME_SUBSTITUTIONS.keys())),
+        (", ".join("$%s" % v for v in list(LOCAL_DIRNAME_SUBSTITUTIONS.keys()))),
         file=sys.stderr
     )
     exit(1)
@@ -76,13 +76,13 @@ def concat_dicts(*dicts):
 def repeated_execution_request_looper(request):
     # dictionary of lists to list of dictionaries:
     ld = [
-        dict(zip(request.repeat_with, t))
-        for t in zip(*request.repeat_with.values())
+        dict(list(zip(request.repeat_with, t)))
+        for t in zip(*list(request.repeat_with.values()))
     ]
     if not ld:
         # No special options given in repeat_with
         ld = [{} for _ in range(len(request.input_files))]
-    return zip(ld, request.specific_dep_files, request.input_files, request.output_files)
+    return list(zip(ld, request.specific_dep_files, request.input_files, request.output_files))
 
 
 def format_single_request_command(request, cmd_template, common_vars):

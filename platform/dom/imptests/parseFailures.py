@@ -58,7 +58,7 @@ def writeFiles(files):
         dirp, leaf = path.rsplit('/', 1)
         pathmap.setdefault(dirp, []).append(leaf)
 
-    for k, v in pathmap.items():
+    for k, v in list(pathmap.items()):
         with open(k + '/mochitest.ini', 'w') as fh:
             result = writeBuildFiles.substManifest('parseFailures.py', v, [])
             fh.write(result)

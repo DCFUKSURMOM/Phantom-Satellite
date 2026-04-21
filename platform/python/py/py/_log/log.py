@@ -92,7 +92,7 @@ class KeywordMapper:
         """ set a consumer for a set of keywords. """
         # normalize to tuples
         if isinstance(keywords, str):
-            keywords = tuple(filter(None, keywords.split()))
+            keywords = tuple([_f for _f in keywords.split() if _f])
         elif hasattr(keywords, '_keywords'):
             keywords = keywords._keywords
         elif not isinstance(keywords, tuple):

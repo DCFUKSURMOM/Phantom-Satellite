@@ -103,7 +103,7 @@ def main(argv=None):
 
         # Run each affected file through cpplint
         lint_failed = False
-        for filename, affected_lines in file_affected_line_map.items():
+        for filename, affected_lines in list(file_affected_line_map.items()):
             if filename.split(".")[-1] not in ("c", "h", "cc"):
                 continue
             if filename.startswith("third_party"):

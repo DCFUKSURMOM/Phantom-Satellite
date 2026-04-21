@@ -123,11 +123,11 @@ def main():
     tuple_list = get_all_test_tuples()
     f = 'report'
     if args.platform:
-        tuple_list = filter(lambda x: x[4] == args.platform, tuple_list)
+        tuple_list = [x for x in tuple_list if x[4] == args.platform]
         f += '-%s' % args.platform
 
     if args.test:
-        tuple_list = filter(lambda x: x[3] == args.test, tuple_list)
+        tuple_list = [x for x in tuple_list if x[3] == args.test]
         f += '-%s' % args.test
 
     f += '-%s' % args.mode

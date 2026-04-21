@@ -7,8 +7,8 @@
 
 import mozunit
 import unittest
-import xpidl
-import header
+from . import xpidl
+from . import header
 
 
 class TestParser(unittest.TestCase):

@@ -2,10 +2,10 @@ import pymake.data, pymake.parser, pymake.parserdata, pymake.functions
 import unittest
 import logging
 
-from cStringIO import StringIO
+from io import StringIO
 
 def multitest(cls):
-    for name in cls.testdata.iterkeys():
+    for name in cls.testdata.keys():
         def m(self, name=name):
             return self.runSingle(*self.testdata[name])
 
@@ -134,7 +134,7 @@ class IterTest(TestBase):
         self.assertEqual(actual, expected)
 
         if ifunc == pymake.parser.itermakefilechars:
-            print "testing %r" % expected
+            print("testing %r" % expected)
             self.assertEqual(pymake.parser.flattenmakesyntax(d, 0), expected)
 
 multitest(IterTest)
@@ -207,7 +207,7 @@ class MakeSyntaxTest(TestBase):
     def compareRecursive(self, actual, expected, path):
         self.assertEqual(len(actual), len(expected),
                          "compareRecursive: %s %r" % (path, actual))
-        for i in xrange(0, len(actual)):
+        for i in range(0, len(actual)):
             ipath = path + [i]
 
             a, isfunc = actual[i]
@@ -217,7 +217,7 @@ class MakeSyntaxTest(TestBase):
             else:
                 self.assertEqual(type(a), getattr(pymake.functions, e['type']),
                                  "compareRecursive: %s" % (ipath,))
-                for k, v in e.iteritems():
+                for k, v in e.items():
                     if k == 'type':
                         pass
                     elif k[0] == '[':
@@ -264,7 +264,7 @@ class VariableTest(TestBase):
 
         m = pymake.data.Makefile()
         stmts.execute(m)
-        for k, v in self.expected.iteritems():
+        for k, v in self.expected.items():
             flavor, source, val = m.variables.get(k)
             if val is None:
                 self.assertEqual(val, v, 'variable named %s' % k)

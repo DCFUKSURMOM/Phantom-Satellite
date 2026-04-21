@@ -155,7 +155,7 @@ class TaskGraphGenerator(object):
         # in post-order
         kinds = {kind.name: kind for kind in self._load_kinds()}
         edges = set()
-        for kind in kinds.itervalues():
+        for kind in kinds.values():
             for dep in kind.config.get('kind-dependencies', []):
                 edges.add((kind.name, dep, 'kind-dependency'))
         kind_graph = Graph(set(kinds), edges)
@@ -211,7 +211,7 @@ class TaskGraphGenerator(object):
     def _run_until(self, name):
         while name not in self._run_results:
             try:
-                k, v = self._run.next()
+                k, v = next(self._run)
             except StopIteration:
                 raise AttributeError("No such run result {}".format(name))
             self._run_results[k] = v

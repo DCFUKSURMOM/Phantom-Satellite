@@ -566,7 +566,7 @@ class Constructor(SafeConstructor):
                 instance.__dict__.update(state)
             elif state:
                 slotstate.update(state)
-            for key, value in slotstate.items():
+            for key, value in list(slotstate.items()):
                 setattr(object, key, value)
 
     def construct_python_object(self, suffix, node):

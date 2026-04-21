@@ -18,11 +18,11 @@ def patch_msbuild():
   backup_path = source_path + ".backup"
   if not os.path.exists(backup_path):
     try:
-      print "Backing up %s..." % source_path
+      print("Backing up %s..." % source_path)
       shutil.copyfile(source_path, backup_path)
     except IOError:
-      print "Could not back up %s to %s. Run as Administrator?" % (
-          source_path, backup_path)
+      print("Could not back up %s to %s. Run as Administrator?" % (
+          source_path, backup_path))
       return 1
 
   source = open(source_path).read()
@@ -35,7 +35,7 @@ def patch_msbuild():
 
   if result != source:
     open(source_path, "w").write(result)
-    print "Patched %s." % source_path
+    print("Patched %s." % source_path)
   return 0
 
 

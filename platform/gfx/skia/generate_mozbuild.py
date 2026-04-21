@@ -166,7 +166,7 @@ def generate_platform_sources():
 
   for plat in platforms:
     if os.system("cd skia && GYP_GENERATORS=dump_mozbuild ./gyp_skia -D OS=%s -D host_os=linux gyp/skia_lib.gyp" % plat) != 0:
-      print 'Failed to generate sources for ' + plat
+      print('Failed to generate sources for ' + plat)
       continue
 
 
@@ -174,7 +174,7 @@ def generate_platform_sources():
     sources[plat] = set(v.replace('../', 'skia/') for v in json.load(f));
     f.close()
 
-  return dict(sources.items() + generate_opt_sources().items())
+  return dict(list(sources.items()) + list(generate_opt_sources().items()))
 
 
 def generate_separated_sources(platform_sources):
@@ -281,7 +281,7 @@ def generate_separated_sources(platform_sources):
     'gpu': set()
   })
 
-  for plat in platform_sources.keys():
+  for plat in list(platform_sources.keys()):
     for value in platform_sources[plat]:
       if isblacklisted(value):
         continue
@@ -308,11 +308,11 @@ def generate_separated_sources(platform_sources):
       separated[key].add(value)
 
   if os.system("cd skia && GYP_GENERATORS=dump_mozbuild ./gyp_skia -D OS=linux -D host_os=linux -R pdf gyp/pdf.gyp") != 0:
-    print 'Failed to generate sources for Skia PDF'
+    print('Failed to generate sources for Skia PDF')
   else:
     f = open('skia/sources.json');
     separated['pdf'].add('skia/src/core/SkMD5.cpp');
-    separated['pdf'].update(filter(lambda x: 'pdf' in x, set(v.replace('../', 'skia/') for v in json.load(f))));
+    separated['pdf'].update([x for x in set(v.replace('../', 'skia/') for v in json.load(f)) if 'pdf' in x]);
     f.close()
 
   return separated
@@ -479,7 +479,7 @@ def write_mozbuild(sources):
 
   f.close()
 
-  print 'Wrote ' + filename
+  print('Wrote ' + filename)
 
 def main():
   platform_sources = generate_platform_sources()

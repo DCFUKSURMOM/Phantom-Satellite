@@ -37,7 +37,7 @@ def get_range_length(range, debug_ranges):
        given offset.'''
     length = 0
     for line in debug_ranges.splitlines():
-        m = re.match('\s*([0-9a-fA-F]+)\s+([0-9a-fA-F]+)\s+([0-9a-fA-F]+)', line)
+        m = re.match(r'\s*([0-9a-fA-F]+)\s+([0-9a-fA-F]+)\s+([0-9a-fA-F]+)', line)
         if m and int(m.group(1), 16) == range:
             length += 1
     return length
@@ -45,7 +45,7 @@ def get_range_length(range, debug_ranges):
 def main(bin, compilation_unit):
     p = subprocess.Popen(['objdump', '-W', bin], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     (out, err) = p.communicate()
-    sections = re.split('\n(Contents of the|The section) ', out)
+    sections = re.split(r'\n(Contents of the|The section) ', out)
     debug_info = [s for s in sections if s.startswith('.debug_info')]
     debug_ranges = [s for s in sections if s.startswith('.debug_ranges')]
     if not debug_ranges or not debug_info:
@@ -59,4 +59,4 @@ def main(bin, compilation_unit):
 
 
 if __name__ == '__main__':
-    print main(*sys.argv[1:])
+    print(main(*sys.argv[1:]))

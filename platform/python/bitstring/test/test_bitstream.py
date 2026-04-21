@@ -2493,7 +2493,7 @@ class Split(unittest.TestCase):
         s = pack('<2h', 1, 2)
         a, b = s.unpack('<2h')
         self.assertEqual((a, b), (1, 2))
-        s = pack('<100q', *range(100))
+        s = pack('<100q', *list(range(100)))
         self.assertEqual(s.len, 100 * 64)
         self.assertEqual(s[44*64:45*64].uintle, 44)
         s = pack('@L0B2h', 5, 5, 5)
@@ -2875,9 +2875,9 @@ class Set(unittest.TestCase):
 
     def testSetList(self):
         a = BitStream(length=18)
-        a.set(True, range(18))
+        a.set(True, list(range(18)))
         self.assertEqual(a.int, -1)
-        a.set(False, range(18))
+        a.set(False, list(range(18)))
         self.assertEqual(a.int, 0)
 
     def testUnset(self):
@@ -2907,7 +2907,7 @@ class Set(unittest.TestCase):
 class Invert(unittest.TestCase):
     def testInvertBits(self):
         a = BitStream('0b111000')
-        a.invert(range(a.len))
+        a.invert(list(range(a.len)))
         self.assertEqual(a, '0b000111')
         a.invert([0, 1, -1])
         self.assertEqual(a, '0b110110')
@@ -3456,8 +3456,8 @@ class Bugs(unittest.TestCase):
         self.assertEqual(s.len, 17)
 
     def testInitFromIterable(self):
-        self.assertTrue(isinstance(range(10), collections.Iterable))
-        s = ConstBitStream(range(12))
+        self.assertTrue(isinstance(list(range(10)), collections.Iterable))
+        s = ConstBitStream(list(range(12)))
         self.assertEqual(s, '0x7ff')
 
     def testFunctionNegativeIndices(self):
@@ -3554,7 +3554,7 @@ class Bugs(unittest.TestCase):
         self.assertRaises(ValueError, a.rol, 5, start=-4, end=-6)
 
     def testByteSwapInt(self):
-        s = pack('5*uintle:16', *range(10, 15))
+        s = pack('5*uintle:16', *list(range(10, 15)))
         self.assertEqual(list(range(10, 15)), s.unpack('5*uintle:16'))
         swaps = s.byteswap(2)
         self.assertEqual(list(range(10, 15)), s.unpack('5*uintbe:16'))
@@ -3588,7 +3588,7 @@ class Bugs(unittest.TestCase):
 
     def testByteSwapIterable(self):
         s = BitStream('0x0011223344556677')
-        swaps = s.byteswap(range(1, 4), repeat=False)
+        swaps = s.byteswap(list(range(1, 4)), repeat=False)
         self.assertEqual(swaps, 1)
         self.assertEqual(s, '0x0022115544336677')
         swaps = s.byteswap([2], start=8)
@@ -3628,7 +3628,7 @@ class Bugs(unittest.TestCase):
     def testBracketTokens(self):
         s = BitStream('3*(0x0, 0b1)')
         self.assertEqual(s, '0x0, 0b1, 0x0, 0b1, 0x0, 0b1')
-        s = pack('2*(uint:12, 3*(7, 6))', *range(3, 17))
+        s = pack('2*(uint:12, 3*(7, 6))', *list(range(3, 17)))
         a = s.unpack('12, 7, 6, 7, 6, 7, 6, 12, 7, 6, 7, 6, 7, 6')
         self.assertEqual(a, list(range(3, 17)))
         b = s.unpack('2*(12,3*(7,6))')

@@ -8,10 +8,10 @@ import copy
 import logging
 import multiprocessing
 
-from python_test_caller import CallPythonTest
-from run_java_tests import FatalTestException
-import sharded_tests_queue
-from test_result import TestResults
+from .python_test_caller import CallPythonTest
+from .run_java_tests import FatalTestException
+from . import sharded_tests_queue
+from .test_result import TestResults
 
 
 def SetTestsContainer(tests_container):
@@ -123,7 +123,7 @@ class PythonTestSharder(object):
     all_passed = []
     test_results = TestResults()
     tests_to_run = self.tests
-    for retry in xrange(self.retries):
+    for retry in range(self.retries):
       logging.warning('Try %d of %d', retry + 1, self.retries)
       self._SetupSharding(self.tests)
       test_runners = self._MakeTestRunners(self.attached_devices)
@@ -197,7 +197,7 @@ class PythonTestSharder(object):
       A list of test objects which correspond to test names found in
       failed_tests, or an empty list if there is no correspondence.
     """
-    failed_test_names = map(lambda t: t.test_name, failed_tests)
+    failed_test_names = [t.test_name for t in failed_tests]
     tests_to_retry = [t for t in available_tests
                       if t.qualified_name in failed_test_names]
     return tests_to_retry

@@ -5,7 +5,7 @@
 '''Mixins for parser tests.
 '''
 
-from itertools import izip_longest
+from itertools import zip_longest
 from pkg_resources import resource_string
 import re
 
@@ -39,7 +39,7 @@ class ParserTestMixin():
         '''
         self.parser.readContents(content)
         entities = [entity for entity in self.parser]
-        for entity, ref in izip_longest(entities, refs):
+        for entity, ref in zip_longest(entities, refs):
             self.assertTrue(entity, 'excess reference entity')
             self.assertTrue(ref, 'excess parsed entity')
             self.assertEqual(entity.val, ref[1])

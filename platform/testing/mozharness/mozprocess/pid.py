@@ -35,7 +35,7 @@ def ps(arg=psarg):
             header = line.split()
             continue
         split = line.split(None, len(header)-1)
-        process_dict = dict(zip(header, split))
+        process_dict = dict(list(zip(header, split)))
         retval.append(process_dict)
     return retval
 
@@ -75,7 +75,7 @@ def get_pids(name):
 
     if mozinfo.isWin:
         # use the windows-specific implementation
-        import wpk
+        from . import wpk
         return wpk.get_pids(name)
     else:
         return [pid for pid,_ in running_processes(name)]
@@ -85,4 +85,4 @@ if __name__ == '__main__':
     for i in sys.argv[1:]:
         pids.update(get_pids(i))
     for i in sorted(pids):
-        print i
+        print(i)

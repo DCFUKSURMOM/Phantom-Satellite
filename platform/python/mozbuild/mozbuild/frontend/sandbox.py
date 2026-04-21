@@ -22,6 +22,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 import sys
 import weakref
+import functools
 
 from mozbuild.util import (
     exec_,
@@ -39,7 +40,9 @@ def alphabetical_sorted(iterable, cmp=None, key=lambda x: x.lower(),
     """sorted() replacement for the sandbox, ordering alphabetically by
     default.
     """
-    return sorted(iterable, cmp, key, reverse)
+    if cmp is not None:
+        key = functools.cmp_to_key(cmp)
+    return sorted(iterable, key=key, reverse=reverse)
 
 
 class SandboxError(Exception):
@@ -116,9 +119,9 @@ class Sandbox(dict):
         """Initialize a Sandbox ready for execution.
         """
         self._builtins = ReadOnlyDict(
-            (builtins or self.BUILTINS).viewitems() |
+            (builtins or self.BUILTINS).items() |
             {b: __builtins__[b] for b in ('__build_class__',)
-             if b in __builtins__}.viewitems())
+             if b in __builtins__}.items())
         dict.__setitem__(self, '__builtins__', self._builtins)
 
         assert isinstance(self._builtins, ReadOnlyDict)
@@ -153,7 +156,11 @@ class Sandbox(dict):
         assert os.path.isabs(path)
 
         try:
-            source = self._finder.get(path).read()
+            raw = self._finder.get(path).read()
+            if isinstance(raw, bytes):
+                source = raw.decode('utf-8', errors='replace')
+            else:
+                source = raw
         except Exception as e:
             raise SandboxLoadError(self._context.source_stack,
                 sys.exc_info()[2], read_error=path)

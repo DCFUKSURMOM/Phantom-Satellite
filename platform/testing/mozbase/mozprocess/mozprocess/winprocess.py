@@ -39,7 +39,7 @@ from __future__ import absolute_import, unicode_literals
 import sys
 import subprocess
 
-from ctypes import c_void_p, POINTER, sizeof, Structure, windll, WinError, WINFUNCTYPE, c_ulong
+from ctypes import cast, create_unicode_buffer, c_ulong, c_void_p, POINTER, sizeof, Structure, windll, WinError, WINFUNCTYPE
 from ctypes.wintypes import BOOL, BYTE, DWORD, HANDLE, LPCWSTR, LPWSTR, UINT, WORD
 from .qijo import QueryInformationJobObject
 
@@ -151,14 +151,14 @@ class EnvironmentBlock:
         else:
             values = []
             fs_encoding = sys.getfilesystemencoding() or 'mbcs'
-            for k, v in env.iteritems():
+            for k, v in env.items():
                 if isinstance(k, bytes):
                     k = k.decode(fs_encoding, 'replace')
                 if isinstance(v, bytes):
                     v = v.decode(fs_encoding, 'replace')
                 values.append("{}={}".format(k, v))
-            values.append("")
-            self._as_parameter_ = LPCWSTR("\0".join(values))
+            values = create_unicode_buffer("\0".join(values) + "\0")
+            self._as_parameter_ = cast(values, LPCWSTR)
 
 # Error Messages we need to watch for go here
 # See: http://msdn.microsoft.com/en-us/library/ms681388%28v=vs.85%29.aspx
@@ -447,33 +447,33 @@ def CanCreateJobObject():
 
 
 def parent():
-    print 'Starting parent'
+    print('Starting parent')
     currentProc = GetCurrentProcess()
     if IsProcessInJob(currentProc):
-        print >> sys.stderr, "You should not be in a job object to test"
+        print("You should not be in a job object to test", file=sys.stderr)
         sys.exit(1)
     assert CanCreateJobObject()
-    print 'File: %s' % __file__
+    print('File: %s' % __file__)
     command = [sys.executable, __file__, '-child']
-    print 'Running command: %s' % command
+    print('Running command: %s' % command)
     process = subprocess.Popen(command)
     process.kill()
     code = process.returncode
-    print 'Child code: %s' % code
+    print('Child code: %s' % code)
     assert code == 127
 
 
 def child():
-    print 'Starting child'
+    print('Starting child')
     currentProc = GetCurrentProcess()
     injob = IsProcessInJob(currentProc)
-    print "Is in a job?: %s" % injob
+    print("Is in a job?: %s" % injob)
     can_create = CanCreateJobObject()
-    print 'Can create job?: %s' % can_create
+    print('Can create job?: %s' % can_create)
     process = subprocess.Popen('c:\\windows\\notepad.exe')
     assert process._job
     jobinfo = QueryInformationJobObject(process._job, 'JobObjectExtendedLimitInformation')
-    print 'Job info: %s' % jobinfo
+    print('Job info: %s' % jobinfo)
     limitflags = jobinfo['BasicLimitInformation']['LimitFlags']
-    print 'LimitFlags: %s' % limitflags
+    print('LimitFlags: %s' % limitflags)
     process.kill()

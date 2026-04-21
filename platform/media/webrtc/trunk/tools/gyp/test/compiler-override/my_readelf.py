@@ -3,6 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import sys
-print sys.argv
+print(sys.argv)
 with open('RAN_MY_READELF', 'w') as f:
   f.write('RAN_MY_READELF')

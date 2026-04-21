@@ -11,7 +11,7 @@ Verifies rules related variables are expanded.
 import sys
 
 if sys.platform == 'win32':
-  print "This test is currently disabled: https://crbug.com/483696."
+  print("This test is currently disabled: https://crbug.com/483696.")
   sys.exit(0)
 
 

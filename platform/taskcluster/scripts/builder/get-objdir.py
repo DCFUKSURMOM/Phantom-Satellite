@@ -5,7 +5,7 @@ import sys
 import os
 import json
 import subprocess
-from StringIO import StringIO
+from io import StringIO
 
 gecko_dir = sys.argv[1]
 os.chdir(gecko_dir)

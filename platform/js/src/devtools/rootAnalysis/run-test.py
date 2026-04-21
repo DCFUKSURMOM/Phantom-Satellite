@@ -85,5 +85,5 @@ for name in cfg.tests:
 
     os.chdir(outdir)
     subprocess.call(["sh", "-c", "rm *.xdb"])
-    execfile(os.path.join(indir, "test.py"), {'test': test, 'equal': equal})
-    print("TEST-PASSED: %s" % name)
+    exec(compile(open(os.path.join(indir, "test.py"), "rb").read(), os.path.join(indir, "test.py"), 'exec'), {'test': test, 'equal': equal})
+    print(("TEST-PASSED: %s" % name))

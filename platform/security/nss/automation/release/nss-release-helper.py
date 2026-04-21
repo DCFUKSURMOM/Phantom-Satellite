@@ -34,12 +34,12 @@ abi_report_files = ['automation/abi-check/expected-report-libfreebl3.so.txt',
 
 
 def check_call_noisy(cmd, *args, **kwargs):
-    print("Executing command: {}".format(cmd))
+    print(("Executing command: {}".format(cmd)))
     check_call(cmd, *args, **kwargs)
 
 
 def exit_with_failure(what):
-    print("failure: {}".format(what))
+    print(("failure: {}".format(what)))
     sys.exit(2)
 
 
@@ -229,7 +229,7 @@ def set_all_lib_versions(version, major, minor, patch, build):
         print("You're increasing the minor (or major) version:")
         print("- erasing ABI comparison expectations")
         new_branch = "NSS_" + str(old_major) + "_" + str(old_minor) + "_BRANCH"
-        print("- setting reference branch to the branch of the previous version: " + new_branch)
+        print(("- setting reference branch to the branch of the previous version: " + new_branch))
         with open(abi_base_version_file, "w") as abi_base:
             abi_base.write("%s\n" % new_branch)
         for report_file in abi_report_files:
@@ -303,7 +303,7 @@ def create_nss_release_archive():
     check_call_noisy(["hg", "archive", "-r", nssreltag, "--prefix=nss-" + nssrel + "/nss",
                       stagedir + "/" + nssreltag + "/src/" + nss_tar, "-X", ".hgtags"])
     check_call_noisy(["tar", "-xz", "-C", nss_stagedir, "-f", nsprtar_with_path])
-    print("changing to directory " + nss_stagedir)
+    print(("changing to directory " + nss_stagedir))
     os.chdir(nss_stagedir)
     check_call_noisy(["tar", "-xz", "-f", nss_tar])
     check_call_noisy(["mv", "-i", "nspr-" + nsprrel + "/nspr", "nss-" + nssrel + "/"])
@@ -314,7 +314,7 @@ def create_nss_release_archive():
     check_call_noisy(["tar", "-cz", "--remove-files", "-f", nss_nspr_tar, "nss-" + nssrel])
     check_call("sha1sum " + nss_tar + " " + nss_nspr_tar + " > SHA1SUMS", shell=True)
     check_call("sha256sum " + nss_tar + " " + nss_nspr_tar + " > SHA256SUMS", shell=True)
-    print("created directory " + nss_stagedir + " with files:")
+    print(("created directory " + nss_stagedir + " with files:"))
     check_call_noisy(["ls", "-l"])
 
 

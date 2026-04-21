@@ -72,7 +72,7 @@ import struct
 import operator
 
 # header magic
-XPT_MAGIC = "XPCOM\nTypeLib\r\n\x1a"
+XPT_MAGIC = b"XPCOM\nTypeLib\r\n\x1a"
 TYPELIB_VERSION = (1, 2)
 
 
@@ -94,16 +94,37 @@ def M_add_class_attribs(attribs):
 
 
 def enum(*names):
-    class Foo(object):
-        __metaclass__ = M_add_class_attribs(enumerate(names))
-
+    class Foo(object, metaclass=M_add_class_attribs(enumerate(names))):
         def __setattr__(self, name, value):  # this makes it read-only
             raise NotImplementedError
     return Foo()
 
+# A lot of previous cmp-related boilerplate was replaced by this function.
+# It was already a bit much in Python 2, but in Python 3 the standard solution,
+# total_ordering would have ballooned the codesize to over 2000 lines of this 
+# stuff. Apparently a custom decorator that restores some of cmp was also an 
+# option, but this seemed cleaner.
+class ComparableMixin:
+    def _cmp_key(self):
+        raise NotImplementedError
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return NotImplemented
+        return self._cmp_key() == other._cmp_key()
+
+    def __lt__(self, other):
+        if type(self) != type(other):
+            return NotImplemented
+        return self._cmp_key() < other._cmp_key()
+
+    def __le__(self, other): return self == other or self < other
+    def __gt__(self, other): return not (self <= other)
+    def __ge__(self, other): return not (self < other)
+    def __hash__(self):      return hash(self._cmp_key())
 
 # Descriptor types as described in the spec
-class Type(object):
+class Type(ComparableMixin):
     """
     Data type of a method parameter or return value. Do not instantiate
     this class directly. Rather, use one of its subclasses.
@@ -155,13 +176,8 @@ class Type(object):
         if reference and not pointer:
             raise Exception("If reference is True pointer must be True too")
 
-    def __cmp__(self, other):
-        return (
-            # First make sure we have two Types of the same type (no pun intended!)
-            cmp(type(self), type(other)) or
-            cmp(self.pointer, other.pointer) or
-            cmp(self.reference, other.reference)
-        )
+    def _cmp_key(self):
+        return (type(self).__name__, self.pointer, self.reference)
 
     @staticmethod
     def decodeflags(byte):
@@ -243,11 +259,9 @@ class SimpleType(Type):
         Type.__init__(self, **kwargs)
         self.tag = tag
 
-    def __cmp__(self, other):
-        return (
-            Type.__cmp__(self, other) or
-            cmp(self.tag, other.tag)
-        )
+    def _cmp_key(self):
+        return super()._cmp_key() + (type(self).__name__, self.pointer,
+                                     self.reference, self.tag)
 
     @staticmethod
     def get(data, tag, flags):
@@ -295,13 +309,11 @@ class InterfaceType(Type):
         self.iface = iface
         self.tag = Type.Tags.Interface
 
-    def __cmp__(self, other):
-        return (
-            Type.__cmp__(self, other) or
-            # When comparing interface types, only look at the name.
-            cmp(self.iface.name, other.iface.name) or
-            cmp(self.tag, other.tag)
-        )
+    def _cmp_key(self):
+        iface_name = self.iface.name if self.iface else ""
+        return super()._cmp_key() + (type(self).__name__, self.pointer,
+                                     self.reference, iface_name, self.tag)
+
 
     @staticmethod
     def read(typelib, map, data_pool, offset, flags):
@@ -357,12 +369,8 @@ class InterfaceIsType(Type):
         self.param_index = param_index
         self.tag = Type.Tags.InterfaceIs
 
-    def __cmp__(self, other):
-        return (
-            Type.__cmp__(self, other) or
-            cmp(self.param_index, other.param_index) or
-            cmp(self.tag, other.tag)
-        )
+    def _cmp_key(self):
+        return super()._cmp_key() + (type(self).__name__, self.pointer, self.reference, self.param_index, self.tag)
 
     @staticmethod
     def read(typelib, map, data_pool, offset, flags):
@@ -416,14 +424,11 @@ class ArrayType(Type):
         self.length_is_arg_num = length_is_arg_num
         self.tag = Type.Tags.Array
 
-    def __cmp__(self, other):
-        return (
-            Type.__cmp__(self, other) or
-            cmp(self.element_type, other.element_type) or
-            cmp(self.size_is_arg_num, other.size_is_arg_num) or
-            cmp(self.length_is_arg_num, other.length_is_arg_num) or
-            cmp(self.tag, other.tag)
-        )
+    def _cmp_key(self):
+        return super()._cmp_key() + (type(self).__name__, self.pointer,
+                                     self.reference, self.element_type,
+                                     self.size_is_arg_num,
+                                     self.length_is_arg_num, self.tag)
 
     @staticmethod
     def read(typelib, map, data_pool, offset, flags):
@@ -475,13 +480,11 @@ class StringWithSizeType(Type):
         self.length_is_arg_num = length_is_arg_num
         self.tag = Type.Tags.StringWithSize
 
-    def __cmp__(self, other):
-        return (
-            Type.__cmp__(self, other) or
-            cmp(self.size_is_arg_num, other.size_is_arg_num) or
-            cmp(self.length_is_arg_num, other.length_is_arg_num) or
-            cmp(self.tag, other.tag)
-        )
+    def _cmp_key(self):
+        return super()._cmp_key() + (type(self).__name__, self.pointer,
+                                     self.reference, self.size_is_arg_num,
+                                     self.length_is_arg_num, self.tag)
+
 
     @staticmethod
     def read(typelib, map, data_pool, offset, flags):
@@ -531,13 +534,11 @@ class WideStringWithSizeType(Type):
         self.length_is_arg_num = length_is_arg_num
         self.tag = Type.Tags.WideStringWithSize
 
-    def __cmp__(self, other):
-        return (
-            Type.__cmp__(self, other) or
-            cmp(self.size_is_arg_num, other.size_is_arg_num) or
-            cmp(self.length_is_arg_num, other.length_is_arg_num) or
-            cmp(self.tag, other.tag)
-        )
+    def _cmp_key(self):
+        return super()._cmp_key() + (type(self).__name__, self.pointer,
+                                     self.reference, self.size_is_arg_num,
+                                     self.length_is_arg_num, self.tag)
+
 
     @staticmethod
     def read(typelib, map, data_pool, offset, flags):
@@ -569,7 +570,7 @@ class WideStringWithSizeType(Type):
         return "wstring_s"
 
 
-class Param(object):
+class Param(ComparableMixin):
     """
     A parameter to a method, or the return value of a method.
     (ParamDescriptor from the typelib specification.)
@@ -593,16 +594,9 @@ class Param(object):
         self.dipper = dipper
         self.optional = optional
 
-    def __cmp__(self, other):
-        return (
-            cmp(self.type, other.type) or
-            cmp(self.in_, other.in_) or
-            cmp(self.out, other.out) or
-            cmp(self.retval, other.retval) or
-            cmp(self.shared, other.shared) or
-            cmp(self.dipper, other.dipper) or
-            cmp(self.optional, other.optional)
-        )
+    def _cmp_key(self):
+        return (self.type, self.in_, self.out, self.retval, self.shared,
+                self.dipper, self.optional)
 
     @staticmethod
     def decodeflags(byte):
@@ -699,7 +693,7 @@ class Param(object):
         return self.prefix() + str(self.type)
 
 
-class Method(object):
+class Method(ComparableMixin):
     """
     A method of an interface, defining its associated parameters
     and return value.
@@ -726,19 +720,11 @@ class Method(object):
             raise Exception("result must be a Param!")
         self.result = result
 
-    def __cmp__(self, other):
-        return (
-            cmp(self.name, other.name) or
-            cmp(self.getter, other.getter) or
-            cmp(self.setter, other.setter) or
-            cmp(self.notxpcom, other.notxpcom) or
-            cmp(self.constructor, other.constructor) or
-            cmp(self.hidden, other.hidden) or
-            cmp(self.optargc, other.optargc) or
-            cmp(self.implicit_jscontext, other.implicit_jscontext) or
-            cmp(self.params, other.params) or
-            cmp(self.result, other.result)
-        )
+    def _cmp_key(self):
+        return (self.name, self.getter, self.setter, self.notxpcom,
+                self.constructor, self.hidden, self.optargc,
+                self.implicit_jscontext, self.params,
+                self.result)
 
     def read_params(self, typelib, map, data_pool, offset, num_args):
         """
@@ -851,12 +837,12 @@ class Method(object):
         """
         if self.name:
             self._name_offset = file.tell() - data_pool_offset + 1
-            file.write(self.name + "\x00")
+            file.write(self.name.encode('utf-8') + b"\x00")
         else:
             self._name_offset = 0
 
 
-class Constant(object):
+class Constant(ComparableMixin):
     """
     A constant value of a specific type defined on an interface.
     (ConstantDesciptor from the typelib specification.)
@@ -877,12 +863,8 @@ class Constant(object):
         self.type = type
         self.value = value
 
-    def __cmp__(self, other):
-        return (
-            cmp(self.name, other.name) or
-            cmp(self.type, other.type) or
-            cmp(self.value, other.value)
-        )
+    def _cmp_key(self):
+        return (self.name, self.type, self.value)
 
     @staticmethod
     def read(typelib, map, data_pool, offset):
@@ -928,7 +910,7 @@ class Constant(object):
         """
         if self.name:
             self._name_offset = file.tell() - data_pool_offset + 1
-            file.write(self.name + "\x00")
+            file.write(self.name.encode('utf-8') + b"\x00")
         else:
             self._name_offset = 0
 
@@ -936,7 +918,7 @@ class Constant(object):
         return "Constant(%s, %s, %d)" % (self.name, str(self.type), self.value)
 
 
-class Interface(object):
+class Interface(ComparableMixin):
     """
     An Interface represents an object, with its associated methods
     and constant values.
@@ -986,44 +968,31 @@ class Interface(object):
 
     def __hash__(self):
         return hash((self.name, self.iid))
+   
 
-    def __cmp__(self, other):
-        c = cmp(self.iid, other.iid)
-        if c != 0:
-            return c
-        c = cmp(self.name, other.name)
-        if c != 0:
-            return c
-        c = cmp(self.namespace, other.namespace)
-        if c != 0:
-            return c
-        # names and IIDs are the same, check resolved
-        if self.resolved != other.resolved:
-            if self.resolved:
-                return -1
-            else:
-                return 1
+    def _cmp_key(self):
+        # resolved=True sorts before resolved=False (True < False numerically is
+        # wrong, so flip it with `not`)
+        resolved_key = not self.resolved
+
+        # only compare parent by name; None sorts before non-None
+        if self.parent is None:
+            parent_key = (0,)
         else:
-            if not self.resolved:
-                # both unresolved, but names and IIDs are the same, so equal
-                return 0
-        # When comparing parents, only look at the name.
-        if (self.parent is None) != (other.parent is None):
-            if self.parent is None:
-                return -1
-            else:
-                return 1
-        elif self.parent is not None:
-            c = cmp(self.parent.name, other.parent.name)
-            if c != 0:
-                return c
+            parent_key = (1, self.parent.name)
+
         return (
-            cmp(self.methods, other.methods) or
-            cmp(self.constants, other.constants) or
-            cmp(self.scriptable, other.scriptable) or
-            cmp(self.function, other.function) or
-            cmp(self.builtinclass, other.builtinclass) or
-            cmp(self.main_process_scriptable_only, other.main_process_scriptable_only)
+            self.iid,
+            self.name,
+            self.namespace,
+            resolved_key,
+            parent_key,
+            self.methods,
+            self.constants,
+            self.scriptable,
+            self.function,
+            self.builtinclass,
+            self.main_process_scriptable_only,
         )
 
     def read_descriptor(self, typelib, map, data_pool):
@@ -1114,12 +1083,12 @@ class Interface(object):
         """
         if self.name:
             self._name_offset = file.tell() - data_pool_offset + 1
-            file.write(self.name + "\x00")
+            file.write(self.name.encode('utf-8') + b"\x00")
         else:
             self._name_offset = 0
         if self.namespace:
             self._namespace_offset = file.tell() - data_pool_offset + 1
-            file.write(self.namespace + "\x00")
+            file.write(self.namespace.encode('utf-8') + b"\x00")
         else:
             self._namespace_offset = 0
         for m in self.methods:
@@ -1156,8 +1125,9 @@ class Typelib(object):
         Convert a 16-byte IID into a UUID string.
 
         """
-        def hexify(s):
-            return ''.join(["%02x" % ord(x) for x in s])
+        # In Py3, iterating over bytes yields ints (a blessing and a curse...)
+        def hexify(b):
+            return ''.join(["%02x" % x for x in b])
 
         return "%s-%s-%s-%s-%s" % (hexify(iid[:4]), hexify(iid[4:6]),
                                    hexify(iid[6:8]), hexify(iid[8:10]),
@@ -1170,16 +1140,16 @@ class Typelib(object):
 
         """
         s = iid_str.replace('-', '')
-        return ''.join([chr(int(s[i:i+2], 16)) for i in range(0, len(s), 2)])
+        return bytes([int(s[i:i+2], 16) for i in range(0, len(s), 2)])
 
     @staticmethod
     def read_string(map, data_pool, offset):
         if offset == 0:
             return ""
-        sz = map.find('\x00', data_pool + offset - 1)
+        sz = map.find(b'\x00', data_pool + offset - 1)
         if sz == -1:
             return ""
-        return map[data_pool + offset - 1:sz]
+        return map[data_pool + offset - 1:sz].decode('utf-8')
 
     @staticmethod
     def read(input_file):
@@ -1192,7 +1162,7 @@ class Typelib(object):
         filename = ""
         data = None
         expected_size = None
-        if isinstance(input_file, basestring):
+        if isinstance(input_file, str):
             filename = input_file
             with open(input_file, "rb") as f:
                 st = os.fstat(f.fileno())
@@ -1254,7 +1224,13 @@ class Typelib(object):
         referenced by methods exist in the array.
 
         """
-        self.interfaces.sort()
+        self.interfaces.sort(
+            key=lambda i: (
+                str(i.iid or ""),
+                i.name,
+                i.namespace or "",
+            )
+        )
         for i in self.interfaces:
             if i.parent and i.parent not in self.interfaces:
                 raise DataError("Interface %s has parent %s not present in typelib!" % (i.name, i.parent.name))
@@ -1272,11 +1248,11 @@ class Typelib(object):
         headersize = (Typelib._header.size + 1)
         if headersize % 4:
             headersize += 4 - headersize % 4
-        fd.write("\x00" * headersize)
+        fd.write(b"\x00" * headersize)
         # save this offset, it's the interface directory offset.
         interface_directory_offset = fd.tell()
         # write out space for an interface directory
-        fd.write("\x00" * Interface._direntry.size * len(self.interfaces))
+        fd.write(b"\x00" * Interface._direntry.size * len(self.interfaces))
         # save this offset, it's the data pool offset.
         data_pool_offset = fd.tell()
         # write out all the interface descriptors to the data pool
@@ -1309,7 +1285,7 @@ class Typelib(object):
 
         """
         self._sanityCheck()
-        if isinstance(output_file, basestring):
+        if isinstance(output_file, str):
             with open(output_file, "wb") as f:
                 self.writefd(f)
         else:
@@ -1392,7 +1368,7 @@ def xpt_link(inputs):
         return Typelib.read(i)
 
     if not inputs:
-        print >>sys.stderr, "Usage: xpt_link <destination file> <input files>"
+        print("Usage: xpt_link <destination file> <input files>", file=sys.stderr)
         return None
     # This is the aggregate list of interfaces.
     interfaces = []
@@ -1527,12 +1503,18 @@ def xpt_link(inputs):
     interfaces = list(required_interfaces)
 
     # Re-sort interfaces (by IID)
-    interfaces.sort()
+    interfaces.sort(
+        key=lambda i: (
+            str(i.iid or ""),
+                i.name,
+                i.namespace or "",
+        )
+    )
     return Typelib(interfaces=interfaces)
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print >>sys.stderr, "xpt <dump|link> <files>"
+        print("xpt <dump|link> <files>", file=sys.stderr)
         sys.exit(1)
     if sys.argv[1] == 'dump':
         xpt_dump(sys.argv[2])

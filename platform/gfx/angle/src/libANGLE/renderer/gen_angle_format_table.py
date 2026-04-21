@@ -153,7 +153,7 @@ def get_component_type(format_id):
 
 def get_channel_tokens(format_id):
     r = re.compile(r'([ABDGLRS][\d]+)')
-    return filter(r.match, r.split(format_id))
+    return list(filter(r.match, r.split(format_id)))
 
 def get_channels(format_id):
     channels = ''
@@ -183,7 +183,7 @@ def json_to_table_data(format_id, json, angle_to_gl):
         "id": format_id,
     }
 
-    for k, v in json.iteritems():
+    for k, v in json.items():
         parsed[k] = v
 
     if "glInternalFormat" not in parsed:
@@ -227,7 +227,7 @@ def gen_enum_string(all_angle):
 gl_to_angle = angle_format.load_forward_table('angle_format_map.json')
 angle_to_gl = angle_format.load_inverse_table('angle_format_map.json')
 json_data = angle_format.load_json('angle_format_data.json')
-all_angle = angle_to_gl.keys()
+all_angle = list(angle_to_gl.keys())
 
 angle_format_cases = parse_json_into_angle_format_switch_string(
     all_angle, json_data, angle_to_gl)

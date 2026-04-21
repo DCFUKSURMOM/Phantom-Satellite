@@ -172,7 +172,7 @@ jobs = 4
                                        compress=False,  # blobber will compress
                                        upload_dir=upload_dir)
         print("== Hazards (temporarily inline here, beware weirdly interleaved output, see bug 1211402) ==")
-        print(file(os.path.join(analysis_dir, "hazards.txt")).read())
+        print((file(os.path.join(analysis_dir, "hazards.txt")).read()))
 
     def upload_results(self, builder):
         """Upload the results of the analysis."""

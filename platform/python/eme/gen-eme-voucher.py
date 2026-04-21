@@ -105,7 +105,7 @@ class ApplicationDigest(univ.Sequence):
 
 def meets_requirements(items, requirements):
 	for r in requirements:
-		for n, v in r.items():
+		for n, v in list(r.items()):
 			if n not in items or items[n] != v: return False
 	return True
 
@@ -129,8 +129,8 @@ def parse_items(stream, items_in, items_out):
 			bits_read += bits
 			total_bits_read += bits
 		elif len(item) == 3 or len(item) == 4:
-			requirements = list(filter(lambda x: isinstance(x, dict), item[2]))
-			sub_items = list(filter(lambda x: isinstance(x, tuple), item[2]))
+			requirements = list([x for x in item[2] if isinstance(x, dict)])
+			sub_items = list([x for x in item[2] if isinstance(x, tuple)])
 
 			if not meets_requirements(items_out, requirements): continue
 
@@ -438,8 +438,8 @@ def processMachoBinary(filename):
 
 
 
-		segment_commands = list(filter(lambda x: x[0].cmd == lc_segment, header.commands))
-		text_segment_commands = list(filter(lambda x: x[1].segname.decode("utf-8").startswith("__TEXT"), segment_commands))
+		segment_commands = list([x for x in header.commands if x[0].cmd == lc_segment])
+		text_segment_commands = list([x for x in segment_commands if x[1].segname.decode("utf-8").startswith("__TEXT")])
 
 
 		code_segment_digests = SetOfCodeSegmentDigest()
@@ -518,7 +518,7 @@ def processCOFFBinary(stream):
 
 	arch_digest.setComponentByName('cpuSubType', CPUSubType('IMAGE_UNUSED'))
 
-	text_section_headers = list(filter(lambda x: (x.items['Characteristics'] & IMAGE_SCN_MEM_EXECUTE) == IMAGE_SCN_MEM_EXECUTE, coff_header.section_headers))
+	text_section_headers = list([x for x in coff_header.section_headers if (x.items['Characteristics'] & IMAGE_SCN_MEM_EXECUTE) == IMAGE_SCN_MEM_EXECUTE])
 
 	code_segment_digests = SetOfCodeSegmentDigest()
 	code_segment_idx = 0

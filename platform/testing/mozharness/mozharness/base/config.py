@@ -28,7 +28,7 @@ from copy import deepcopy
 from optparse import OptionParser, Option, OptionGroup
 import os
 import sys
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import socket
 import time
 try:
@@ -92,7 +92,7 @@ class ReadOnlyDict(dict):
         assert not self._lock, "ReadOnlyDict is locked!"
 
     def lock(self):
-        for (k, v) in self.items():
+        for (k, v) in list(self.items()):
             self[k] = make_immutable(v)
         self._lock = True
 
@@ -128,10 +128,10 @@ class ReadOnlyDict(dict):
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
-        for k, v in self.__dict__.items():
+        for k, v in list(self.__dict__.items()):
             setattr(result, k, deepcopy(v, memo))
         result._lock = False
-        for k, v in self.items():
+        for k, v in list(self.items()):
             result[k] = deepcopy(v, memo)
         return result
 
@@ -156,7 +156,7 @@ def parse_config_file(file_name, quiet=False, search_path=None,
     if file_name.endswith('.py'):
         global_dict = {}
         local_dict = {}
-        execfile(file_path, global_dict, local_dict)
+        exec(compile(open(file_path, "rb").read(), file_path, 'exec'), global_dict, local_dict)
         config = local_dict[config_dict_name]
     elif file_name.endswith('.json'):
         fh = open(file_path)
@@ -177,18 +177,18 @@ def download_config_file(url, file_name):
     max_sleeptime = 5 * 60
     while True:
         if n >= attempts:
-            print "Failed to download from url %s after %d attempts, quiting..." % (url, attempts)
+            print("Failed to download from url %s after %d attempts, quiting..." % (url, attempts))
             raise SystemError(-1)
         try:
-            contents = urllib2.urlopen(url, timeout=30).read()
+            contents = urllib.request.urlopen(url, timeout=30).read()
             break
-        except urllib2.URLError, e:
-            print "Error downloading from url %s: %s" % (url, str(e))
-        except socket.timeout, e:
-            print "Time out accessing %s: %s" % (url, str(e))
-        except socket.error, e:
-            print "Socket error when accessing %s: %s" % (url, str(e))
-        print "Sleeping %d seconds before retrying" % sleeptime
+        except urllib.error.URLError as e:
+            print("Error downloading from url %s: %s" % (url, str(e)))
+        except socket.timeout as e:
+            print("Time out accessing %s: %s" % (url, str(e)))
+        except socket.error as e:
+            print("Socket error when accessing %s: %s" % (url, str(e)))
+        print("Sleeping %d seconds before retrying" % sleeptime)
         time.sleep(sleeptime)
         sleeptime = sleeptime * 2
         if sleeptime > max_sleeptime:
@@ -199,8 +199,8 @@ def download_config_file(url, file_name):
         f = open(file_name, 'w')
         f.write(contents)
         f.close()
-    except IOError, e:
-        print "Error writing downloaded contents to file %s: %s" % (file_name, str(e))
+    except IOError as e:
+        print("Error writing downloaded contents to file %s: %s" % (file_name, str(e)))
         raise SystemError(-1)
 
 
@@ -390,8 +390,8 @@ class BaseConfig(object):
         for action in action_list:
             if action not in self.all_actions:
                 if not quiet:
-                    print("Invalid action %s not in %s!" % (action,
-                                                            self.all_actions))
+                    print(("Invalid action %s not in %s!" % (action,
+                                                            self.all_actions)))
                 raise SystemExit(-1)
         return action_list
 
@@ -401,17 +401,17 @@ class BaseConfig(object):
             sorted_indexes = sorted(indexes)
             for i in range(len(indexes)):
                 if indexes[i] != sorted_indexes[i]:
-                    print(("Action %s comes in different order in %s\n" +
-                           "than in %s") % (action_list[i], action_list, self.all_actions))
+                    print((("Action %s comes in different order in %s\n" +
+                           "than in %s") % (action_list[i], action_list, self.all_actions)))
                     raise SystemExit(-1)
         except ValueError as e:
-            print("Invalid action found: " + str(e))
+            print(("Invalid action found: " + str(e)))
             raise SystemExit(-1)
 
     def list_actions(self):
-        print "Actions available:"
+        print("Actions available:")
         for a in self.all_actions:
-            print "    " + ("*" if a in self.default_actions else " "), a
+            print("    " + ("*" if a in self.default_actions else " "), a)
         raise SystemExit(0)
 
     def get_cfgs_from_files(self, all_config_files, options):
@@ -446,9 +446,9 @@ class BaseConfig(object):
                     all_cfg_files_and_dicts.append((cf, parse_config_file(cf)))
             except Exception:
                 if cf in options.opt_config_files:
-                    print(
+                    print((
                         "WARNING: optional config file not found %s" % cf
-                    )
+                    ))
                 else:
                     raise
         return all_cfg_files_and_dicts
@@ -485,7 +485,7 @@ class BaseConfig(object):
                 # We only append values from various configs for the 'env' entry
                 # For everything else we follow the standard behaviour
                 for i, (c_file, c_dict) in enumerate(self.all_cfg_files_and_dicts):
-                    for v in c_dict.keys():
+                    for v in list(c_dict.keys()):
                         if v == 'env' and v in config:
                             config[v].update(c_dict[v])
                         else:
@@ -499,7 +499,7 @@ class BaseConfig(object):
             #    as the keys/values that make up that instance. Ultimately,
             #    this becomes self.config during BaseScript's init
             self.set_config(config)
-        for key in defaults.keys():
+        for key in list(defaults.keys()):
             value = getattr(options, key)
             if value is None:
                 continue
@@ -511,7 +511,7 @@ class BaseConfig(object):
         # The idea behind the volatile_config is we don't want to save this
         # info over multiple runs.  This defaults to the action-specific
         # config options, but can be anything.
-        for key in self.volatile_config.keys():
+        for key in list(self.volatile_config.keys()):
             if self._config.get(key) is not None:
                 self.volatile_config[key] = self._config[key]
                 del(self._config[key])

@@ -38,7 +38,7 @@ class TalosResults(object):
         tbpl_output = {}
         try:
 
-            for key, urls in output_formats.items():
+            for key, urls in list(output_formats.items()):
                 _output = output.Output(self)
                 results = _output()
                 for url in urls:
@@ -55,11 +55,11 @@ class TalosResults(object):
                 )
             except:
                 pass
-            print('\nFAIL: %s' % str(e).replace('\n', '\nRETURN:'))
+            print(('\nFAIL: %s' % str(e).replace('\n', '\nRETURN:')))
             raise e
 
         if tbpl_output:
-            print("TinderboxPrint: TalosResult: %s" % json.dumps(tbpl_output))
+            print(("TinderboxPrint: TalosResult: %s" % json.dumps(tbpl_output)))
 
 
 class TestResults(object):
@@ -420,14 +420,14 @@ class BrowserLogResults(object):
         self.mainthread_io(counter_results)
 
         if not set(counters).union(set(mainthread_counters))\
-                .intersection(counter_results.keys()):
+                .intersection(list(counter_results.keys())):
             # no xperf counters to accumulate
             return
 
         filename = 'etl_output_thread_stats.csv'
         if not os.path.exists(filename):
-            print("Warning: we are looking for xperf results file %s, and"
-                  " didn't find it" % filename)
+            print(("Warning: we are looking for xperf results file %s, and"
+                  " didn't find it" % filename))
             return
 
         contents = open(filename).read()
@@ -442,7 +442,7 @@ class BrowserLogResults(object):
                 # data is counters
                 header = row
                 continue
-            values = dict(zip(header, row))
+            values = dict(list(zip(header, row)))
 
             # Format for talos
             thread = values['thread']
@@ -455,11 +455,11 @@ class BrowserLogResults(object):
                 counter_results.setdefault(counter_name, []).append(value)
                 self.using_xperf = True
 
-        if (set(mainthread_counters).intersection(counter_results.keys())):
+        if (set(mainthread_counters).intersection(list(counter_results.keys()))):
             filename = 'etl_output.csv'
             if not os.path.exists(filename):
-                print("Warning: we are looking for xperf results file"
-                      " %s, and didn't find it" % filename)
+                print(("Warning: we are looking for xperf results file"
+                      " %s, and didn't find it" % filename))
                 return
 
             contents = open(filename).read()
@@ -473,7 +473,7 @@ class BrowserLogResults(object):
                     # other data is counters
                     header = row
                     continue
-                values = dict(zip(header, row))
+                values = dict(list(zip(header, row)))
                 for i, mainthread_counter in enumerate(mainthread_counters):
                     if int(values[mainthread_counter_keys[i]]) > 0:
                         counter_results.setdefault(mainthread_counter, [])\
@@ -485,7 +485,7 @@ class BrowserLogResults(object):
 
         counters = ['Main', 'Content']
         if not set(['%s_RSS' % i for i in counters])\
-                .intersection(counter_results.keys()):
+                .intersection(list(counter_results.keys())):
             # no RSS counters to accumulate
             return
         for line in self.results_raw.split('\n'):

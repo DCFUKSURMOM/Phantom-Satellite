@@ -6,7 +6,7 @@
 # ***** END LICENSE BLOCK *****
 """Support for hg/git mapper
 """
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import time
 try:
     import simplejson as json
@@ -47,7 +47,7 @@ class MapperMixin:
         n = 1
         while n <= attempts:
             try:
-                r = urllib2.urlopen(url, timeout=10)
+                r = urllib.request.urlopen(url, timeout=10)
                 j = json.loads(r.readline())
                 if j['%s_rev' % vcs] is None:
                     if require_answer:
@@ -55,7 +55,7 @@ class MapperMixin:
                     else:
                         self.warning("Mapper returned a revision of None.  Accepting because require_answer is False.")
                 return j['%s_rev' % vcs]
-            except Exception, err:
+            except Exception as err:
                 self.warning('Error: %s' % str(err))
                 if n == attempts:
                     self.fatal('Giving up on %s %s revision for %s.' % (project_name, vcs, rev))

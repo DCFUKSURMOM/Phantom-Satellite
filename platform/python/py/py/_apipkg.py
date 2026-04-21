@@ -72,10 +72,10 @@ class ApiModule(ModuleType):
         self.__map__ = {}
         self.__implprefix__ = implprefix or name
         if attr:
-            for name, val in attr.items():
+            for name, val in list(attr.items()):
                 # print "setting", self.__name__, name, val
                 setattr(self, name, val)
-        for name, importspec in importspec.items():
+        for name, importspec in list(importspec.items()):
             if isinstance(importspec, dict):
                 subname = '%s.%s' % (self.__name__, name)
                 apimod = ApiModule(subname, importspec, implprefix)

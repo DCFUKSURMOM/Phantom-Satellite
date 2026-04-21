@@ -37,8 +37,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'futures'
-copyright = u'2009-2011, Brian Quinlan'
+project = 'futures'
+copyright = '2009-2011, Brian Quinlan'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -172,8 +172,8 @@ htmlhelp_basename = 'futuresdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'futures.tex', u'futures Documentation',
-   u'Brian Quinlan', 'manual'),
+  ('index', 'futures.tex', 'futures Documentation',
+   'Brian Quinlan', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

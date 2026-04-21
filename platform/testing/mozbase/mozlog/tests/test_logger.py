@@ -80,12 +80,12 @@ class TestStructuredLogging(unittest.TestCase):
         The actual message should contain no fields other than the timestamp
         field and those present in expected."""
 
-        self.assertTrue(isinstance(actual['_time'], (int, long)))
+        self.assertTrue(isinstance(actual['_time'], (int, int)))
 
-        for k, v in expected.items():
+        for k, v in list(expected.items()):
             self.assertEqual(v, actual[k])
 
-        for k in actual.keys():
+        for k in list(actual.keys()):
             if k != '_time':
                 self.assertTrue(expected.get(k) is not None)
 

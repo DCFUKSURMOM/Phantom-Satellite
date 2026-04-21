@@ -1,3 +1,4 @@
+
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,8 +19,8 @@ unary :
   '!'? value ;
 value :
   [0-9]+ # integer
-  | 'defined(' \w+ ')'
-  | \w+  # string identifier or value;
+  | 'defined(' \\w+ ')'
+  | \\w+  # string identifier or value;
 """
 
 import sys
@@ -27,7 +28,8 @@ import os
 import re
 from optparse import OptionParser
 import errno
-from makeutil import Makefile
+from .makeutil import Makefile
+from functools import reduce
 
 # hack around win32 mangling our line endings
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/65443
@@ -56,7 +58,7 @@ class Expression:
         self.__ignore_whitespace()
         self.e = self.__get_logical_or()
         if self.content:
-            raise Expression.ParseError, self
+            raise Expression.ParseError(self)
 
     def __get_logical_or(self):
         """
@@ -126,7 +128,7 @@ class Expression:
         Production: '!'? value
         """
         # eat whitespace right away, too
-        not_ws = re.match('!\s*', self.content)
+        not_ws = re.match(r'!\s*', self.content)
         if not not_ws:
             return self.__get_value()
         rv = Expression.__AST('not')
@@ -137,13 +139,13 @@ class Expression:
 
     def __get_value(self):
         """
-        Production: ( [0-9]+ | 'defined(' \w+ ')' | \w+ )
+        Production: ( [0-9]+ | 'defined(' \\w+ ')' | \\w+ )
         Note that the order is important, and the expression is kind-of
-        ambiguous as \w includes 0-9. One could make it unambiguous by
+        ambiguous as \\w includes 0-9. One could make it unambiguous by
         removing 0-9 from the first char of a string literal.
         """
         rv = None
-        m = re.match('defined\s*\(\s*(\w+)\s*\)', self.content)
+        m = re.match(r'defined\s*\(\s*(\w+)\s*\)', self.content)
         if m:
             word_len = m.end()
             rv = Expression.__ASTLeaf('defined', m.group(1))
@@ -153,17 +155,17 @@ class Expression:
                 value = int(self.content[:word_len])
                 rv = Expression.__ASTLeaf('int', value)
             else:
-                word_len = re.match('\w*', self.content).end()
+                word_len = re.match(r'\w*', self.content).end()
                 if word_len:
                     rv = Expression.__ASTLeaf('string', self.content[:word_len])
                 else:
-                    raise Expression.ParseError, self
+                    raise Expression.ParseError(self)
         self.__strip(word_len)
         self.__ignore_whitespace()
         return rv
 
     def __ignore_whitespace(self):
-        ws_len = re.match('\s*', self.content).end()
+        ws_len = re.match(r'\s*', self.content).end()
         self.__strip(ws_len)
         return
 
@@ -196,7 +198,7 @@ class Expression:
                 return left and right
             elif tok[1].value == '||':
                 return left or right
-            raise Expression.ParseError, self
+            raise Expression.ParseError(self)
 
         # Mapping from token types to evaluator functions
         # Apart from (non-)equality, all these can be simple lambda forms.
@@ -230,7 +232,7 @@ class Expression:
         def __repr__(self):
             return self.value.__repr__()
 
-    class ParseError(StandardError):
+    class ParseError(Exception):
         """
         Error raised when parsing fails.
         It has two members, offset and content, which give the offset of the
@@ -278,7 +280,7 @@ class Preprocessor:
         self.context = Context()
         for k,v in {'FILE': '',
                     'LINE': 0,
-                    'DIRECTORY': os.path.abspath('.')}.iteritems():
+                    'DIRECTORY': os.path.abspath('.')}.items():
             self.context[k] = v
         self.actionLevel = 0
         self.disableLevel = 0
@@ -292,25 +294,25 @@ class Preprocessor:
         self.cmds = {}
         for cmd, level in {'define': 0,
                            'undef': 0,
-                           'if': sys.maxint,
-                           'ifdef': sys.maxint,
-                           'ifndef': sys.maxint,
+                           'if': sys.maxsize,
+                           'ifdef': sys.maxsize,
+                           'ifndef': sys.maxsize,
                            'else': 1,
                            'elif': 1,
                            'elifdef': 1,
                            'elifndef': 1,
-                           'endif': sys.maxint,
+                           'endif': sys.maxsize,
                            'expand': 0,
                            'literal': 0,
                            'filter': 0,
                            'unfilter': 0,
                            'include': 0,
                            'includesubst': 0,
-                           'error': 0}.iteritems():
+                           'error': 0}.items():
             self.cmds[cmd] = (level, getattr(self, 'do_' + cmd))
         self.out = sys.stdout
         self.setMarker(marker)
-        self.varsubst = re.compile('@(?P<VAR>\w+)@', re.U)
+        self.varsubst = re.compile(r'@(?P<VAR>\w+)@', re.U)
         self.includes = set()
         self.silenceMissingDirectiveWarnings = False
         if defines:
@@ -332,7 +334,7 @@ class Preprocessor:
         """
         self.marker = aMarker
         if aMarker:
-            self.instruction = re.compile('{0}(?P<cmd>[a-z]+)(?:\s(?P<args>.*))?$'
+            self.instruction = re.compile(r'{0}(?P<cmd>[a-z]+)(?:\s(?P<args>.*))?$'
                                           .format(aMarker),
                                           re.U)
             self.comment = re.compile(aMarker, re.U)
@@ -414,20 +416,33 @@ class Preprocessor:
         """
         if not self.out:
             return
-
+        # Python 3 enforces strict typing on bytes and strings, Python 2 did not.
+        # This has... interesting consequences for porting legacy preprocessor code.
+        needs_bytes = getattr(self.out, 'needs_bytes', False)
         next_line, next_file = self.context['LINE'], self.context['FILE']
         if self.checkLineNumbers:
             expected_file, expected_line = self.line_info
             expected_line += 1
             if (expected_line != next_line or
                 expected_file and expected_file != next_file):
-                self.out.write('//@line {line} "{file}"\n'.format(line=next_line,
-                                                                  file=next_file))
+                ln = '//@line {line} "{file}"\n'.format(line=next_line,
+                                                                  file=next_file)
+                if needs_bytes:
+                    ln = ln.encode('utf-8')
+                self.out.write(ln)
         self.noteLineInfo()
 
         filteredLine = self.applyFilters(aLine)
         if filteredLine != aLine:
             self.actionLevel = 2
+
+        if needs_bytes:
+            if isinstance(filteredLine, str):
+                filteredLine = filteredLine.encode('utf-8')
+        else:
+            if isinstance(filteredLine, bytes):
+                filteredLine = filteredLine.decode('utf-8', 'surrogateescape')
+
         self.out.write(filteredLine)
 
     def handleCommandLine(self, args, defaultToStdin = False):
@@ -443,7 +458,7 @@ class Preprocessor:
                 except OSError as error:
                     if error.errno != errno.EEXIST:
                         raise
-            return open(path, 'wb')
+            return open(path, 'w', encoding='utf-8', errors='replace')
 
         p = self.getCommandLineParser()
         options, args = p.parse_args(args=args)
@@ -462,7 +477,7 @@ class Preprocessor:
                 raise Preprocessor.Error(self, "--depend doesn't work with stdout",
                                          None)
             try:
-                from makeutil import Makefile
+                from .makeutil import Makefile
             except:
                 raise Preprocessor.Error(self, "--depend requires the "
                                                "mozbuild.makeutil module", None)
@@ -470,7 +485,7 @@ class Preprocessor:
 
         if args:
             for f in args:
-                with open(f, 'rU') as input:
+                with open(f, 'r', encoding='utf-8', errors='replace') as input:
                     self.processFile(input=input, output=out)
             if depfile:
                 mk = Makefile()
@@ -483,7 +498,7 @@ class Preprocessor:
 
     def getCommandLineParser(self, unescapeDefines = False):
         escapedValue = re.compile('".*"$')
-        numberValue = re.compile('\d+$')
+        numberValue = re.compile(r'\d+$')
         def handleD(option, opt, value, parser):
             vals = value.split('=', 1)
             if len(vals) == 1:
@@ -551,7 +566,7 @@ class Preprocessor:
 
     # Variables
     def do_define(self, args):
-        m = re.match('(?P<name>\w+)(?:\s(?P<value>.*))?', args, re.U)
+        m = re.match(r'(?P<name>\w+)(?:\s(?P<value>.*))?', args, re.U)
         if not m:
             raise Preprocessor.Error(self, 'SYNTAX_DEF', args)
         val = ''
@@ -563,7 +578,7 @@ class Preprocessor:
                 pass
         self.context[m.group('name')] = val
     def do_undef(self, args):
-        m = re.match('(?P<name>\w+)$', args, re.U)
+        m = re.match(r'(?P<name>\w+)$', args, re.U)
         if not m:
             raise Preprocessor.Error(self, 'SYNTAX_DEF', args)
         if args in self.context:
@@ -599,7 +614,7 @@ class Preprocessor:
         if self.disableLevel and not replace:
             self.disableLevel += 1
             return
-        if re.match('\W', args, re.U):
+        if re.match(r'\W', args, re.U):
             raise Preprocessor.Error(self, 'INVALID_VAR', args)
         if args not in self.context:
             self.disableLevel = 1
@@ -614,7 +629,7 @@ class Preprocessor:
         if self.disableLevel and not replace:
             self.disableLevel += 1
             return
-        if re.match('\W', args, re.U):
+        if re.match(r'\W', args, re.U):
             raise Preprocessor.Error(self, 'INVALID_VAR', args)
         if args in self.context:
             self.disableLevel = 1
@@ -658,7 +673,7 @@ class Preprocessor:
             self.ifStates.pop()
     # output processing
     def do_expand(self, args):
-        lst = re.split('__(\w+)__', args, re.U)
+        lst = re.split(r'__(\w+)__', args, re.U)
         do_replace = False
         def vsubst(v):
             if v in self.context:
@@ -677,7 +692,7 @@ class Preprocessor:
         current = dict(self.filters)
         for f in filters:
             current[f] = getattr(self, 'filter_' + f)
-        filterNames = current.keys()
+        filterNames = list(current.keys())
         filterNames.sort()
         self.filters = [(fn, current[fn]) for fn in filterNames]
         return
@@ -687,7 +702,7 @@ class Preprocessor:
         for f in filters:
             if f in current:
                 del current[f]
-        filterNames = current.keys()
+        filterNames = list(current.keys())
         filterNames.sort()
         self.filters = [(fn, current[fn]) for fn in filterNames]
         return
@@ -732,7 +747,7 @@ class Preprocessor:
         args can either be a file name, or a file-like object.
         Files should be opened, and will be closed after processing.
         """
-        isName = type(args) == str or type(args) == unicode
+        isName = type(args) == str or type(args) == str
         oldCheckLineNumbers = self.checkLineNumbers
         self.checkLineNumbers = False
         if isName:
@@ -742,12 +757,12 @@ class Preprocessor:
                     args = self.applyFilters(args)
                 if not os.path.isabs(args):
                     args = os.path.join(self.context['DIRECTORY'], args)
-                args = open(args, 'rU')
+                args = open(args, 'r', encoding='utf-8', errors='replace')
             except Preprocessor.Error:
                 raise
             except:
                 raise Preprocessor.Error(self, 'FILE_NOT_FOUND', str(args))
-        self.checkLineNumbers = bool(re.search('\.(js|jsm|java)(?:\.in)?$', args.name))
+        self.checkLineNumbers = bool(re.search(r'\.(js|jsm|java)(?:\.in)?$', args.name))
         oldFile = self.context['FILE']
         oldLine = self.context['LINE']
         oldDir = self.context['DIRECTORY']
@@ -787,7 +802,7 @@ def preprocess(includes=[sys.stdin], defines={},
     pp = Preprocessor(defines=defines,
                       marker=marker)
     for f in includes:
-        with open(f, 'rU') as input:
+        with open(f, 'r', encoding='utf-8', errors='replace') as input:
             pp.processFile(input=input, output=output)
     return pp.includes
 

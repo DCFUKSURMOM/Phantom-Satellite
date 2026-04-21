@@ -352,7 +352,7 @@ class Future(object):
 
     def __get_result(self):
         if self._exception:
-            raise type(self._exception), self._exception, self._traceback
+            raise type(self._exception)(self._exception).with_traceback(self._traceback)
         else:
             return self._result
 
@@ -568,7 +568,7 @@ class Executor(object):
         if timeout is not None:
             end_time = timeout + time.time()
 
-        fs = [self.submit(fn, *args) for args in itertools.izip(*iterables)]
+        fs = [self.submit(fn, *args) for args in zip(*iterables)]
 
         # Yield must be hidden in closure so that the futures are submitted
         # before the first iterator value is required.

@@ -74,7 +74,7 @@ class ProcTestKill(proctest.ProcTest):
         p.run()
         p.kill()
 
-        self.assertEquals(p.proc.returncode, -signal.SIGTERM)
+        self.assertEqual(p.proc.returncode, -signal.SIGTERM)
 
     @unittest.skipUnless(processhandler.isPosix, "posix only")
     def test_process_kill_with_sigint_if_needed(self):
@@ -85,7 +85,7 @@ class ProcTestKill(proctest.ProcTest):
         time.sleep(1)
         p.kill()
 
-        self.assertEquals(p.proc.returncode, -signal.SIGKILL)
+        self.assertEqual(p.proc.returncode, -signal.SIGKILL)
 
 if __name__ == '__main__':
     unittest.main()

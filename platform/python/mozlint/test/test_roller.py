@@ -29,7 +29,7 @@ def test_roll_successful(lint, linters, files):
     assert len(result) == 1
     assert lint.return_code == 1
 
-    path = result.keys()[0]
+    path = list(result.keys())[0]
     assert os.path.basename(path) == 'foobar.js'
 
     errors = result[path]

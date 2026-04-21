@@ -17,12 +17,12 @@ import subprocess
 import sys
 
 if sys.platform == 'darwin':
-  print "This test is currently disabled: https://crbug.com/483696."
+  print("This test is currently disabled: https://crbug.com/483696.")
   sys.exit(0)
 
 def ExpectEq(expected, actual):
   if expected != actual:
-    print >>sys.stderr, 'Expected "%s", got "%s"' % (expected, actual)
+    print('Expected "%s", got "%s"' % (expected, actual), file=sys.stderr)
     test.fail_test()
 
 def ls(path):

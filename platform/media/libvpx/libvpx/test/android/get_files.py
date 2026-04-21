@@ -38,7 +38,7 @@ def get_file_sha(filename):
         buf = file.read(HASH_CHUNK)
       return sha_hash.hexdigest()
   except IOError:
-    print("Error reading " + filename)
+    print(("Error reading " + filename))
 
 # Downloads a file from a url, and then checks the sha against the passed
 # in sha
@@ -109,10 +109,10 @@ for filename, sha in zip(file_names, file_shas):
   path = os.path.join(local_resource_path, filename)
   if os.path.isfile(path) \
       and get_file_sha(path) == sha:
-    print(path + ' exists, skipping')
+    print((path + ' exists, skipping'))
     continue
   for retry in range(0, ftp_retries):
-    print("Downloading " + path)
+    print(("Downloading " + path))
     if not download_and_check_sha(url, filename, sha):
       print("Sha does not match, retrying...")
     else:

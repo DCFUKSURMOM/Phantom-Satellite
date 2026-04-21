@@ -115,7 +115,7 @@ class TooltoolMixin(object):
         self.download_file(TOOLTOOL_PY_URL, file_path)
         if not os.path.exists(file_path):
             self.fatal("We can't get tooltool.py")
-        self.chmod(file_path, 0755)
+        self.chmod(file_path, 0o755)
         return file_path
 
     def create_tooltool_manifest(self, contents, path=None):

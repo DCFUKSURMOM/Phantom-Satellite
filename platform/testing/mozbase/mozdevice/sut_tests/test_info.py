@@ -15,6 +15,6 @@ class InfoTestCase(DeviceManagerTestCase):
         cmds = ('os', 'id', 'systime', 'uptime', 'screen', 'memory', 'power')
         for c in cmds:
             data = self.dm.getInfo(c)
-            print c + str(data)
+            print(c + str(data))
 
         # No real good way to verify this.  If it doesn't throw, we're ok.

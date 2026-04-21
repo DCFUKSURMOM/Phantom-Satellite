@@ -376,7 +376,7 @@ def FixCode(s):
 
 
 def GenerateDispatch(prebound, calltime):
-  print "\n// %d - %d" % (prebound, calltime)
+  print("\n// %d - %d" % (prebound, calltime))
   args = {
       "template_params": Merge([Gen("typename P%", prebound),
                                 Gen("typename C%", calltime)]),
@@ -385,12 +385,12 @@ def GenerateDispatch(prebound, calltime):
       "args": Merge([GenAlpha("p.%", prebound), GenAlpha("c.%", calltime)]),
   }
 
-  print FixCode(DISPATCH_TO_METHOD_TEMPLATE % args)
-  print FixCode(DISPATCH_TO_FUNCTION_TEMPLATE % args)
+  print(FixCode(DISPATCH_TO_METHOD_TEMPLATE % args))
+  print(FixCode(DISPATCH_TO_FUNCTION_TEMPLATE % args))
 
 
 def GenerateCreateFunctor(prebound, calltime):
-  print "// %d - %d" % (prebound, calltime)
+  print("// %d - %d" % (prebound, calltime))
   args = {
       "calltime": GenTuple("A%", calltime),
       "prebound": GenTuple("P%", prebound),
@@ -403,51 +403,51 @@ def GenerateCreateFunctor(prebound, calltime):
   }
 
   mutant = FixCode(CREATE_METHOD_FUNCTOR_TEMPLATE % args)
-  print mutant
+  print(mutant)
 
   # Slightly different version for free function call.
-  print "\n", FixCode(CREATE_FUNCTION_FUNCTOR_TEMPLATE % args)
+  print("\n", FixCode(CREATE_FUNCTION_FUNCTOR_TEMPLATE % args))
 
   # Functor with pointer to a pointer of the object.
-  print "\n#ifdef GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING"
+  print("\n#ifdef GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING")
   mutant2 = mutant.replace("CreateFunctor(T* obj,", "CreateFunctor(T** obj,")
   mutant2 = mutant2.replace("new Mutant", "new MutantLateObjectBind")
   mutant2 = mutant2.replace(" " * 17 + "Tuple", " " * 31 + "Tuple")
-  print mutant2
-  print "#endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING\n"
+  print(mutant2)
+  print("#endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING\n")
 
   # OS_WIN specific. Same functors but with stdcall calling conventions.
   # Functor for method with __stdcall calling conventions.
-  print "#if defined (OS_WIN)"
+  print("#if defined (OS_WIN)")
   stdcall_method = CREATE_METHOD_FUNCTOR_TEMPLATE
   stdcall_method = stdcall_method.replace("U::", "__stdcall U::")
   stdcall_method = FixCode(stdcall_method % args)
-  print stdcall_method
+  print(stdcall_method)
   # Functor for free function with __stdcall calling conventions.
   stdcall_function = CREATE_FUNCTION_FUNCTOR_TEMPLATE
   stdcall_function = stdcall_function.replace("R (*", "R (__stdcall *");
-  print "\n", FixCode(stdcall_function % args)
+  print("\n", FixCode(stdcall_function % args))
 
-  print "#ifdef GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING"
+  print("#ifdef GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING")
   stdcall2 = stdcall_method;
   stdcall2 = stdcall2.replace("CreateFunctor(T* obj,", "CreateFunctor(T** obj,")
   stdcall2 = stdcall2.replace("new Mutant", "new MutantLateObjectBind")
   stdcall2 = stdcall2.replace(" " * 17 + "Tuple", " " * 31 + "Tuple")
-  print stdcall2
-  print "#endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING"
-  print "#endif  // OS_WIN\n"
+  print(stdcall2)
+  print("#endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING")
+  print("#endif  // OS_WIN\n")
 
 
 def main():
-  print HEADER
-  for prebound in xrange(0, 6 + 1):
-    for args in xrange(0, 6 + 1):
+  print(HEADER)
+  for prebound in range(0, 6 + 1):
+    for args in range(0, 6 + 1):
       GenerateDispatch(prebound, args)
-  print MUTANT
-  for prebound in xrange(0, 6 + 1):
-    for args in xrange(0, 6 + 1):
+  print(MUTANT)
+  for prebound in range(0, 6 + 1):
+    for args in range(0, 6 + 1):
       GenerateCreateFunctor(prebound, args)
-  print FOOTER
+  print(FOOTER)
   return 0
 
 

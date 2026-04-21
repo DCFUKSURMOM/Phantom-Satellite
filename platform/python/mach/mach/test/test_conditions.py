@@ -34,8 +34,8 @@ class TestConditions(TestBase):
     def test_conditions_pass(self):
         """Test that a command which passes its conditions is runnable."""
 
-        self.assertEquals((0, '', ''), self._run_mach(['cmd_foo']))
-        self.assertEquals((0, '', ''), self._run_mach(['cmd_foo_ctx'], _populate_context))
+        self.assertEqual((0, '', ''), self._run_mach(['cmd_foo']))
+        self.assertEqual((0, '', ''), self._run_mach(['cmd_foo_ctx'], _populate_context))
 
     def test_invalid_context_message(self):
         """Test that commands which do not pass all their conditions
@@ -47,17 +47,17 @@ class TestConditions(TestBase):
 
         for name in ('cmd_bar', 'cmd_foobar'):
             result, stdout, stderr = self._run_mach([name])
-            self.assertEquals(1, result)
+            self.assertEqual(1, result)
 
             fail_msg = Registrar._condition_failed_message(name, fail_conditions)
-            self.assertEquals(fail_msg.rstrip(), stdout.rstrip())
+            self.assertEqual(fail_msg.rstrip(), stdout.rstrip())
 
         for name in ('cmd_bar_ctx', 'cmd_foobar_ctx'):
             result, stdout, stderr = self._run_mach([name], _populate_context)
-            self.assertEquals(1, result)
+            self.assertEqual(1, result)
 
             fail_msg = Registrar._condition_failed_message(name, fail_conditions)
-            self.assertEquals(fail_msg.rstrip(), stdout.rstrip())
+            self.assertEqual(fail_msg.rstrip(), stdout.rstrip())
 
     def test_invalid_type(self):
         """Test that a condition which is not callable raises an exception."""

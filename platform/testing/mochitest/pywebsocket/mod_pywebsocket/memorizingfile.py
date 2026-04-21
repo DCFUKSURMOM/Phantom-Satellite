@@ -47,7 +47,7 @@ class MemorizingFile(object):
     the control reaches WebSocketRequestHandler.
     """
 
-    def __init__(self, file_, max_memorized_lines=sys.maxint):
+    def __init__(self, file_, max_memorized_lines=sys.maxsize):
         """Construct an instance.
 
         Args:

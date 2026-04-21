@@ -31,7 +31,7 @@ test.run_gyp('commands-repeated.gyp',
 contents = test.read('commands-repeated.gypd').replace('\r\n', '\n')
 expect = test.read('commands-repeated.gypd.golden').replace('\r\n', '\n')
 if not test.match(contents, expect):
-  print "Unexpected contents of `commands-repeated.gypd'"
+  print("Unexpected contents of `commands-repeated.gypd'")
   test.diff(expect, contents, 'commands-repeated.gypd ')
   test.fail_test()
 

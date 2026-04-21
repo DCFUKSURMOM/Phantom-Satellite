@@ -34,7 +34,7 @@ for line in sys.stdin:
 
 sys.stdout.write('digraph g {\n')
 
-for olist in classdict.itervalues():
+for olist in classdict.values():
     for line in olist:
         sys.stdout.write(line)
 

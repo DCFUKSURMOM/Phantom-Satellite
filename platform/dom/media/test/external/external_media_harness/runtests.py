@@ -16,7 +16,7 @@ from marionette_harness import (
 from marionette_harness.runtests import MarionetteHarness, cli as mn_cli
 
 import external_media_tests
-from testcase import MediaTestCase
+from .testcase import MediaTestCase
 from external_media_tests.media_utils.video_puppeteer import debug_script
 
 

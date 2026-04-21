@@ -242,7 +242,7 @@ class MobilePartnerRepack(LocalesMixin, ReleaseMixin, MobileSigningMixin,
                     self.warning("%s:%s had previous issues; skipping!" % (platform, locale))
                     continue
                 original_path = '%s/original/%s/%s/%s' % (dirs['abs_work_dir'], platform, locale, installer_name)
-                for partner in c['partner_config'].keys():
+                for partner in list(c['partner_config'].keys()):
                     repack_path = '%s/unsigned/partner-repacks/%s/%s/%s/%s' % (dirs['abs_work_dir'], partner, platform, locale, installer_name)
                     total_count += 1
                     if self._repack_apk(partner, original_path, repack_path):
@@ -291,7 +291,7 @@ class MobilePartnerRepack(LocalesMixin, ReleaseMixin, MobileSigningMixin,
                 if self.query_failure(platform, locale):
                     self.warning("%s:%s had previous issues; skipping!" % (platform, locale))
                     continue
-                for partner in c['partner_config'].keys():
+                for partner in list(c['partner_config'].keys()):
                     unsigned_path = '%s/unsigned/partner-repacks/%s/%s/%s/%s' % (dirs['abs_work_dir'], partner, platform, locale, installer_name)
                     signed_dir = '%s/partner-repacks/%s/%s/%s' % (dirs['abs_work_dir'], partner, platform, locale)
                     signed_path = "%s/%s" % (signed_dir, installer_name)

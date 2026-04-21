@@ -22,7 +22,7 @@ assert('<returnvalue>' in hazmap)
 
 # All hazards should be in f() and loopy()
 assert(hazmap['cell2'].function == 'Cell* f()')
-print(len(set(haz.function for haz in hazards)))
+print((len(set(haz.function for haz in hazards))))
 assert(len(set(haz.function for haz in hazards)) == 2)
 
 # Check that the correct GC call is reported for each hazard. (cell3 has a

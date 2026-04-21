@@ -86,8 +86,8 @@ def filterpaths(paths, linter, **lintargs):
             path = os.path.join(root, path)
         return FilterPath(path)
 
-    include = map(normalize, include)
-    exclude = map(normalize, exclude)
+    include = list(map(normalize, include))
+    exclude = list(map(normalize, exclude))
 
     # Paths with and without globs will be handled separately,
     # pull them apart now.

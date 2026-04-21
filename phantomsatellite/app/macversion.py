@@ -15,11 +15,11 @@ o.add_option("--version", dest="version")
 (options, args) = o.parse_args()
 
 if not options.buildid:
-    print >>sys.stderr, "--buildid is required"
+    print("--buildid is required", file=sys.stderr)
     sys.exit(1)
 
 if not options.version:
-    print >>sys.stderr, "--version is required"
+    print("--version is required", file=sys.stderr)
     sys.exit(1)
 
 # We want to build a version number that matches the format allowed for
@@ -41,4 +41,4 @@ day = buildid[6:8]
 if day[0] == '0':
   day = day[1]
 
-print '%s.%s.%s' % (majorVersion + twodigityear, month, day)
+print('%s.%s.%s' % (majorVersion + twodigityear, month, day))

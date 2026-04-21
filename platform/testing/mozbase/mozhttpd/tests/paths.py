@@ -7,19 +7,19 @@ from mozfile import TemporaryDirectory
 import mozhttpd
 import os
 import unittest
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 
 class PathTest(unittest.TestCase):
 
     def try_get(self, url, expected_contents):
-        f = urllib2.urlopen(url)
+        f = urllib.request.urlopen(url)
         self.assertEqual(f.getcode(), 200)
         self.assertEqual(f.read(), expected_contents)
 
     def try_get_expect_404(self, url):
-        with self.assertRaises(urllib2.HTTPError) as cm:
-            urllib2.urlopen(url)
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            urllib.request.urlopen(url)
         self.assertEqual(404, cm.exception.code)
 
     def test_basic(self):

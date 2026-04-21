@@ -118,7 +118,7 @@ class ConfigTest(BaseScript):
                 global_dict = {}
                 local_dict = {}
                 try:
-                    execfile(config_file, global_dict, local_dict)
+                    exec(compile(open(config_file, "rb").read(), config_file, 'exec'), global_dict, local_dict)
                 except:
                     self.add_summary("%s is invalid python." % config_file,
                                      level="error")

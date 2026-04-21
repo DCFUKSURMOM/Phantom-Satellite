@@ -5,7 +5,7 @@
 
 from mozautolog import RESTfulAutologTestGroup
 
-from base import Output, count, long_name
+from .base import Output, count, long_name
 
 
 class AutologOutput(Output):

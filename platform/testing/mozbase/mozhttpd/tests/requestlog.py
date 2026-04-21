@@ -3,7 +3,7 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import mozhttpd
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import os
 import unittest
 
@@ -17,7 +17,7 @@ class RequestLogTest(unittest.TestCase):
         httpd = mozhttpd.MozHttpd(port=0, docroot=here, log_requests=log_requests)
         httpd.start(block=False)
         url = "http://%s:%s/" % ('127.0.0.1', httpd.httpd.server_port)
-        f = urllib2.urlopen(url)
+        f = urllib.request.urlopen(url)
         f.read()
 
         return httpd.request_log

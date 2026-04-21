@@ -16,13 +16,13 @@ class StringTest(unittest2.TestCase):
     def test_enc_dec(self):
 
         message = unicode_string.encode('utf-8')
-        print("\tMessage:   %s" % message)
+        print(("\tMessage:   %s" % message))
 
         encrypted = rsa.encrypt(message, self.pub)
-        print("\tEncrypted: %s" % encrypted)
+        print(("\tEncrypted: %s" % encrypted))
 
         decrypted = rsa.decrypt(encrypted, self.priv)
-        print("\tDecrypted: %s" % decrypted)
+        print(("\tDecrypted: %s" % decrypted))
 
         self.assertEqual(message, decrypted)
 

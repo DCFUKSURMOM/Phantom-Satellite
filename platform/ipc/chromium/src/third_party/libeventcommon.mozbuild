@@ -17,7 +17,7 @@ else:
     if CONFIG['OS_ARCH'] == 'Darwin':
         os_macosx = 1
         libevent_include_suffix = 'mac'
-    elif CONFIG['OS_ARCH'] in ['DragonFly', 'FreeBSD', 'GNU_kFreeBSD',
+    elif CONFIG['OS_ARCH'] in ['DragonFly', 'FreeBSD', 'kFreeBSD',
                                'NetBSD', 'OpenBSD']:
         os_bsd = 1
         libevent_include_suffix = 'bsd'

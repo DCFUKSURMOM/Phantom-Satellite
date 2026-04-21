@@ -4,7 +4,7 @@
 
 from __future__ import print_function
 
-from distutils.version import StrictVersion
+from mozbuild.version import Version
 
 from mach.decorators import (
     Command,
@@ -20,7 +20,7 @@ from mozbuild.base import (
 def is_osx_10_10_or_greater(cls):
     import platform
     release = platform.mac_ver()[0]
-    return release and StrictVersion(release) >= StrictVersion('10.10')
+    return release and Version(release) >= Version('10.10')
 
 
 @CommandProvider

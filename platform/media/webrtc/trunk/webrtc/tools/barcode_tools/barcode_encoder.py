@@ -59,7 +59,7 @@ def generate_upca_barcodes(number_of_barcodes, barcode_width, barcode_height,
       helper_functions.run_shell_command(
           command, fail_msg=('Error during barcode %s generation' % content))
     except helper_functions.HelperError as err:
-      print >> sys.stderr, err
+      print(err, file=sys.stderr)
       errors = True
   return not errors
 
@@ -111,7 +111,7 @@ def _convert_to_yuv_and_delete(output_directory, file_name, pattern):
                            file_name))
     os.remove(file_name)
   except helper_functions.HelperError as err:
-    print >> sys.stderr, err
+    print(err, file=sys.stderr)
     return False
   return True
 
@@ -154,7 +154,7 @@ def _add_to_file_and_delete(output_file, file_name):
   try:
     os.remove(file_name)
   except OSError as e:
-    print >> sys.stderr, 'Error deleting file %s.\nError: %s' % (file_name, e)
+    print('Error deleting file %s.\nError: %s' % (file_name, e), file=sys.stderr)
     return False
   return True
 

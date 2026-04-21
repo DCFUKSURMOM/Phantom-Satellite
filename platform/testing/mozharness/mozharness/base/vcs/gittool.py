@@ -1,6 +1,6 @@
 import os
 import re
-import urlparse
+import urllib.parse
 
 from mozharness.base.script import ScriptMixin
 from mozharness.base.log import LogMixin, OutputParser
@@ -80,8 +80,8 @@ class GittoolVCS(ScriptMixin, LogMixin):
             cmd.append('--clean')
 
         for base_mirror_url in self.config.get('gittool_base_mirror_urls', self.config.get('vcs_base_mirror_urls', [])):
-            bits = urlparse.urlparse(repo)
-            mirror_url = urlparse.urljoin(base_mirror_url, bits.path)
+            bits = urllib.parse.urlparse(repo)
+            mirror_url = urllib.parse.urljoin(base_mirror_url, bits.path)
             cmd.extend(['--mirror', mirror_url])
 
         cmd.extend([repo, dest])

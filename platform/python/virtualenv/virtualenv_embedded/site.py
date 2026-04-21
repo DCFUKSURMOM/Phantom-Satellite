@@ -66,7 +66,7 @@ ImportError exception, it is silently ignored.
 import sys
 import os
 try:
-    import __builtin__ as builtins
+    import builtins as builtins
 except ImportError:
     import builtins
 try:
@@ -99,7 +99,7 @@ def makepath(*paths):
 
 def abs__file__():
     """Set all module' __file__ attribute to an absolute path"""
-    for m in sys.modules.values():
+    for m in list(sys.modules.values()):
         if ((_is_jython and not isinstance(m, ModuleType)) or
             hasattr(m, '__loader__')):
             # only modules need the abspath in Jython. and don't mess
@@ -453,7 +453,7 @@ class _Printer(object):
         while 1:
             try:
                 for i in range(lineno, lineno + self.MAXLINES):
-                    print(self.__lines[i])
+                    print((self.__lines[i]))
             except IndexError:
                 break
             else:
@@ -461,9 +461,9 @@ class _Printer(object):
                 key = None
                 while key is None:
                     try:
-                        key = raw_input(prompt)
-                    except NameError:
                         key = input(prompt)
+                    except NameError:
+                        key = eval(input(prompt))
                     if key not in ('', 'q'):
                         key = None
                 if key == 'q':
@@ -721,16 +721,16 @@ def _script():
     if not args:
         print("sys.path = [")
         for dir in sys.path:
-            print("    %r," % (dir,))
+            print(("    %r," % (dir,)))
         print("]")
         def exists(path):
             if os.path.isdir(path):
                 return "exists"
             else:
                 return "doesn't exist"
-        print("USER_BASE: %r (%s)" % (USER_BASE, exists(USER_BASE)))
-        print("USER_SITE: %r (%s)" % (USER_SITE, exists(USER_BASE)))
-        print("ENABLE_USER_SITE: %r" %  ENABLE_USER_SITE)
+        print(("USER_BASE: %r (%s)" % (USER_BASE, exists(USER_BASE))))
+        print(("USER_SITE: %r (%s)" % (USER_SITE, exists(USER_BASE))))
+        print(("ENABLE_USER_SITE: %r" %  ENABLE_USER_SITE))
         sys.exit(0)
 
     buffer = []
@@ -740,7 +740,7 @@ def _script():
         buffer.append(USER_SITE)
 
     if buffer:
-        print(os.pathsep.join(buffer))
+        print((os.pathsep.join(buffer)))
         if ENABLE_USER_SITE:
             sys.exit(0)
         elif ENABLE_USER_SITE is False:
@@ -751,7 +751,7 @@ def _script():
             sys.exit(3)
     else:
         import textwrap
-        print(textwrap.dedent(help % (sys.argv[0], os.pathsep)))
+        print((textwrap.dedent(help % (sys.argv[0], os.pathsep))))
         sys.exit(10)
 
 if __name__ == '__main__':

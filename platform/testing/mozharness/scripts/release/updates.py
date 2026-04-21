@@ -146,7 +146,7 @@ class UpdatesBumper(MercurialScript, BuildbotMixin,
 
         :return: list
         """
-        return [(n, c) for n, c in self.config["update_channels"].items() if
+        return [(n, c) for n, c in list(self.config["update_channels"].items()) if
                 n in self.config["channels"]]
 
     def pull(self):

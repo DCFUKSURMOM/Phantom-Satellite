@@ -81,7 +81,7 @@ def test_json_formatter(results):
     assert set(formatted.keys()) == set(results.keys())
 
     slots = ResultContainer.__slots__
-    for errors in formatted.values():
+    for errors in list(formatted.values()):
         for err in errors:
             assert all(s in err for s in slots)
 

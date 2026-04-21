@@ -6,7 +6,7 @@ from __future__ import absolute_import
 
 import re
 import os
-from urlparse import urlparse
+from urllib.parse import urlparse
 import mozpack.path as mozpath
 from mozpack.chrome.flags import Flags
 from mozpack.errors import errors
@@ -321,7 +321,7 @@ class ManifestContract(ManifestEntry):
         return self.serialize(self.contractID, self.cid)
 
 # All manifest classes by their type name.
-MANIFESTS_TYPES = dict([(c.type, c) for c in globals().values()
+MANIFESTS_TYPES = dict([(c.type, c) for c in list(globals().values())
                        if type(c) == type and issubclass(c, ManifestEntry)
                        and hasattr(c, 'type') and c.type])
 

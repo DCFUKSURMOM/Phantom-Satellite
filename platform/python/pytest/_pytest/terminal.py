@@ -549,7 +549,7 @@ def build_summary_stats_line(stats):
            "xfailed xpassed warnings error").split()
     key_translation = {'warnings': 'pytest-warnings'}
     unknown_key_seen = False
-    for key in stats.keys():
+    for key in list(stats.keys()):
         if key not in keys:
             if key: # setup/teardown reports have an empty key, ignore them
                 keys.append(key)

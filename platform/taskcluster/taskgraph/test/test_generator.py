@@ -102,7 +102,7 @@ class TestGenerator(unittest.TestCase):
         self.tgg = self.maketgg(['fake-t-1'])
         self.assertEqual(self.tgg.target_task_set.graph,
                          graph.Graph({'fake-t-1'}, set()))
-        self.assertEqual(self.tgg.target_task_set.tasks.keys(),
+        self.assertEqual(list(self.tgg.target_task_set.tasks.keys()),
                          ['fake-t-1'])
 
     def test_target_task_graph(self):

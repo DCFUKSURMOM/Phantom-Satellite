@@ -584,7 +584,7 @@ class DesktopSingleLocale(LocalesMixin, ReleaseMixin, MockMixin, BuildbotMixin,
         BaseScript.add_failure(self, locale, message=message, **kwargs)
 
     def query_failed_locales(self):
-        return [l for l, res in self.locales_property.items() if
+        return [l for l, res in list(self.locales_property.items()) if
                 res == FAILURE_STR]
 
     def summary(self):
@@ -623,7 +623,7 @@ class DesktopSingleLocale(LocalesMixin, ReleaseMixin, MockMixin, BuildbotMixin,
 
         for repository in config['repos']:
             current_repo = {}
-            for key, value in repository.iteritems():
+            for key, value in repository.items():
                 try:
                     current_repo[key] = value % replace_dict
                 except TypeError:
@@ -880,7 +880,7 @@ class DesktopSingleLocale(LocalesMixin, ReleaseMixin, MockMixin, BuildbotMixin,
             abs_dirs[directory] = value
         dirs = {}
         dirs['abs_tools_dir'] = os.path.join(abs_dirs['abs_work_dir'], 'tools')
-        for key in dirs.keys():
+        for key in list(dirs.keys()):
             if key not in abs_dirs:
                 abs_dirs[key] = dirs[key]
         self.abs_dirs = abs_dirs
@@ -1051,7 +1051,7 @@ class DesktopSingleLocale(LocalesMixin, ReleaseMixin, MockMixin, BuildbotMixin,
     def taskcluster_upload(self):
         auth = os.path.join(os.getcwd(), self.config['taskcluster_credentials_file'])
         credentials = {}
-        execfile(auth, credentials)
+        exec(compile(open(auth, "rb").read(), auth, 'exec'), credentials)
         client_id = credentials.get('taskcluster_clientId')
         access_token = credentials.get('taskcluster_accessToken')
         if not client_id or not access_token:
@@ -1095,7 +1095,7 @@ class DesktopSingleLocale(LocalesMixin, ReleaseMixin, MockMixin, BuildbotMixin,
             artifacts_task = artifacts_tc.get_task(artifacts_task_id)
             artifacts_tc.claim_task(artifacts_task)
 
-        for locale, files in self.upload_files.iteritems():
+        for locale, files in self.upload_files.items():
             self.info("Uploading files to S3 for locale '%s': %s" % (locale, files))
             routes = []
             for template in templates:

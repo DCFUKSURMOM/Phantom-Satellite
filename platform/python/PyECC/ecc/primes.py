@@ -33,14 +33,14 @@ def prime(n, k):
         s += 1
         d /= 2
         
-    for i in xrange(k):
+    for i in range(k):
         
-        a = long(2 + random.randint(0, n - 4))
+        a = int(2 + random.randint(0, n - 4))
         x = exp(a, d, n)
         if (x == 1) or (x == n - 1):
             continue
         
-        for r in xrange(1, s):
+        for r in range(1, s):
             x = (x * x) % n
             
             if x == 1:

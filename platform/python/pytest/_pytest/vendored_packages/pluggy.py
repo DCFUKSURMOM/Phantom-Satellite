@@ -189,7 +189,7 @@ class _TagTracer:
             "%s%s [%s]\n" % (indent, content, ":".join(tags))
         ]
 
-        for name, value in extra.items():
+        for name, value in list(extra.items()):
             lines.append("%s    %s: %s\n" % (indent, name, value))
         return lines
 
@@ -457,7 +457,7 @@ class PluginManager(object):
 
     def get_name(self, plugin):
         """ Return name for registered plugin or None if not registered. """
-        for name, val in self._name2plugin.items():
+        for name, val in list(self._name2plugin.items()):
             if plugin == val:
                 return name
 

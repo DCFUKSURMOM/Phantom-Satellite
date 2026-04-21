@@ -29,7 +29,7 @@ from xpcshellcommandline import parser_desktop, parser_remote
 here = os.path.abspath(os.path.dirname(__file__))
 
 if sys.version_info[0] < 3:
-    unicode_type = unicode
+    unicode_type = str
 else:
     unicode_type = str
 
@@ -124,7 +124,7 @@ class XPCShellRunner(MozbuildObject):
         # Python through 2.7.2 has issues with unicode in some of the
         # arguments. Work around that.
         filtered_args = {}
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             if isinstance(v, unicode_type):
                 v = v.encode('utf-8')
 

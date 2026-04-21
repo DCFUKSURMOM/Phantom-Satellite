@@ -4,7 +4,7 @@
 
 import re
 import subprocess
-from cmanager import CounterManager
+from .cmanager import CounterManager
 
 
 def xrestop(binary='xrestop'):

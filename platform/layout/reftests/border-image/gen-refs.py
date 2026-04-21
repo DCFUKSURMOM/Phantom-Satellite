@@ -65,7 +65,7 @@ class np:
 def parse_p(tok):
   if tok[-2:] == "px":
     return float(tok[:-2])
-  print "Whoops, not a pixel value " + tok
+  print("Whoops, not a pixel value " + tok)
 
 def parse_np(tok):
   if tok[-2:] == "px":
@@ -91,11 +91,11 @@ def parse(filename):
     if toks[0] == "border-image-repeat:":
       props.repeat = toks[1]
     if toks[0] == "border-image-slice:":
-      props.slice = map(parse_p, toks[1:5])
+      props.slice = list(map(parse_p, toks[1:5]))
     if toks[0] == "border-image-width:":
-      props.image_width = map(parse_np, toks[1:5])
+      props.image_width = list(map(parse_np, toks[1:5]))
     if toks[0] == "border-image-outset:":
-      props.outset = map(parse_np, toks[1:5])
+      props.outset = list(map(parse_np, toks[1:5]))
   f.close()
   return props
 
@@ -106,8 +106,8 @@ def normalise(props):
   result = Props()
   result.source = props.source
   result.repeat = props.repeat
-  result.width = map(lambda x: x.get_absolute(props.width), props.image_width)
-  outsets = map(lambda x: x.get_absolute(props.width), props.outset)
+  result.width = [x.get_absolute(props.width) for x in props.image_width]
+  outsets = [x.get_absolute(props.width) for x in props.outset]
   result.size.width = props.size.width + 2*props.width + outsets[1] + outsets[3]
   result.size.height = props.size.height + 2*props.width + outsets[0] + outsets[2]
   result.slice = props.slice
@@ -121,47 +121,47 @@ def normalise(props):
 
 def check_parse(props):
   if not hasattr(props, 'source'):
-    print "missing border-image-source"
+    print("missing border-image-source")
     return False
   if not hasattr(props.size, 'width'):
-    print "missing width"
+    print("missing width")
     return False
   if not hasattr(props.size, 'height'):
-    print "missing height"
+    print("missing height")
     return False
   if not hasattr(props, 'width'):
-    print "missing border-width"
+    print("missing border-width")
     return False
   if not hasattr(props, 'image_width'):
-    print "missing border-image-width"
+    print("missing border-image-width")
     return False
   if not hasattr(props, 'slice'):
-    print "missing border-image-slice"
+    print("missing border-image-slice")
     return False
   if not hasattr(props, 'repeat') or (props.repeat not in ["stretch", "repeat", "round"]):
-    print "missing or incorrect border-image-repeat '" + props.repeat + "'"
+    print("missing or incorrect border-image-repeat '" + props.repeat + "'")
     return False
   if not hasattr(props, 'outset'):
-    print "missing border-image-outset"
+    print("missing border-image-outset")
     return False
 
   return True
 
 def check_normalise(props):
   if not hasattr(props, 'source'):
-    print "missing border-image-source"
+    print("missing border-image-source")
     return False
   if not hasattr(props.size, 'width'):
-    print "missing width"
+    print("missing width")
     return False
   if not hasattr(props.size, 'height'):
-    print "missing height"
+    print("missing height")
     return False
   if not hasattr(props, 'slice'):
-    print "missing border-image-slice"
+    print("missing border-image-slice")
     return False
   if not hasattr(props, 'repeat') or (props.repeat not in ["stretch", "repeat", "round"]):
-    print "missing or incorrect border-image-repeat '" + props.repeat + "'"
+    print("missing or incorrect border-image-repeat '" + props.repeat + "'")
     return False
 
   return True
@@ -180,7 +180,7 @@ class Tile:
 def make_src_tiles():
   tiles = [Tile() for i in range(9)]
 
-  rows = [range(3*i, 3*(i+1)) for i in range(3)]
+  rows = [list(range(3*i, 3*(i+1))) for i in range(3)]
   cols = [[i, i+3, i+6] for i in range(3)]
 
   row_limits_slice = [0, props.slice[3], props.size.width - props.slice[1], props.size.width]
@@ -239,7 +239,7 @@ def compute(props):
     for t in [tiles[i] for i in [3, 4, 5]]:
       t.scale.y = dest_tile_size.height/t.slice.height()
   else:
-    print "Whoops, invalid border-image-repeat value"
+    print("Whoops, invalid border-image-repeat value")
 
   # catch overlapping slices. Its easier to deal with it here than to catch
   # earlier and have to avoid all the divide by zeroes above
@@ -312,34 +312,34 @@ def compute(props):
       dest_tiles[(i+1)*tiles_h-2].dest_size.width -= diff_h
 
   # output the table to simulate the border
-  print "<table>"
+  print("<table>")
   for i in range(tiles_h):
-    print "<col style=\"width: " + str(dest_tiles[i].dest_size.width) + "px;\">"
+    print("<col style=\"width: " + str(dest_tiles[i].dest_size.width) + "px;\">")
   for i in range(tiles_v):
-    print "<tr style=\"height: " + str(dest_tiles[i*tiles_h].dest_size.height) + "px;\">"
+    print("<tr style=\"height: " + str(dest_tiles[i*tiles_h].dest_size.height) + "px;\">")
     for j in range(tiles_h):
       width = dest_tiles[i*tiles_h+j].size.width
       height = dest_tiles[i*tiles_h+j].size.height
       # catch any tiles with negative widths/heights
       # this happends when the total of the border-image-slices > borde drawing area
       if width <= 0 or height <= 0:
-        print "  <td style=\"background: white;\"></td>"
+        print("  <td style=\"background: white;\"></td>")
       else:
-        print "  <td style=\"background-image: " + props.source + "; background-size: " + str(width) + "px " + str(height) + "px; background-position: " + str(dest_tiles[i*tiles_h+j].offset.x) + "px " + str(dest_tiles[i*tiles_h+j].offset.y) + "px;\"></td>"
-    print "</tr>"
-  print "</table>"
+        print("  <td style=\"background-image: " + props.source + "; background-size: " + str(width) + "px " + str(height) + "px; background-position: " + str(dest_tiles[i*tiles_h+j].offset.x) + "px " + str(dest_tiles[i*tiles_h+j].offset.y) + "px;\"></td>")
+    print("</tr>")
+  print("</table>")
 
 
 # start here
 args = sys.argv[1:]
 if len(args) == 0:
-  print "whoops: no source file"
+  print("whoops: no source file")
   exit(1)
 
 
 props = parse(args[0])
 if not check_parse(props):
-  print dir(props)
+  print(dir(props))
   exit(1)
 props = normalise(props)
 if not check_normalise(props):

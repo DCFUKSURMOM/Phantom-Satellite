@@ -39,7 +39,7 @@ def load_with_override(override_path):
     results = load_forward_table(map_path)
     overrides = load_json(override_path)
 
-    for k, v in overrides.iteritems():
+    for k, v in overrides.items():
         results[k] = v
 
     return results

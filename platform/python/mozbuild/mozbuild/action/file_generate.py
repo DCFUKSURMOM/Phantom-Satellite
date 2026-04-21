@@ -9,7 +9,9 @@
 from __future__ import absolute_import, print_function
 
 import argparse
-import imp
+import importlib.util
+import importlib.machinery
+import types
 import os
 import sys
 import traceback
@@ -48,9 +50,19 @@ def main(argv):
     # Since we're invoking the script in a roundabout way, we provide this
     # bit of convenience.
     sys.path.append(os.path.dirname(script))
-    with open(script, 'r') as fh:
-        module = imp.load_module('script', fh, script,
-                                 ('.py', 'r', imp.PY_SOURCE))
+    module_name = "script"
+    loader = importlib.machinery.SourceFileLoader(module_name, script)
+    module = types.ModuleType(module_name)
+    module.__loader__ = loader
+    module.__file__ = script
+    module.__package__ = module_name.rpartition('.')[0]
+    module.__spec__ = None
+
+    sys.modules[module_name] = module
+
+    code = loader.get_code(module_name)
+    exec(code, module.__dict__)
+
     method = args.method_name
     if not hasattr(module, method):
         print('Error: script "{0}" is missing a {1} method'.format(script, method),

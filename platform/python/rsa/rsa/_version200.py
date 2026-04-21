@@ -52,14 +52,14 @@ def bytes2int(bytes):
     8405007
     """
 
-    if not (type(bytes) is types.ListType or type(bytes) is types.StringType):
+    if not (type(bytes) is list or type(bytes) is bytes):
         raise TypeError("You must pass a string or a list")
 
     # Convert byte stream to integer
     integer = 0
     for byte in bytes:
         integer *= 256
-        if type(byte) is types.StringType: byte = ord(byte)
+        if type(byte) is bytes: byte = ord(byte)
         integer += byte
 
     return integer
@@ -69,7 +69,7 @@ def int2bytes(number):
     Converts a number to a string of bytes
     """
 
-    if not (type(number) is types.LongType or type(number) is types.IntType):
+    if not (type(number) is int or type(number) is int):
         raise TypeError("You must pass a long or an int")
 
     string = ""
@@ -88,7 +88,7 @@ def to64(number):
     'A'
     """
 
-    if not (type(number) is types.LongType or type(number) is types.IntType):
+    if not (type(number) is int or type(number) is int):
         raise TypeError("You must pass a long or an int")
 
     if 0 <= number <= 9:            #00-09 translates to '0' - '9'
@@ -117,7 +117,7 @@ def from64(number):
     1
     """
 
-    if not (type(number) is types.LongType or type(number) is types.IntType):
+    if not (type(number) is int or type(number) is int):
         raise TypeError("You must pass a long or an int")
 
     if 48 <= number <= 57:         #ord('0') - ord('9') translates to 0-9
@@ -146,7 +146,7 @@ def int2str64(number):
     '7MyqL'
     """
 
-    if not (type(number) is types.LongType or type(number) is types.IntType):
+    if not (type(number) is int or type(number) is int):
         raise TypeError("You must pass a long or an int")
 
     string = ""
@@ -166,13 +166,13 @@ def str642int(string):
     123456789
     """
 
-    if not (type(string) is types.ListType or type(string) is types.StringType):
+    if not (type(string) is list or type(string) is bytes):
         raise TypeError("You must pass a string or a list")
 
     integer = 0
     for byte in string:
         integer *= 64
-        if type(byte) is types.StringType: byte = ord(byte)
+        if type(byte) is bytes: byte = ord(byte)
         integer += from64(byte)
 
     return integer
@@ -333,7 +333,7 @@ def extended_gcd(a, b):
     oa = a                             #Remember original a/b to remove 
     ob = b                             #negative values from return results
     while b != 0:
-        q = long(a/b)
+        q = int(a/b)
         (a, b)  = (b, a % b)
         (x, lx) = ((lx - (q * x)),x)
         (y, ly) = ((ly - (q * y)),y)
@@ -393,10 +393,10 @@ def newkeys(nbits):
 def encrypt_int(message, ekey, n):
     """Encrypts a message using encryption key 'ekey', working modulo n"""
 
-    if type(message) is types.IntType:
-        message = long(message)
+    if type(message) is int:
+        message = int(message)
 
-    if not type(message) is types.LongType:
+    if not type(message) is int:
         raise TypeError("You must pass a long or int")
 
     if message < 0 or message > n:

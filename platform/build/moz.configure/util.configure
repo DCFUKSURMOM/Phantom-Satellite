@@ -25,15 +25,22 @@ def configure_error(message):
 @imports('sys')
 @imports(_from='mozbuild.configure.util', _import='LineIO')
 @imports(_from='mozbuild.shellutil', _import='quote')
+@imports(_from='locale', _import='getpreferredencoding')
 def check_cmd_output(*args, **kwargs):
+    encoding = getpreferredencoding(False)
     onerror = kwargs.pop('onerror', None)
 
     with log.queue_debug():
         log.debug('Executing: `%s`', quote(*args))
         proc = subprocess.Popen(args, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
+
         stdout, stderr = proc.communicate()
         retcode = proc.wait()
+
+        stdout = stdout.decode(encoding, errors='replace')
+        stderr = stderr.decode(encoding, errors='replace')
+
         if retcode == 0:
             return stdout
 
@@ -70,7 +77,7 @@ def windows_binary_type(path):
     Returns WindowsBinaryType constant.
     """
     GetBinaryTypeW = ctypes.windll.kernel32.GetBinaryTypeW
-    GetBinaryTypeW.argtypes = [wintypes.LPWSTR, wintypes.POINTER(wintypes.DWORD)]
+    GetBinaryTypeW.argtypes = [wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
     GetBinaryTypeW.restype = wintypes.BOOL
 
     bin_type = wintypes.DWORD()
@@ -232,7 +239,7 @@ def unique_list(l):
 #     ('19.0', 'arm', r'C:\...\amd64_arm\cl.exe')
 #     ('19.0', 'x64', r'C:\...\amd64\cl.exe')
 #     ('19.0', 'x86', r'C:\...\amd64_x86\cl.exe')
-@imports(_import='_winreg', _as='winreg')
+@imports(_import='winreg', _as='winreg')
 @imports(_from='__builtin__', _import='WindowsError')
 @imports(_from='fnmatch', _import='fnmatch')
 def get_registry_values(pattern):
@@ -295,7 +302,7 @@ def get_registry_values(pattern):
         keys = next_keys
 
 
-@imports(_from='mozbuild.configure.util', _import='Version', _as='_Version')
+@imports(_from='mozbuild.version', _import='RichVersion', _as='_Version')
 def Version(v):
     'A version number that can be compared usefully.'
     return _Version(v)

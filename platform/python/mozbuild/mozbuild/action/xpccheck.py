@@ -40,7 +40,7 @@ def verifyDirectory(initests, directory):
         break
    
     if not found:
-      print >>sys.stderr, "TEST-UNEXPECTED-FAIL | xpccheck | test %s is missing from test manifest %s!" % (name, os.path.join(directory, 'xpcshell.ini'))
+      print("TEST-UNEXPECTED-FAIL | xpccheck | test %s is missing from test manifest %s!" % (name, os.path.join(directory, 'xpcshell.ini')), file=sys.stderr)
       sys.exit(1)
 
 def verifyIniFile(initests, directory):
@@ -60,12 +60,12 @@ def verifyIniFile(initests, directory):
         break
 
     if not found:
-      print >>sys.stderr, "TEST-UNEXPECTED-FAIL | xpccheck | found %s in xpcshell.ini and not in directory '%s'" % (name, directory)
+      print("TEST-UNEXPECTED-FAIL | xpccheck | found %s in xpcshell.ini and not in directory '%s'" % (name, directory), file=sys.stderr)
       sys.exit(1)
 
 def main(argv):
   if len(argv) < 2:
-    print >>sys.stderr, "Usage: xpccheck.py <topsrcdir> <directory> [<directory> ...]"
+    print("Usage: xpccheck.py <topsrcdir> <directory> [<directory> ...]", file=sys.stderr)
     sys.exit(1)
 
   topsrcdir = argv[0]

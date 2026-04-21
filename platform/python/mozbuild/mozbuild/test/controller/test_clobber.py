@@ -9,7 +9,7 @@ import shutil
 import tempfile
 import unittest
 
-from StringIO import StringIO
+from io import StringIO
 
 from mozunit import main
 

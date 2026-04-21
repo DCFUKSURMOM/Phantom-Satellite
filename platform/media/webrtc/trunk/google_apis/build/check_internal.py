@@ -15,6 +15,6 @@ import sys
 
 if __name__ == '__main__':
   if os.path.exists(sys.argv[1]):
-    print 1
+    print(1)
   else:
-    print 0
+    print(0)

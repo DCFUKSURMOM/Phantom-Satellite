@@ -46,7 +46,7 @@ class TestCreate(unittest.TestCase):
 
         create.create_tasks(taskgraph, label_to_taskid, {'level': '4'})
 
-        for tid, task in self.created_tasks.iteritems():
+        for tid, task in self.created_tasks.items():
             self.assertEqual(task['payload'], 'hello world')
             self.assertEqual(task['schedulerId'], 'gecko-level-4')
             # make sure the dependencies exist, at least
@@ -68,7 +68,7 @@ class TestCreate(unittest.TestCase):
 
         create.create_tasks(taskgraph, label_to_taskid, {'level': '4'})
 
-        for tid, task in self.created_tasks.iteritems():
+        for tid, task in self.created_tasks.items():
             self.assertEqual(task.get('dependencies'), [os.environ['TASK_ID']])
 
 

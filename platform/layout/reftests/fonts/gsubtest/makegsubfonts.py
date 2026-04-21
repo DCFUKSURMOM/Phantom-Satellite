@@ -124,7 +124,7 @@ def makeLookup1():
     		if table.format == 4:
     			table.cmap[cp] = glyphName
     		else:
-    			raise NotImplementedError, "Unsupported cmap table format: %d" % table.format
+    			raise NotImplementedError("Unsupported cmap table format: %d" % table.format)
     	cp += 1
     
     	# tag.fail
@@ -145,7 +145,7 @@ def makeLookup1():
     		if table.format == 4:
     			table.cmap[cp] = glyphName
     		else:
-    			raise NotImplementedError, "Unsupported cmap table format: %d" % table.format
+    			raise NotImplementedError("Unsupported cmap table format: %d" % table.format)
 
         # bump this up so that the sequence is the same as the lookup 3 font
     	cp += 3
@@ -171,7 +171,7 @@ def makeLookup1():
     script = scriptRecord.Script = Script()
     defaultLangSys = script.DefaultLangSys = DefaultLangSys()
     defaultLangSys.FeatureCount = featureCount
-    defaultLangSys.FeatureIndex = range(defaultLangSys.FeatureCount)
+    defaultLangSys.FeatureIndex = list(range(defaultLangSys.FeatureCount))
     defaultLangSys.ReqFeatureIndex = 65535
     defaultLangSys.LookupOrder = None
     script.LangSysCount = 0
@@ -326,7 +326,7 @@ def makeLookup3():
     		if table.format == 4:
     			table.cmap[cp] = glyphName
     		else:
-    			raise NotImplementedError, "Unsupported cmap table format: %d" % table.format
+    			raise NotImplementedError("Unsupported cmap table format: %d" % table.format)
     	cp += 1
     
     	# tag.alt1,2,3
@@ -347,7 +347,7 @@ def makeLookup3():
     			if table.format == 4:
     				table.cmap[cp] = glyphName
     			else:
-    				raise NotImplementedError, "Unsupported cmap table format: %d" % table.format
+    				raise NotImplementedError("Unsupported cmap table format: %d" % table.format)
     		cp += 1
     	
     # set the glyph order
@@ -371,7 +371,7 @@ def makeLookup3():
     script = scriptRecord.Script = Script()
     defaultLangSys = script.DefaultLangSys = DefaultLangSys()
     defaultLangSys.FeatureCount = featureCount
-    defaultLangSys.FeatureIndex = range(defaultLangSys.FeatureCount)
+    defaultLangSys.FeatureIndex = list(range(defaultLangSys.FeatureCount))
     defaultLangSys.ReqFeatureIndex = 65535
     defaultLangSys.LookupOrder = None
     script.LangSysCount = 0
@@ -474,13 +474,13 @@ def makeJavascriptData():
 
 # build fonts
 
-print "Making lookup type 1 font..."
+print("Making lookup type 1 font...")
 makeLookup1()
 
-print "Making lookup type 3 font..."
+print("Making lookup type 3 font...")
 makeLookup3()
 
 # output javascript data
 
-print "Making javascript data file..."
+print("Making javascript data file...")
 makeJavascriptData()

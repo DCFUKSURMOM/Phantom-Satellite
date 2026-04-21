@@ -27,7 +27,7 @@ class ShardedTestsQueue(object):
     self.tests_queue = multiprocessing.Queue()
     for test in tests:
       self.tests_queue.put(test)
-    for _ in xrange(self.num_devices):
+    for _ in range(self.num_devices):
       self.tests_queue.put(ShardedTestsQueue._STOP_SENTINEL)
 
   def __iter__(self):

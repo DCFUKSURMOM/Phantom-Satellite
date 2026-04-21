@@ -53,7 +53,7 @@ def ToCAsciiArray(lines):
 def ToCArray(lines):
   result = []
   for chr in lines:
-    result.append(str(ord(chr)))
+    result.append(str(chr))
   return ", ".join(result)
 
 HEADER_TEMPLATE = """\
@@ -87,7 +87,7 @@ def embed(cxx, preprocessorOption, msgs, sources, c_out, js_out, namespace, env)
 
   js_out.write(processed)
   import zlib
-  compressed = zlib.compress(processed)
+  compressed = zlib.compress(processed.encode('utf-8'))
   data = ToCArray(compressed)
   c_out.write(HEADER_TEMPLATE % {
     'sources_type': 'unsigned char',
@@ -107,9 +107,9 @@ def preprocess(cxx, preprocessorOption, source, args = []):
   tmpOut = 'self-hosting-preprocessed.pp';
   outputArg = shlex.split(preprocessorOption + tmpOut)
 
-  with open(tmpIn, 'wb') as input:
+  with open(tmpIn, 'w', encoding='utf-8') as input:
     input.write(source)
-  print(' '.join(cxx + outputArg + args + [tmpIn]))
+  print((' '.join(cxx + outputArg + args + [tmpIn])))
   result = subprocess.Popen(cxx + outputArg + args + [tmpIn]).wait()
   if (result != 0):
     sys.exit(result);
@@ -122,7 +122,7 @@ def preprocess(cxx, preprocessorOption, source, args = []):
 def messages(jsmsg):
   defines = []
   for line in open(jsmsg):
-    match = re.match("MSG_DEF\((JSMSG_(\w+))", line)
+    match = re.match(r"MSG_DEF\((JSMSG_(\w+))", line)
     if match:
       defines.append("#define %s %i" % (match.group(1), len(defines)))
     else:
@@ -132,7 +132,7 @@ def messages(jsmsg):
 
 def get_config_defines(buildconfig):
   # Collect defines equivalent to ACDEFINES and add MOZ_DEBUG_DEFINES.
-  env = {key: value for key, value in buildconfig.defines.iteritems()
+  env = {key: value for key, value in buildconfig.defines.items()
          if key not in buildconfig.non_global_defines}
   for define in buildconfig.substs['MOZ_DEBUG_DEFINES']:
     env[define] = 1

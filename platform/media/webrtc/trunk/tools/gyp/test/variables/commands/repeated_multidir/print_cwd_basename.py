@@ -7,4 +7,4 @@
 import os
 import os.path
 
-print os.path.basename(os.getcwd())
+print(os.path.basename(os.getcwd()))

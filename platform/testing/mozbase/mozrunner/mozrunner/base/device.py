@@ -59,7 +59,7 @@ class DeviceRunner(BaseRunner):
         if self.app_ctx.dm._deviceSerial:
             cmd.extend(['-s', self.app_ctx.dm._deviceSerial])
         cmd.append('shell')
-        for k, v in self._device_env.iteritems():
+        for k, v in self._device_env.items():
             cmd.append('%s=%s' % (k, v))
         cmd.append(self.app_ctx.remote_binary)
         return cmd
@@ -178,7 +178,7 @@ class FennecRunner(DeviceRunner):
         app_params.extend(self.cmdargs)
         am_subcommand.extend(["--es", "args", "'%s'" % " ".join(app_params)])
         # Append env variables in the form |--es env0 MOZ_CRASHREPORTER=1|
-        for (count, (k, v)) in enumerate(self._device_env.iteritems()):
+        for (count, (k, v)) in enumerate(self._device_env.items()):
             am_subcommand.extend(["--es", "env%d" % count, "%s=%s" % (k, v)])
         cmd.append("%s" % " ".join(am_subcommand))
         return cmd

@@ -9,8 +9,8 @@ import os
 import re
 import subprocess
 import sys
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 import mozinfo
 
@@ -137,13 +137,13 @@ class MozharnessRunner(MozbuildObject):
 
 
     def path_to_url(self, path):
-        return urlparse.urljoin('file:', urllib.pathname2url(path))
+        return urllib.parse.urljoin('file:', urllib.request.pathname2url(path))
 
     def _installer_url(self):
         package_re = {
-            "linux": re.compile("^firefox-\d+\..+\.tar\.bz2$"),
-            "win": re.compile("^firefox-\d+\..+\.installer\.exe$"),
-            "mac": re.compile("^firefox-\d+\..+\.mac(?:64)?\.dmg$"),
+            "linux": re.compile(r"^firefox-\d+\..+\.tar\.bz2$"),
+            "win": re.compile(r"^firefox-\d+\..+\.installer\.exe$"),
+            "mac": re.compile(r"^firefox-\d+\..+\.mac(?:64)?\.dmg$"),
         }[mozinfo.info['os']]
         dist_path = os.path.join(self.topobjdir, "dist")
         filenames = [item for item in os.listdir(dist_path) if

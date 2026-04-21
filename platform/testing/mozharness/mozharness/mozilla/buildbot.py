@@ -133,7 +133,7 @@ class BuildbotMixin(object):
         if not os.path.isdir(dir_name):
             self.mkdir_p(dir_name)
         if not prop_list:
-            prop_list = self.buildbot_properties.keys()
+            prop_list = list(self.buildbot_properties.keys())
             self.info("Writing buildbot properties to %s" % file_name)
         else:
             if not isinstance(prop_list, (list, tuple)):
@@ -171,7 +171,7 @@ class BuildbotMixin(object):
             if self.buildbot_config['sourcestamp']['changes'][0].get('comments'):
                 sendchange += ['--comments', self.buildbot_config['sourcestamp']['changes'][0]['comments'].encode('ascii', 'ignore')]
         if sendchange_props:
-            for key, value in sendchange_props.iteritems():
+            for key, value in sendchange_props.items():
                 sendchange.extend(['--property', '%s:%s' % (key, value)])
         else:
             if self.buildbot_config["properties"].get("builduid"):

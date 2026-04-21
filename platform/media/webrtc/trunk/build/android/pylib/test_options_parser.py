@@ -4,7 +4,7 @@
 
 """Parses options for the instrumentation tests."""
 
-import constants
+from . import constants
 import optparse
 import os
 import sys

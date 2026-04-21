@@ -22,7 +22,7 @@ def CheckFileType(file, expected):
   o = proc.communicate()[0].strip()
   assert not proc.returncode
   if not expected in o:
-    print 'File: Expected %s, got %s' % (expected, o)
+    print('File: Expected %s, got %s' % (expected, o))
     test.fail_test()
 
 def HasCerts():
@@ -37,7 +37,7 @@ def CheckSignature(file):
   o = proc.communicate()[0].strip()
   assert not proc.returncode
   if "code object is not signed at all" in o:
-    print 'File %s not properly signed.' % (file)
+    print('File %s not properly signed.' % (file))
     test.fail_test()
 
 def CheckEntitlements(file, expected_entitlements):
@@ -49,10 +49,10 @@ def CheckEntitlements(file, expected_entitlements):
     data = temp.read()
   entitlements = ParseEntitlements(data)
   if not entitlements:
-    print 'No valid entitlements found in %s.' % (file)
+    print('No valid entitlements found in %s.' % (file))
     test.fail_test()
   if entitlements != expected_entitlements:
-    print 'Unexpected entitlements found in %s.' % (file)
+    print('Unexpected entitlements found in %s.' % (file))
     test.fail_test()
 
 def ParseEntitlements(data):
@@ -75,17 +75,17 @@ def GetMachineBuild():
 
 def CheckPlistvalue(plist, key, expected):
   if key not in plist:
-    print '%s not set in plist' % key
+    print('%s not set in plist' % key)
     test.fail_test()
     return
   actual = plist[key]
   if actual != expected:
-    print 'File: Expected %s, got %s for %s' % (expected, actual, key)
+    print('File: Expected %s, got %s for %s' % (expected, actual, key))
     test.fail_test()
 
 def CheckPlistNotSet(plist, key):
   if key in plist:
-    print '%s should not be set in plist' % key
+    print('%s should not be set in plist' % key)
     test.fail_test()
     return
 
@@ -111,7 +111,7 @@ if sys.platform == 'darwin':
     xcode_version = TestMac.Xcode.Version()
     if xcode_version >= '0720':
       if len(plist) != 23:
-        print 'plist should have 23 entries, but it has %s' % len(plist)
+        print('plist should have 23 entries, but it has %s' % len(plist))
         test.fail_test()
 
     # Values that will hopefully never change.

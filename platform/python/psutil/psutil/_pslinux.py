@@ -25,7 +25,7 @@ from . import _psutil_linux as cext
 from . import _psutil_posix as cext_posix
 from ._common import isfile_strict, usage_percent
 from ._common import NIC_DUPLEX_FULL, NIC_DUPLEX_HALF, NIC_DUPLEX_UNKNOWN
-from ._compat import PY3, long
+from ._compat import PY3, int
 
 if sys.version_info >= (3, 4):
     import enum
@@ -601,7 +601,7 @@ def net_if_stats():
     duplex_map = {cext.DUPLEX_FULL: NIC_DUPLEX_FULL,
                   cext.DUPLEX_HALF: NIC_DUPLEX_HALF,
                   cext.DUPLEX_UNKNOWN: NIC_DUPLEX_UNKNOWN}
-    names = net_io_counters().keys()
+    names = list(net_io_counters().keys())
     ret = {}
     for name in names:
         isup, duplex, speed, mtu = cext.net_if_stats(name)
@@ -1062,7 +1062,7 @@ class Process(object):
         @wrap_exceptions
         def ionice_set(self, ioclass, value):
             if value is not None:
-                if not PY3 and not isinstance(value, (int, long)):
+                if not PY3 and not isinstance(value, (int, int)):
                     msg = "value argument is not an integer (gor %r)" % value
                     raise TypeError(msg)
                 if not 0 <= value <= 8:

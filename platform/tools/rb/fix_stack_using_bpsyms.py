@@ -160,4 +160,4 @@ def fixSymbols(line, symbolsDir):
 if __name__ == "__main__":
   symbolsDir = sys.argv[1]
   for line in iter(sys.stdin.readline, ''):
-    print fixSymbols(line, symbolsDir),
+    print(fixSymbols(line, symbolsDir), end=' ')

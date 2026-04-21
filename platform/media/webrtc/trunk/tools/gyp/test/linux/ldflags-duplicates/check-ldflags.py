@@ -12,13 +12,13 @@ import sys
 
 def CheckContainsFlags(args, substring):
   if args.find(substring) is -1:
-    print 'ERROR: Linker arguments "%s" are missing in "%s"' % (substring, args)
+    print('ERROR: Linker arguments "%s" are missing in "%s"' % (substring, args))
     return False;
   return True;
 
 if __name__ == '__main__':
   args = " ".join(sys.argv)
-  print  "args = " +args
+  print("args = " +args)
   if not CheckContainsFlags(args, 'lib1.a -Wl,--no-whole-archive') \
     or not CheckContainsFlags(args, 'lib2.a -Wl,--no-whole-archive'):
     sys.exit(1);

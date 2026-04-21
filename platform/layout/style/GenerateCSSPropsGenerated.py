@@ -7,6 +7,7 @@ import string
 import argparse
 import subprocess
 import buildconfig
+import functools
 from mozbuild import shellutil
 
 def get_properties(preprocessorHeader):
@@ -26,7 +27,7 @@ def get_properties(preprocessorHeader):
         property_order = {"longhand": 0, "logical": 0, "shorthand": 1, "alias": 2}
         return property_order[x["proptype"]] - property_order[y["proptype"]]
 
-    properties = sorted(properties, cmp=property_compare)
+    properties = sorted(properties, key=functools.cmp_to_key(property_compare))
 
     for i, p in enumerate(properties):
         p["index"] = i
@@ -46,7 +47,7 @@ def get_properties(preprocessorHeader):
 def generate_idl_names(properties):
     names = []
     for p in properties:
-        if p["proptype"] is "alias":
+        if p["proptype"] == "alias":
             continue
         if p["idlname"] is None:
             names.append("  nullptr,  // %s" % p["name"])
@@ -56,28 +57,28 @@ def generate_idl_names(properties):
 
 def generate_assertions(properties):
     def enum(p):
-        if p["proptype"] is "alias":
+        if p["proptype"] == "alias":
             return "eCSSPropertyAlias_%s" % p["prop"]
         else:
             return "eCSSProperty_%s" % p["id"]
     msg = ('static_assert(%s == %d, "GenerateCSSPropsGenerated.py did not list '
            'properties in nsCSSPropertyID order");')
-    return "\n".join(map(lambda p: msg % (enum(p), p["index"]), properties))
+    return "\n".join([msg % (enum(p), p["index"]) for p in properties])
 
 def generate_idl_name_positions(properties):
     # Skip aliases.
-    ps = filter(lambda p: p["proptype"] is not "alias", properties)
+    ps = [p for p in properties if p["proptype"] != "alias"]
 
     # Sort alphabetically by IDL name.
-    ps = sorted(ps, key=lambda p: p["idlname"])
+    ps = sorted(ps, key=lambda p: p["idlname"] or "")
 
     # Annotate entries with the sorted position.
     ps = [(p, position) for position, p in enumerate(ps)]
 
     # Sort back to nsCSSPropertyID order.
-    ps = sorted(ps, key=lambda (p, position): p["index"])
+    ps = sorted(ps, key=lambda p_position1: p_position1[0]["index"])
 
-    return ",\n".join(map(lambda (p, position): "  %d" % position, ps))
+    return ",\n".join(map(lambda p_position: "  %d" % p_position[1], ps))
 
 def generate(output, cppTemplate, preprocessorHeader):
     cppFile = open(cppTemplate, "r")

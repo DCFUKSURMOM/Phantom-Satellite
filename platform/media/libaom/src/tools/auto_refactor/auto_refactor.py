@@ -90,12 +90,12 @@ class StructInfo():
   def update_struct_item_list(self):
     # Collect all struct_items from struct_name_dic and typedef_name_dic
     # Compute child_decl_map for each struct item.
-    for struct_name in self.struct_name_dic.keys():
+    for struct_name in list(self.struct_name_dic.keys()):
       struct_item = self.struct_name_dic[struct_name]
       struct_item.compute_child_decl_map(self)
       self.struct_item_list.append(struct_item)
 
-    for typedef_name in self.typedef_name_dic.keys():
+    for typedef_name in list(self.typedef_name_dic.keys()):
       struct_item = self.typedef_name_dic[typedef_name]
       if struct_item.struct_name not in self.struct_name_dic:
         struct_item.compute_child_decl_map(self)

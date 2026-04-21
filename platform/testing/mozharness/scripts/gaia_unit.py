@@ -68,7 +68,7 @@ class GaiaUnitTest(GaiaTest):
                     try:
                         disabled_tests = json.loads(m.read())
                     except:
-                        print "Error while decoding disabled.json; please make sure this file has valid JSON syntax."
+                        print("Error while decoding disabled.json; please make sure this file has valid JSON syntax.")
                         sys.exit(1)
 
                 # Construct a list of all tests
@@ -76,10 +76,10 @@ class GaiaUnitTest(GaiaTest):
                 for path in ('apps', 'tv_apps'):
                     test_root    = os.path.join(dirs['abs_gaia_dir'], path)
                     full_paths   = glob.glob(os.path.join(test_root, '*/test/unit/*_test.js'))
-                    unit_tests  += map(lambda x: os.path.relpath(x, test_root), full_paths)
+                    unit_tests  += [os.path.relpath(x, test_root) for x in full_paths]
 
                 # Remove the tests that are disabled
-                active_unit_tests = filter(lambda x: x not in disabled_tests, unit_tests)
+                active_unit_tests = [x for x in unit_tests if x not in disabled_tests]
 
                 # Chunk the list as requested
                 tests_to_run = subprocess.check_output(chunker + active_unit_tests).strip().split(' ')

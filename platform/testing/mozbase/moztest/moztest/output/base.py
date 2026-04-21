@@ -5,7 +5,7 @@
 
 from __future__ import with_statement
 from contextlib import closing
-from StringIO import StringIO
+from io import StringIO
 
 try:
     from abc import abstractmethod
@@ -13,8 +13,8 @@ except ImportError:
     # abc is python 2.6+
     # from https://github.com/mozilla/mozbase/blob/master/mozdevice/mozdevice/devicemanager.py
     def abstractmethod(method):
-        line = method.func_code.co_firstlineno
-        filename = method.func_code.co_filename
+        line = method.__code__.co_firstlineno
+        filename = method.__code__.co_filename
 
         def not_implemented(*args, **kwargs):
             raise NotImplementedError('Abstract method %s at File "%s", '

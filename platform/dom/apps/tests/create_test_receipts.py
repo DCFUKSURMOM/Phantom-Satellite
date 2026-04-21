@@ -152,12 +152,12 @@ receipt_with_wrong_typ = {
   "reissue": "http://mochi.test:8888/reissue/5169314356"
 }
 
-print("let valid_receipt1 = \"" + jwt.encode(receipt1, "") + "\";\n")
-print("let valid_receipt2 = \"" + jwt.encode(receipt2, "") + "\";\n")
-print("let receipt_without_typ = \"" + jwt.encode(receipt_without_typ, "") + "\";\n")
-print("let receipt_without_product = \"" + jwt.encode(receipt_without_product, "") + "\";\n")
-print("let receipt_without_user = \"" + jwt.encode(receipt_without_user, "") + "\";\n")
-print("let receipt_without_iss = \"" + jwt.encode(receipt_without_iss, "") + "\";\n")
-print("let receipt_without_nbf = \"" + jwt.encode(receipt_without_nbf, "") + "\";\n")
-print("let receipt_without_iat = \"" + jwt.encode(receipt_without_iat, "") + "\";\n")
-print("let receipt_with_wrong_typ = \"" + jwt.encode(receipt_with_wrong_typ, "") + "\";\n")
+print(("let valid_receipt1 = \"" + jwt.encode(receipt1, "") + "\";\n"))
+print(("let valid_receipt2 = \"" + jwt.encode(receipt2, "") + "\";\n"))
+print(("let receipt_without_typ = \"" + jwt.encode(receipt_without_typ, "") + "\";\n"))
+print(("let receipt_without_product = \"" + jwt.encode(receipt_without_product, "") + "\";\n"))
+print(("let receipt_without_user = \"" + jwt.encode(receipt_without_user, "") + "\";\n"))
+print(("let receipt_without_iss = \"" + jwt.encode(receipt_without_iss, "") + "\";\n"))
+print(("let receipt_without_nbf = \"" + jwt.encode(receipt_without_nbf, "") + "\";\n"))
+print(("let receipt_without_iat = \"" + jwt.encode(receipt_without_iat, "") + "\";\n"))
+print(("let receipt_with_wrong_typ = \"" + jwt.encode(receipt_with_wrong_typ, "") + "\";\n"))

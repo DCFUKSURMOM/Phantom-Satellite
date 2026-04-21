@@ -16,7 +16,7 @@ class CounterManager(object):
 
     def _loadCounters(self):
         """Loads all of the counters defined in the counterDict"""
-        for counter in self.counterDict.keys():
+        for counter in list(self.counterDict.keys()):
             self.allCounters[counter] = self.counterDict[counter]
 
     def registerCounters(self, counters):

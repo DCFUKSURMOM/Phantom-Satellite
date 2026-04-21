@@ -72,8 +72,8 @@ for wm in WRITING_MODES:
         if wm != "horizontal-tb":
             write_test_files(wm, "sideways", pos1, pos2)
 
-print("# START tests from {}".format(__file__))
+print(("# START tests from {}".format(__file__)))
 reftest_items.sort()
 for item in reftest_items:
     print(item)
-print("# END tests from {}".format(__file__))
+print(("# END tests from {}".format(__file__)))

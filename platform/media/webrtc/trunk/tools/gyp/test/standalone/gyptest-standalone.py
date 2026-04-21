@@ -26,7 +26,7 @@ for root, dirs, files in os.walk("."):
     file = os.path.join(root, file)
     contents = open(file).read()
     if 'standalone.gyp' in contents:
-      print 'gyp file referenced in generated output: %s' % file
+      print('gyp file referenced in generated output: %s' % file)
       test.fail_test()
 
 

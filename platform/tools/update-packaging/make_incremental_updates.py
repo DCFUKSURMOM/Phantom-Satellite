@@ -46,11 +46,11 @@ class PatchInfo:
         if m:
             # Directory immediately following extensions is used for the test
             testdir = m.group(1)
-            print '     add-if "'+testdir+'" "'+filename+'"'
+            print('     add-if "'+testdir+'" "'+filename+'"')
             self.manifestv2.append('add-if "'+testdir+'" "'+filename+'"')
             self.manifestv3.append('add-if "'+testdir+'" "'+filename+'"')
         else:
-            print '        add "'+filename+'"'
+            print('        add "'+filename+'"')
             self.manifestv2.append('add "'+filename+'"')
             self.manifestv3.append('add "'+filename+'"')
 
@@ -59,7 +59,7 @@ class PatchInfo:
             This was ported from mozilla/tools/update-packaging/common.sh's
             make_add_if_not_instruction.
         """
-        print ' add-if-not "'+filename+'" "'+filename+'"'
+        print(' add-if-not "'+filename+'" "'+filename+'"')
         self.manifestv3.append('add-if-not "'+filename+'" "'+filename+'"')
 
     def append_patch_instruction(self, filename, patchname):
@@ -76,11 +76,11 @@ class PatchInfo:
         m = re.match("((?:|.*/)distribution/extensions/.*)/", filename)
         if m:
             testdir = m.group(1)
-            print '   patch-if "'+testdir+'" "'+patchname+'" "'+filename+'"'
+            print('   patch-if "'+testdir+'" "'+patchname+'" "'+filename+'"')
             self.manifestv2.append('patch-if "'+testdir+'" "'+patchname+'" "'+filename+'"')
             self.manifestv3.append('patch-if "'+testdir+'" "'+patchname+'" "'+filename+'"')
         else:
-            print '      patch "'+patchname+'" "'+filename+'"'
+            print('      patch "'+patchname+'" "'+filename+'"')
             self.manifestv2.append('patch "'+patchname+'" "'+filename+'"')
             self.manifestv3.append('patch "'+patchname+'" "'+filename+'"')
 
@@ -90,16 +90,16 @@ class PatchInfo:
             mozilla/tools/update-packaging/common.sh/make_remove_instruction
         """
         if filename.endswith("/"):
-            print '      rmdir "'+filename+'"'
+            print('      rmdir "'+filename+'"')
             self.manifestv2.append('rmdir "'+filename+'"')
             self.manifestv3.append('rmdir "'+filename+'"')
         elif filename.endswith("/*"):
             filename = filename[:-1]
-            print '    rmrfdir "'+filename+'"'
+            print('    rmrfdir "'+filename+'"')
             self.manifestv2.append('rmrfdir "'+filename+'"')
             self.manifestv3.append('rmrfdir "'+filename+'"')
         else:
-            print '     remove "'+filename+'"'
+            print('     remove "'+filename+'"')
             self.manifestv2.append('remove "'+filename+'"')
             self.manifestv3.append('remove "'+filename+'"')
 
@@ -217,7 +217,7 @@ def xzunzip_file(filename):
 def extract_mar(filename, work_dir):
     """ Extracts the marfile intot he work_dir
         assumes work_dir already exists otherwise will throw osError"""
-    print "Extracting "+filename+" to "+work_dir
+    print("Extracting "+filename+" to "+work_dir)
     saved_path = os.getcwd()
     try:
         os.chdir(work_dir)
@@ -229,7 +229,7 @@ def create_partial_patch_for_file(from_marfile_entry, to_marfile_entry, shas, pa
     """ Creates the partial patch file and manifest entry for the pair of files passed in
     """
     if not (from_marfile_entry.sha(),to_marfile_entry.sha()) in shas:
-        print 'diffing "'+from_marfile_entry.name+'\"'
+        print('diffing "'+from_marfile_entry.name+'\"')
         #bunzip to/from
         bunzip_file(from_marfile_entry.abs_path)
         bunzip_file(to_marfile_entry.abs_path)
@@ -343,7 +343,7 @@ def create_partial_patch(from_dir_path, to_dir_path, patch_filename, shas, patch
     elif "Contents\Resources\precomplete" in to_file_set:
         forced_list.append("Contents\Resources\precomplete")
     else:
-        raise Exception, "missing precomplete file in: "+to_dir_path
+        raise Exception("missing precomplete file in: "+to_dir_path)
 
     if "removed-files" in to_file_set:
         forced_list.append("removed-files")
@@ -353,7 +353,7 @@ def create_partial_patch(from_dir_path, to_dir_path, patch_filename, shas, patch
     elif "Contents\Resources\\removed-files" in to_file_set:
         forced_list.append("Contents\Resources\\removed-files")
     else:
-        raise Exception, "missing removed-files file in: "+to_dir_path
+        raise Exception("missing removed-files file in: "+to_dir_path)
 
     if "chrome.manifest" in to_file_set:
         forced_list.append("chrome.manifest")
@@ -363,7 +363,7 @@ def create_partial_patch(from_dir_path, to_dir_path, patch_filename, shas, patch
     elif "Contents\Resources\\chrome.manifest" in to_file_set:
         forced_list.append("Contents\Resources\\chrome.manifest")
     else:
-        raise Exception, "missing chrome.manifest file in: "+to_dir_path
+        raise Exception("missing chrome.manifest file in: "+to_dir_path)
 
     # Files which exist in both sets need to be patched
     patch_filenames = list(from_file_set.intersection(to_file_set))
@@ -375,7 +375,7 @@ def create_partial_patch(from_dir_path, to_dir_path, patch_filename, shas, patch
             # This filename is in the add if not list, explicitly add-if-not
             create_add_if_not_patch_for_file(to_dir_hash[filename], patch_info)
         elif filename in forced_list:
-            print 'Forcing "'+filename+'"'
+            print('Forcing "'+filename+'"')
             # This filename is in the forced list, explicitly add
             create_add_patch_for_file(to_dir_hash[filename], patch_info)
         else:
@@ -422,8 +422,8 @@ def create_partial_patch(from_dir_path, to_dir_path, patch_filename, shas, patch
     return patch_filename
 
 def usage():
-    print "-h for help"
-    print "-f for patchlist_file"
+    print("-h for help")
+    print("-f for patchlist_file")
 
 def get_buildid(work_dir):
     """ extracts buildid from MAR
@@ -432,7 +432,7 @@ def get_buildid(work_dir):
     if not os.path.exists(ini):
         ini = '%s/Contents/Resources/application.ini' % work_dir
         if not os.path.exists(ini):
-            print 'WARNING: application.ini not found, cannot find build ID'
+            print('WARNING: application.ini not found, cannot find build ID')
             return ''
 
     fd, tmppath = tempfile.mkstemp('', 'tmp', os.getcwd())
@@ -460,7 +460,7 @@ def decode_filename(filepath):
         '(?P<product>\w+)(-)(?P<version>\w+\.\w+(\.\w+){0,2})(\.)(?P<locale>.+?)(\.)(?P<platform>.+?)(\.)(?P<type>\w+)(.mar)',
       os.path.basename(filepath))
       return m.groupdict()
-    except Exception, exc:
+    except Exception as exc:
       try:
         m = re.search(
           '(?P<platform>.+?)\/(?P<locale>.+?)\/(?P<product>\w+)-(?P<version>\w+\.\w+)\.(?P<type>\w+).mar',
@@ -477,7 +477,7 @@ def create_partial_patches(patches):
     metadata = []
     try:
         work_dir_root = tempfile.mkdtemp('-fastmode', 'tmp', os.getcwd())
-        print "Building patches using work dir: %s" % (work_dir_root)
+        print("Building patches using work dir: %s" % (work_dir_root))
 
         # Iterate through every patch set in the patch file
         patch_num = 1
@@ -533,7 +533,7 @@ def create_partial_patches(patches):
              'locale':from_decoded['locale'],
              'platform':from_decoded['platform'],
             })
-            print "done with patch %s/%s time (%.2fs/%.2fs/%.2fs) (mar/patch/total)" % (str(patch_num),str(len(patches)),mar_extract_time-startTime,time.time()-mar_extract_time,time.time()-startTime)
+            print("done with patch %s/%s time (%.2fs/%.2fs/%.2fs) (mar/patch/total)" % (str(patch_num),str(len(patches)),mar_extract_time-startTime,time.time()-mar_extract_time,time.time()-startTime))
             patch_num += 1
         return metadata
     finally:

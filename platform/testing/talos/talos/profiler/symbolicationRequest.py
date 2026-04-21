@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from symLogging import LogTrace, LogError
+from .symLogging import LogTrace, LogError
 
 import re
 import json
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 # Precompiled regex for validating lib names
 # Empty lib name means client couldn't associate frame with any lib
@@ -202,9 +202,9 @@ class SymbolicationRequest:
                 }
                 requestJson = json.dumps(requestObj)
                 headers = {"Content-Type": "application/json"}
-                requestHandle = urllib2.Request(url, requestJson, headers)
+                requestHandle = urllib.request.Request(url, requestJson, headers)
                 try:
-                    response = urllib2.urlopen(requestHandle)
+                    response = urllib.request.urlopen(requestHandle)
                 except Exception as e:
                     if requestVersion == 4:
                         # Try again with version 3

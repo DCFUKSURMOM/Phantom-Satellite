@@ -13,7 +13,7 @@ import mozcrash
 import mozfile
 import mozinfo
 import mozlog
-import StringIO
+import io
 import posixpath
 from mozdevice import devicemanager, devicemanagerADB, devicemanagerSUT
 
@@ -58,7 +58,7 @@ class RemoteCPPUnitTests(cppunittests.CPPUnitTests):
 
                 for info in apk_contents.infolist():
                     if info.filename.endswith(".so"):
-                        print >> sys.stderr, "Pushing %s.." % info.filename
+                        print("Pushing %s.." % info.filename, file=sys.stderr)
                         remote_file = posixpath.join(self.remote_bin_dir, os.path.basename(info.filename))
                         apk_contents.extract(info, tmpdir)
                         local_file = os.path.join(tmpdir, info.filename)
@@ -74,7 +74,7 @@ class RemoteCPPUnitTests(cppunittests.CPPUnitTests):
         elif self.options.local_lib:
             for file in os.listdir(self.options.local_lib):
                 if file.endswith(".so"):
-                    print >> sys.stderr, "Pushing %s.." % file
+                    print("Pushing %s.." % file, file=sys.stderr)
                     remote_file = posixpath.join(self.remote_bin_dir, file)
                     local_file = os.path.join(self.options.local_lib, file)
                     self.device.pushFile(local_file, remote_file)
@@ -85,7 +85,7 @@ class RemoteCPPUnitTests(cppunittests.CPPUnitTests):
                     for root, dirs, files in os.walk(local_arm_lib):
                         for file in files:
                             if (file.endswith(".so")):
-                                print >> sys.stderr, "Pushing %s.." % file
+                                print("Pushing %s.." % file, file=sys.stderr)
                                 remote_file = posixpath.join(self.remote_bin_dir, file)
                                 local_file = os.path.join(root, file)
                                 self.device.pushFile(local_file, remote_file)
@@ -131,7 +131,7 @@ class RemoteCPPUnitTests(cppunittests.CPPUnitTests):
         basename = os.path.basename(prog)
         remote_bin = posixpath.join(self.remote_bin_dir, basename)
         self.log.test_start(basename)
-        buf = StringIO.StringIO()
+        buf = io.StringIO()
         test_timeout = cppunittests.CPPUnitTests.TEST_PROC_TIMEOUT * timeout_factor
         returncode = self.device.shell([remote_bin], buf, env=env, cwd=self.remote_home_dir,
                                        timeout=test_timeout)
@@ -236,7 +236,7 @@ def run_test_harness(options, args):
     else:
         dm = devicemanagerSUT.DeviceManagerSUT(options.device_ip, options.device_port, deviceRoot=options.remote_test_root)
         if not options.device_ip:
-            print "Error: you must provide a device IP to connect to via the --deviceIP option"
+            print("Error: you must provide a device IP to connect to via the --deviceIP option")
             sys.exit(1)
 
     options.xre_path = os.path.abspath(options.xre_path)
@@ -258,23 +258,23 @@ def main():
     mozlog.commandline.add_logging_group(parser)
     options, args = parser.parse_args()
     if not args:
-        print >>sys.stderr, """Usage: %s <test binary> [<test binary>...]""" % sys.argv[0]
+        print("""Usage: %s <test binary> [<test binary>...]""" % sys.argv[0], file=sys.stderr)
         sys.exit(1)
     if options.local_lib is not None and not os.path.isdir(options.local_lib):
-        print >>sys.stderr, """Error: --localLib directory %s not found""" % options.local_lib
+        print("""Error: --localLib directory %s not found""" % options.local_lib, file=sys.stderr)
         sys.exit(1)
     if options.local_apk is not None and not os.path.isfile(options.local_apk):
-        print >>sys.stderr, """Error: --apk file %s not found""" % options.local_apk
+        print("""Error: --apk file %s not found""" % options.local_apk, file=sys.stderr)
         sys.exit(1)
     if not options.xre_path:
-        print >>sys.stderr, """Error: --xre-path is required"""
+        print("""Error: --xre-path is required""", file=sys.stderr)
         sys.exit(1)
 
     log = mozlog.commandline.setup_logging("remotecppunittests", options,
                                            {"tbpl": sys.stdout})
     try:
         result = run_test_harness(options, args)
-    except Exception, e:
+    except Exception as e:
         log.error(str(e))
         result = False
     sys.exit(0 if result else 1)

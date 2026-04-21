@@ -30,7 +30,7 @@ class SymbolTable(object):
         strtab = fh.read(cmd.strsize)
         fh.seek(cmd.symoff)
         nlists = []
-        for i in xrange(cmd.nsyms):
+        for i in range(cmd.nsyms):
             cmd = nlist.from_fileobj(fh)
             if cmd.n_un == 0:
                 nlists.append((cmd, ''))
@@ -72,18 +72,18 @@ class SymbolTable(object):
     def readtoc(self, fh, off, n):
         #print 'toc', off, n
         fh.seek(off)
-        return [dylib_table_of_contents.from_fileobj(fh) for i in xrange(n)]
+        return [dylib_table_of_contents.from_fileobj(fh) for i in range(n)]
 
     def readmodtab(self, fh, off, n):
         #print 'modtab', off, n
         fh.seek(off)
-        return [dylib_module.from_fileobj(fh) for i in xrange(n)]
+        return [dylib_module.from_fileobj(fh) for i in range(n)]
 
     def readsym(self, fh, off, n):
         #print 'sym', off, n
         fh.seek(off)
         refs = []
-        for i in xrange(n):
+        for i in range(n):
             ref = dylib_reference.from_fileobj(fh)
             isym, flags = divmod(ref.isym_flags, 256)
             refs.append((self.nlists[isym], flags))
@@ -92,4 +92,4 @@ class SymbolTable(object):
     def readrel(self, fh, off, n):
         #print 'rel', off, n
         fh.seek(off)
-        return [relocation_info.from_fileobj(fh) for i in xrange(n)]
+        return [relocation_info.from_fileobj(fh) for i in range(n)]

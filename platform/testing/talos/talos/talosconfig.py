@@ -3,7 +3,7 @@ import json
 
 
 def writeConfigFile(obj, vals):
-    data = dict((opt, obj[opt]) for opt in (vals or obj.keys()))
+    data = dict((opt, obj[opt]) for opt in (vals or list(obj.keys())))
     return json.dumps(data)
 
 

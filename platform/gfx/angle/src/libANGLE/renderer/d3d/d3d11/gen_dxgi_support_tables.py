@@ -141,7 +141,7 @@ def do_format(format_data):
         'depthStencil': macro_prefix + 'DS'
     }
 
-    for format_name, format_support in sorted(format_data.iteritems()):
+    for format_name, format_support in sorted(format_data.items()):
 
         always_supported = set()
         never_supported = set()
@@ -152,7 +152,7 @@ def do_format(format_data):
         fl_10_0_check_10_1_supported = set()
         fl_10_0_check_11_0_supported = set()
 
-        for json_flag, support in format_support.iteritems():
+        for json_flag, support in format_support.items():
 
             d3d_flag = [json_flag_to_d3d[json_flag]]
 
@@ -182,7 +182,7 @@ def do_format(format_data):
             elif support == '11_0check':
                 fl_11_0_check.update(d3d_flag)
             else:
-                print("Data specification error: " + support)
+                print(("Data specification error: " + support))
                 sys.exit(1)
 
         for feature_level in ['10_0', '10_1', '11_0']:

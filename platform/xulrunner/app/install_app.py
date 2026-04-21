@@ -10,7 +10,7 @@ if ((sys.version_info.major != 2) or (sys.version_info.minor < 7)):
     raise Exception("You need to use Python version 2.7 or higher")
 
 import os, shutil, re, zipfile
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 # Platform-specific support
 # see https://developer.mozilla.org/en/XULRunner/Deploying_XULRunner_1.8
@@ -215,7 +215,7 @@ def handleCommandLine():
     except exn:
         shutil.rmtree(cmds.installDir)
         raise exn
-    print cmds.appName + " application installed to " + cmds.installDir
+    print(cmds.appName + " application installed to " + cmds.installDir)
 
 if __name__ == '__main__':
     handleCommandLine()

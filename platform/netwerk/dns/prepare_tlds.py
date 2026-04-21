@@ -50,7 +50,7 @@ def _normalizeHostname(domain):
   def convertLabel(label):
     if _isASCII(label):
       return label.lower()
-    return encodings.idna.ToASCII(label)
+    return encodings.idna.ToASCII(label).decode("ascii")
   return ".".join(map(convertLabel, domain.split(".")))
 
 def _isASCII(s):

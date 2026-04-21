@@ -10,7 +10,7 @@ import errno
 import logging
 import os
 import posixpath
-import StringIO
+import io
 import sys
 import mozdevice
 import mozlog
@@ -190,7 +190,7 @@ class DMCli(object):
 
     def add_commands(self, parser):
         subparsers = parser.add_subparsers(title="Commands", metavar="<command>")
-        for (commandname, commandprops) in sorted(self.commands.iteritems()):
+        for (commandname, commandprops) in sorted(self.commands.items()):
             subparser = subparsers.add_parser(commandname, help=commandprops['help'])
             if commandprops.get('args'):
                 for arg in commandprops['args']:
@@ -199,7 +199,7 @@ class DMCli(object):
                     # this package)
                     # kwargs = { k: v for k,v in arg.items() if k is not 'name' }
                     kwargs = {}
-                    for (k, v) in arg.items():
+                    for (k, v) in list(arg.items()):
                         if k is not 'name':
                             kwargs[k] = v
                     subparser.add_argument(arg['name'], **kwargs)
@@ -234,7 +234,7 @@ class DMCli(object):
             self.parser.error("Unknown device manager type: %s" % type)
 
     def deviceroot(self, args):
-        print self.dm.deviceRoot
+        print(self.dm.deviceRoot)
 
     def push(self, args):
         (src, dest) = (args.local_file, args.remote_file)
@@ -250,7 +250,7 @@ class DMCli(object):
     def pull(self, args):
         (src, dest) = (args.local_file, args.remote_file)
         if not self.dm.fileExists(src):
-            print 'No such file or directory'
+            print('No such file or directory')
             return
         if not dest:
             dest = posixpath.basename(src)
@@ -276,7 +276,7 @@ class DMCli(object):
 
     def listapps(self, args):
         for app in self.dm.getInstalledApps():
-            print app
+            print(app)
 
     def stopapp(self, args):
         self.dm.stopApplication(args.appname)
@@ -286,22 +286,22 @@ class DMCli(object):
             self.dm.killProcess(name)
 
     def shell(self, args):
-        buf = StringIO.StringIO()
+        buf = io.StringIO()
         self.dm.shell(args.command, buf, root=args.root)
-        print str(buf.getvalue()[0:-1]).rstrip()
+        print(str(buf.getvalue()[0:-1]).rstrip())
 
     def getinfo(self, args):
         info = self.dm.getInfo(directive=args.directive)
-        for (infokey, infoitem) in sorted(info.iteritems()):
+        for (infokey, infoitem) in sorted(info.items()):
             if infokey == "process":
                 pass  # skip process list: get that through ps
             elif args.directive is None:
-                print "%s: %s" % (infokey.upper(), infoitem)
+                print("%s: %s" % (infokey.upper(), infoitem))
             else:
-                print infoitem
+                print(infoitem)
 
     def logcat(self, args):
-        print ''.join(self.dm.getLogcat())
+        print(''.join(self.dm.getLogcat()))
 
     def clearlogcat(self, args):
         self.dm.recordLogcat()
@@ -312,22 +312,22 @@ class DMCli(object):
     def processlist(self, args):
         pslist = self.dm.getProcessList()
         for ps in pslist:
-            print " ".join(str(i) for i in ps)
+            print(" ".join(str(i) for i in ps))
 
     def listfiles(self, args):
         filelist = self.dm.listFiles(args.remote_dir)
         for file in filelist:
-            print file
+            print(file)
 
     def removefile(self, args):
         self.dm.removeFile(args.remote_file)
 
     def isdir(self, args):
         if self.dm.dirExists(args.remote_dir):
-            print "TRUE"
+            print("TRUE")
             return
 
-        print "FALSE"
+        print("FALSE")
         return errno.ENOTDIR
 
     def mkdir(self, args):
@@ -341,16 +341,16 @@ class DMCli(object):
 
     def sutver(self, args):
         if args.dmtype == 'sut':
-            print '%s Version %s' % (self.dm.agentProductName,
-                                     self.dm.agentVersion)
+            print('%s Version %s' % (self.dm.agentProductName,
+                                     self.dm.agentVersion))
         else:
-            print 'Must use SUT transport to get SUT version.'
+            print('Must use SUT transport to get SUT version.')
 
     def isfile(self, args):
         if self.dm.fileExists(args.remote_file):
-            print "TRUE"
+            print("TRUE")
             return
-        print "FALSE"
+        print("FALSE")
         return errno.ENOENT
 
     def launchfennec(self, args):
@@ -368,9 +368,9 @@ class DMCli(object):
 
     def getip(self, args):
         if args.interface:
-            print(self.dm.getIP(args.interface))
+            print((self.dm.getIP(args.interface)))
         else:
-            print(self.dm.getIP())
+            print((self.dm.getIP()))
 
 
 def cli(args=sys.argv[1:]):

@@ -1190,8 +1190,8 @@ class Production(object):
     def __len__(self):
         return len(self.prod)
 
-    def __nonzero__(self):
-        return 1
+    def __bool__(self):
+        return True
 
     def __getitem__(self,index):
         return self.prod[index]

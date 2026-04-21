@@ -33,15 +33,15 @@ def get_credentials():
             os.remove(CREDENTIALS_PATH)
     else:
         https_username = \
-                raw_input("Please enter your full LDAP email address: ")
+                input("Please enter your full LDAP email address: ")
 
         with open(CREDENTIALS_PATH, "w+") as file_handler:
             file_handler.write("%s\n" % https_username)
 
-        os.chmod(CREDENTIALS_PATH, 0600)
+        os.chmod(CREDENTIALS_PATH, 0o600)
 
     if not LDAP_PASSWORD:
-        print "Please enter your LDAP password (we won't store it):"
+        print("Please enter your LDAP password (we won't store it):")
         LDAP_PASSWORD = getpass.getpass()
 
     return https_username, LDAP_PASSWORD

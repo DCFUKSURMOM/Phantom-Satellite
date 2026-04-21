@@ -30,7 +30,7 @@ class DataChannelTestCase(DeviceManagerTestCase):
         capturedHeader = False
         while numbeats < 3:
             data = self._datasock.recv(1024)
-            print data
+            print(data)
             self.assertNotEqual(len(data), 0)
 
             # Check for the header

@@ -9,10 +9,10 @@ import json
 import os
 import subprocess
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
-import constants
-import io_stats_parser
+from . import constants
+from . import io_stats_parser
 
 
 class DeviceStatsMonitor(object):
@@ -95,7 +95,7 @@ class DeviceStatsMonitor(object):
     with open(output_path, 'w') as f:
       f.write('display(%d, %s, %s);' % (self._hz, json.dumps(results), units))
     return 'file://%s?results=file://%s' % (
-        DeviceStatsMonitor.RESULT_VIEWER_PATH, urllib.quote(output_path))
+        DeviceStatsMonitor.RESULT_VIEWER_PATH, urllib.parse.quote(output_path))
 
 
   @staticmethod

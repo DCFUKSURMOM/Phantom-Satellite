@@ -39,8 +39,8 @@ def bytes2human(n):
 
 def main():
     templ = "%-17s %8s %8s %8s %5s%% %9s  %s"
-    print(templ % ("Device", "Total", "Used", "Free", "Use ", "Type",
-                   "Mount"))
+    print((templ % ("Device", "Total", "Used", "Free", "Use ", "Type",
+                   "Mount")))
     for part in psutil.disk_partitions(all=False):
         if os.name == 'nt':
             if 'cdrom' in part.opts or part.fstype == '':
@@ -49,14 +49,14 @@ def main():
                 # partition or just hang.
                 continue
         usage = psutil.disk_usage(part.mountpoint)
-        print(templ % (
+        print((templ % (
             part.device,
             bytes2human(usage.total),
             bytes2human(usage.used),
             bytes2human(usage.free),
             int(usage.percent),
             part.fstype,
-            part.mountpoint))
+            part.mountpoint)))
 
 if __name__ == '__main__':
     sys.exit(main())

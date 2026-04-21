@@ -6,8 +6,8 @@
 
 import os
 
-import android_commands
-from run_java_tests import TestRunner
+from . import android_commands
+from .run_java_tests import TestRunner
 
 
 def _GetPackageName(fname):

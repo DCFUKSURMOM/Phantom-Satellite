@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-from StringIO import StringIO
+from io import StringIO
 import os
 import textwrap
 import unittest
@@ -62,7 +62,7 @@ class TestLint(unittest.TestCase):
             '''):
                 self.lint_test()
 
-        self.assertEquals(e.exception.message,
+        self.assertEqual(e.exception.message,
                           "`bar` depends on '--help' and `foo`. "
                           "`foo` must depend on '--help'")
 
@@ -85,7 +85,7 @@ class TestLint(unittest.TestCase):
             '''):
                 self.lint_test()
 
-        self.assertEquals(e.exception.message,
+        self.assertEqual(e.exception.message,
                           "`bar` depends on '--help' and `foo`. "
                           "`foo` must depend on '--help'")
 
@@ -111,7 +111,7 @@ class TestLint(unittest.TestCase):
             '''):
                 self.lint_test()
 
-        self.assertEquals(e.exception.message,
+        self.assertEqual(e.exception.message,
                           "Missing @depends for `foo`: '--help'")
 
         # There is a default restricted `os` module when there is no explicit

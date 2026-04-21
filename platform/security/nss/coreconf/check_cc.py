@@ -6,7 +6,7 @@ import sys
 
 def main():
     if sys.platform == 'win32' or len(sys.argv) < 2:
-        print(0)
+        print((0))
     else:
         cc = os.environ.get('CC', 'cc')
         try:
@@ -20,7 +20,7 @@ def main():
         except OSError:
             # We probably just don't have CC/cc.
             cc_is_arg = False
-        print(int(cc_is_arg))
+        print((int(cc_is_arg)))
 
 if __name__ == '__main__':
     main()

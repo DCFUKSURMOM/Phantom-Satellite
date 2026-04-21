@@ -66,13 +66,13 @@ def print_joining_table(f):
 		values[u] = value
 
 	short_value = {}
-	for value in sorted (set ([v for v in values.values ()] + ['JOINING_TYPE_X'])):
+	for value in sorted (set ([v for v in list(values.values ())] + ['JOINING_TYPE_X'])):
 		short = ''.join(x[0] for x in value.split('_')[2:])
-		assert short not in short_value.values()
+		assert short not in list(short_value.values())
 		short_value[value] = short
 
 	print ()
-	for value,short in short_value.items():
+	for value,short in list(short_value.items()):
 		print ("#define %s	%s" % (short, value))
 
 	uu = sorted(values.keys())
@@ -149,7 +149,7 @@ def print_joining_table(f):
 	print ("  return X;")
 	print ("}")
 	print ()
-	for value,short in short_value.items():
+	for value,short in list(short_value.items()):
 		print ("#undef %s" % (short))
 	print ()
 
@@ -217,7 +217,7 @@ def print_shaping_table(f):
 	print ("static const uint16_t shaping_table[][4] =")
 	print ("{")
 
-	keys = shapes.keys ()
+	keys = list(shapes.keys ())
 	min_u, max_u = min (keys), max (keys)
 	for u in range (min_u, max_u + 1):
 		s = [shapes[u][shape] if u in shapes and shape in shapes[u] else 0
@@ -234,7 +234,7 @@ def print_shaping_table(f):
 	ligas_2 = {}
 	ligas_3 = {}
 	ligas_mark_2 = {}
-	for key in ligatures.keys ():
+	for key in list(ligatures.keys ()):
 		for shape in ligatures[key]:
 			c = ligatures[key][shape]
 			if len(key) == 3:

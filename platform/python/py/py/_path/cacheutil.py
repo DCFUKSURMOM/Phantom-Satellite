@@ -47,7 +47,7 @@ class BasicCache(object):
         if numentries >= self.maxentries:
             # evict according to entry's weight
             items = [(entry.weight, key)
-                        for key, entry in self._dict.items()]
+                        for key, entry in list(self._dict.items())]
             items.sort()
             index = numentries - self.prunenum
             if index > 0:

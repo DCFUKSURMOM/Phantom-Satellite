@@ -29,16 +29,16 @@ def drawMF(img, blk_sz, mf):
   height = img_rgba.size[1]
   num_row = height // blk_sz
   num_col = width // blk_sz
-  for i in xrange(num_row):
+  for i in range(num_row):
     left = (0, i * blk_sz)
     right = (width, i * blk_sz)
     draw.line([left, right], fill=(0, 0, 255, 255))
-  for j in xrange(num_col):
+  for j in range(num_col):
     up = (j * blk_sz, 0)
     down = (j * blk_sz, height)
     draw.line([up, down], fill=(0, 0, 255, 255))
-  for i in xrange(num_row):
-    for j in xrange(num_col):
+  for i in range(num_row):
+    for j in range(num_col):
       center = (j * blk_sz + 0.5 * blk_sz, i * blk_sz + 0.5 * blk_sz)
       """mf[i,j][0] is the row shift and mf[i,j][1] is the column shift In PIL coordinates, head[0] is x (column shift) and head[1] is y (row shift)."""
       head = (center[0] + mf[i, j][1], center[1] + mf[i, j][0])

@@ -227,10 +227,10 @@ class Or(Interpretable):
 
 # == Unary operations ==
 keepalive = []
-for astclass, astpattern in {
+for astclass, astpattern in list({
     ast.Not    : 'not __exprinfo_expr',
     ast.Invert : '(~__exprinfo_expr)',
-    }.items():
+    }.items()):
 
     class UnaryArith(Interpretable):
         __view__ = astclass
@@ -251,14 +251,14 @@ for astclass, astpattern in {
     keepalive.append(UnaryArith)
 
 # == Binary operations ==
-for astclass, astpattern in {
+for astclass, astpattern in list({
     ast.Add    : '(__exprinfo_left + __exprinfo_right)',
     ast.Sub    : '(__exprinfo_left - __exprinfo_right)',
     ast.Mul    : '(__exprinfo_left * __exprinfo_right)',
     ast.Div    : '(__exprinfo_left / __exprinfo_right)',
     ast.Mod    : '(__exprinfo_left % __exprinfo_right)',
     ast.Power  : '(__exprinfo_left ** __exprinfo_right)',
-    }.items():
+    }.items()):
 
     class BinaryArith(Interpretable):
         __view__ = astclass

@@ -17,7 +17,7 @@ f_conf = "configure"
 f_conf_in = "configure.in"
 
 def check_call_noisy(cmd, *args, **kwargs):
-    print("Executing command:", cmd)
+    print(("Executing command:", cmd))
     check_call(cmd, *args, **kwargs)
 
 o = OptionParser(usage="client.py [options] remove_beta | set_beta | print_library_versions | set_version_to_minor_release | set_version_to_patch_release | create_nspr_release_archive")
@@ -30,7 +30,7 @@ except IndexError:
     sys.exit(2)
 
 def exit_with_failure(what):
-    print("failure: ", what)
+    print(("failure: ", what))
     sys.exit(2)
 
 def check_files_exist():
@@ -144,12 +144,12 @@ def create_nspr_release_archive():
     check_call_noisy(["mkdir", "-p", nspr_stagedir])
     check_call_noisy(["hg", "archive", "-r", nsprreltag, "--prefix=nspr-" + nsprrel + "/nspr",
                       "../stage/v" + nsprrel + "/src/" + nspr_tar, "-X", ".hgtags"])
-    print("changing to directory " + nspr_stagedir)
+    print(("changing to directory " + nspr_stagedir))
     os.chdir(nspr_stagedir)
 
     check_call("sha1sum " + nspr_tar + " > SHA1SUMS", shell=True)
     check_call("sha256sum " + nspr_tar + " > SHA256SUMS", shell=True)
-    print("created directory " + nspr_stagedir + " with files:")
+    print(("created directory " + nspr_stagedir + " with files:"))
     check_call_noisy(["ls", "-l"])
 
 if action in ('remove_beta'):

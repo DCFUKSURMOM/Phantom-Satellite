@@ -3,7 +3,7 @@
 from __future__ import print_function
 import os, sys
 
-if not len(sys.argv) is 2 or not os.path.exists(sys.argv[1]):
+if not len(sys.argv) == 2 or not os.path.exists(sys.argv[1]):
   print("\nYou did not supply a valid path to check.")
   exit(1)
 else:
@@ -44,7 +44,8 @@ PP_DIRECTIVES = [
 ]
 
 PP_FILES = []
-PP_BAD_FILES = []
+PP_BAD_DIRECTIVE_FILES = []
+PP_BAD_ENCODING_FILES = []
 
 for root, directories, filenames in os.walk(DIST_PATH):
   for filename in filenames: 
@@ -52,21 +53,31 @@ for root, directories, filenames in os.walk(DIST_PATH):
       PP_FILES += [ os.path.join(root, filename).replace(os.sep, '/') ]
 
 for file in PP_FILES:
-  with open(file) as fp:
+  with open(file, encoding='utf-8') as fp:
     marker = '%' if file.endswith(PP_SPECIAL_TYPES) else '#'
     directives = tuple(marker + directive for directive in PP_DIRECTIVES)
-    for line in fp:
-      if line.startswith(directives):
-        PP_BAD_FILES += [ file.replace(DIST_PATH + '/', '') ]
+    try:
+        for line in fp:
+          if line.startswith(directives):
+            PP_BAD_DIRECTIVE_FILES += [ file.replace(DIST_PATH + '/', '') ]
+    except UnicodeDecodeError:
+        PP_BAD_ENCODING_FILES += [ file.replace(DIST_PATH+ '/' , '') ]
+
   fp.close()
 
-PP_BAD_FILES = list(dict.fromkeys(PP_BAD_FILES))
+PP_BAD_DIRECTIVE_FILES = list(dict.fromkeys(PP_BAD_DIRECTIVE_FILES))
+PP_BAD_ENCODING_FILES = list(dict.fromkeys(PP_BAD_ENCODING_FILES))
 
 print('Done!')
 
-if len(PP_BAD_FILES) > 0:
-  print("\nWARNING: The following {0} file(s) in {1} may require preprocessing:\n".format(len(PP_BAD_FILES), DIST_PATH))
-  for file in PP_BAD_FILES:
+if len(PP_BAD_DIRECTIVE_FILES) > 0:
+  print("\nWARNING: The following {0} file(s) in {1} may require preprocessing:\n".format(len(PP_BAD_DIRECTIVE_FILES), DIST_PATH))
+  for file in PP_BAD_DIRECTIVE_FILES:
     print(file)
 
-exit(0)
+if len(PP_BAD_ENCODING_FILES) > 0:
+  print("\nWARNING: The following {0} file(s) in {1} are not valid UTF-8:\n".format(len(PP_BAD_ENCODING_FILES), DIST_PATH))
+  for file in PP_BAD_ENCODING_FILES:
+    print(file)
+
+sys.exit(0)

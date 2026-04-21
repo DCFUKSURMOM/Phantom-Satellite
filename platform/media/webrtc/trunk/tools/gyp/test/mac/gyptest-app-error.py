@@ -14,7 +14,7 @@ import TestGyp
 import sys
 
 if sys.platform == 'darwin':
-  print "This test is currently disabled: https://crbug.com/483696."
+  print("This test is currently disabled: https://crbug.com/483696.")
   sys.exit(0)
 
   expected_error = 'Old-style plist parser: missing semicolon in dictionary'

@@ -433,7 +433,7 @@ ARCHIVE_FILES = {
 # "common" is our catch all archive and it ignores things from other archives.
 # Verify nothing sneaks into ARCHIVE_FILES without a corresponding exclusion
 # rule in the "common" archive.
-for k, v in ARCHIVE_FILES.items():
+for k, v in list(ARCHIVE_FILES.items()):
     # Skip mozharness because it isn't staged.
     if k in ('common', 'mozharness'):
         continue

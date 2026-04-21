@@ -656,7 +656,7 @@ class Emitter:
 
         # Last character or followed by a whitespace.
         followed_by_whitespace = (len(scalar) == 1 or
-                scalar[1] in '\0 \t\r\n\x85\u2028\u2029')
+                scalar[1] in '\0 \t\r\n\x85\\u2028\\u2029')
 
         # The previous character is a space.
         previous_space = False
@@ -694,11 +694,11 @@ class Emitter:
                     block_indicators = True
 
             # Check for line breaks, special, and unicode characters.
-            if ch in '\n\x85\u2028\u2029':
+            if ch in '\n\x85\\u2028\\u2029':
                 line_breaks = True
             if not (ch == '\n' or '\x20' <= ch <= '\x7E'):
-                if (ch == '\x85' or '\xA0' <= ch <= '\uD7FF'
-                        or '\uE000' <= ch <= '\uFFFD') and ch != '\uFEFF':
+                if (ch == '\x85' or '\xA0' <= ch <= '\\uD7FF'
+                        or '\\uE000' <= ch <= '\\uFFFD') and ch != '\\uFEFF':
                     unicode_characters = True
                     if not self.allow_unicode:
                         special_characters = True
@@ -715,7 +715,7 @@ class Emitter:
                     break_space = True
                 previous_space = True
                 previous_break = False
-            elif ch in '\n\x85\u2028\u2029':
+            elif ch in '\n\x85\\u2028\\u2029':
                 if index == 0:
                     leading_break = True
                 if index == len(scalar)-1:
@@ -730,9 +730,9 @@ class Emitter:
 
             # Prepare for the next character.
             index += 1
-            preceeded_by_whitespace = (ch in '\0 \t\r\n\x85\u2028\u2029')
+            preceeded_by_whitespace = (ch in '\0 \t\r\n\x85\\u2028\\u2029')
             followed_by_whitespace = (index+1 >= len(scalar) or
-                    scalar[index+1] in '\0 \t\r\n\x85\u2028\u2029')
+                    scalar[index+1] in '\0 \t\r\n\x85\\u2028\\u2029')
 
         # Let's decide what styles are allowed.
         allow_flow_plain = True
@@ -791,7 +791,7 @@ class Emitter:
     def write_stream_start(self):
         # Write BOM if needed.
         if self.encoding and self.encoding.startswith('utf-16'):
-            self.stream.write('\uFEFF'.encode(self.encoding))
+            self.stream.write('\\uFEFF'.encode(self.encoding))
 
     def write_stream_end(self):
         self.flush_stream()
@@ -872,7 +872,7 @@ class Emitter:
                         self.stream.write(data)
                     start = end
             elif breaks:
-                if ch is None or ch not in '\n\x85\u2028\u2029':
+                if ch is None or ch not in '\n\x85\\u2028\\u2029':
                     if text[start] == '\n':
                         self.write_line_break()
                     for br in text[start:end]:
@@ -883,7 +883,7 @@ class Emitter:
                     self.write_indent()
                     start = end
             else:
-                if ch is None or ch in ' \n\x85\u2028\u2029' or ch == '\'':
+                if ch is None or ch in ' \n\x85\\u2028\\u2029' or ch == '\'':
                     if start < end:
                         data = text[start:end]
                         self.column += len(data)
@@ -900,7 +900,7 @@ class Emitter:
                 start = end + 1
             if ch is not None:
                 spaces = (ch == ' ')
-                breaks = (ch in '\n\x85\u2028\u2029')
+                breaks = (ch in '\n\x85\\u2028\\u2029')
             end += 1
         self.write_indicator('\'', False)
 
@@ -918,8 +918,8 @@ class Emitter:
         '\\':       '\\',
         '\x85':     'N',
         '\xA0':     '_',
-        '\u2028':   'L',
-        '\u2029':   'P',
+        '\\u2028':   'L',
+        '\\u2029':   'P',
     }
 
     def write_double_quoted(self, text, split=True):
@@ -929,11 +929,11 @@ class Emitter:
             ch = None
             if end < len(text):
                 ch = text[end]
-            if ch is None or ch in '"\\\x85\u2028\u2029\uFEFF' \
+            if ch is None or ch in '"\\\x85\\u2028\\u2029\\uFEFF' \
                     or not ('\x20' <= ch <= '\x7E'
                         or (self.allow_unicode
-                            and ('\xA0' <= ch <= '\uD7FF'
-                                or '\uE000' <= ch <= '\uFFFD'))):
+                            and ('\xA0' <= ch <= '\\uD7FF'
+                                or '\\uE000' <= ch <= '\\uFFFD'))):
                 if start < end:
                     data = text[start:end]
                     self.column += len(data)
@@ -946,7 +946,7 @@ class Emitter:
                         data = '\\'+self.ESCAPE_REPLACEMENTS[ch]
                     elif ch <= '\xFF':
                         data = '\\x%02X' % ord(ch)
-                    elif ch <= '\uFFFF':
+                    elif ch <= '\\uFFFF':
                         data = '\\u%04X' % ord(ch)
                     else:
                         data = '\\U%08X' % ord(ch)
@@ -979,11 +979,11 @@ class Emitter:
     def determine_block_hints(self, text):
         hints = ''
         if text:
-            if text[0] in ' \n\x85\u2028\u2029':
+            if text[0] in ' \n\x85\\u2028\\u2029':
                 hints += str(self.best_indent)
-            if text[-1] not in '\n\x85\u2028\u2029':
+            if text[-1] not in '\n\x85\\u2028\\u2029':
                 hints += '-'
-            elif len(text) == 1 or text[-2] in '\n\x85\u2028\u2029':
+            elif len(text) == 1 or text[-2] in '\n\x85\\u2028\\u2029':
                 hints += '+'
         return hints
 
@@ -1002,7 +1002,7 @@ class Emitter:
             if end < len(text):
                 ch = text[end]
             if breaks:
-                if ch is None or ch not in '\n\x85\u2028\u2029':
+                if ch is None or ch not in '\n\x85\\u2028\\u2029':
                     if not leading_space and ch is not None and ch != ' '   \
                             and text[start] == '\n':
                         self.write_line_break()
@@ -1027,7 +1027,7 @@ class Emitter:
                         self.stream.write(data)
                     start = end
             else:
-                if ch is None or ch in ' \n\x85\u2028\u2029':
+                if ch is None or ch in ' \n\x85\\u2028\\u2029':
                     data = text[start:end]
                     self.column += len(data)
                     if self.encoding:
@@ -1037,7 +1037,7 @@ class Emitter:
                         self.write_line_break()
                     start = end
             if ch is not None:
-                breaks = (ch in '\n\x85\u2028\u2029')
+                breaks = (ch in '\n\x85\\u2028\\u2029')
                 spaces = (ch == ' ')
             end += 1
 
@@ -1054,7 +1054,7 @@ class Emitter:
             if end < len(text):
                 ch = text[end]
             if breaks:
-                if ch is None or ch not in '\n\x85\u2028\u2029':
+                if ch is None or ch not in '\n\x85\\u2028\\u2029':
                     for br in text[start:end]:
                         if br == '\n':
                             self.write_line_break()
@@ -1064,7 +1064,7 @@ class Emitter:
                         self.write_indent()
                     start = end
             else:
-                if ch is None or ch in '\n\x85\u2028\u2029':
+                if ch is None or ch in '\n\x85\\u2028\\u2029':
                     data = text[start:end]
                     if self.encoding:
                         data = data.encode(self.encoding)
@@ -1073,7 +1073,7 @@ class Emitter:
                         self.write_line_break()
                     start = end
             if ch is not None:
-                breaks = (ch in '\n\x85\u2028\u2029')
+                breaks = (ch in '\n\x85\\u2028\\u2029')
             end += 1
 
     def write_plain(self, text, split=True):
@@ -1110,7 +1110,7 @@ class Emitter:
                         self.stream.write(data)
                     start = end
             elif breaks:
-                if ch not in '\n\x85\u2028\u2029':
+                if ch not in '\n\x85\\u2028\\u2029':
                     if text[start] == '\n':
                         self.write_line_break()
                     for br in text[start:end]:
@@ -1123,7 +1123,7 @@ class Emitter:
                     self.indention = False
                     start = end
             else:
-                if ch is None or ch in ' \n\x85\u2028\u2029':
+                if ch is None or ch in ' \n\x85\\u2028\\u2029':
                     data = text[start:end]
                     self.column += len(data)
                     if self.encoding:
@@ -1132,6 +1132,6 @@ class Emitter:
                     start = end
             if ch is not None:
                 spaces = (ch == ' ')
-                breaks = (ch in '\n\x85\u2028\u2029')
+                breaks = (ch in '\n\x85\\u2028\\u2029')
             end += 1
 

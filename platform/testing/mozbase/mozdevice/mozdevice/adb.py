@@ -491,13 +491,12 @@ class ADBHost(ADBCommand):
         return devices
 
 
-class ADBDevice(ADBCommand):
+class ADBDevice(ADBCommand, metaclass=ABCMeta):
     """ADBDevice is an abstract base class which provides methods which
     can be used to interact with the associated Android or B2G based
     device. It must be used via one of the concrete implementations in
     :class:`ADBAndroid` or :class:`ADBB2G`.
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self,
                  device=None,
@@ -645,7 +644,7 @@ class ADBDevice(ADBCommand):
         def is_valid_serial(serial):
             return ":" not in serial or serial.startswith("usb:")
 
-        if isinstance(device, (str, unicode)):
+        if isinstance(device, (str, str)):
             # Treat this as a device serial
             if not is_valid_serial(device):
                 raise ValueError("Device serials containing ':' characters are "
@@ -1036,8 +1035,8 @@ class ADBDevice(ADBCommand):
         if cwd:
             cmd = "cd %s && %s" % (cwd, cmd)
         if env:
-            envstr = '&& '.join(map(lambda x: 'export %s=%s' %
-                                    (x[0], x[1]), env.iteritems()))
+            envstr = '&& '.join(['export %s=%s' %
+                                    (x[0], x[1]) for x in env.items()])
             cmd = envstr + "&& " + cmd
         cmd += "; echo rc=$?"
 
@@ -1651,7 +1650,7 @@ class ADBDevice(ADBCommand):
             else:
                 entry = line
             entries[entry] = 1
-        entry_list = entries.keys()
+        entry_list = list(entries.keys())
         entry_list.sort()
         return entry_list
 

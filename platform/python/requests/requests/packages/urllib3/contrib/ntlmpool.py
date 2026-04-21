@@ -8,7 +8,7 @@ from __future__ import absolute_import
 try:
     from http.client import HTTPSConnection
 except ImportError:
-    from httplib import HTTPSConnection
+    from http.client import HTTPSConnection
 from logging import getLogger
 from ntlm import ntlm
 

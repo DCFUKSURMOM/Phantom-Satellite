@@ -59,7 +59,7 @@ def write_test_file(idx, suffix, style, code, name=None):
                                               char=get_html_entity(code),
                                               code='U+{:04X}'.format(code),
                                               title=name))
-    print("== {} {}".format(filename, REF_FILE.format(idx)))
+    print(("== {} {}".format(filename, REF_FILE.format(idx))))
 
 idx = 10
 def write_files(style, code):
@@ -77,9 +77,9 @@ def write_files(style, code):
     if shape == 'circle':
         write_test_file(idx, next(suffix), fill, code, fill + ', horizontal')
 
-print("# START tests from {}".format(__file__))
+print(("# START tests from {}".format(__file__)))
 for name, code, _ in DATA_SET:
     write_files(('filled', name), code)
 for name, _, code in DATA_SET:
     write_files(('open', name), code)
-print("# END tests from {}".format(__file__))
+print(("# END tests from {}".format(__file__)))

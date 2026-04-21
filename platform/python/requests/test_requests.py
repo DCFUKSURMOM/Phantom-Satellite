@@ -31,7 +31,7 @@ from requests.models import urlencode
 from requests.hooks import default_hooks
 
 try:
-    import StringIO
+    import io
 except ImportError:
     import io as StringIO
 
@@ -159,7 +159,7 @@ class TestRequests(object):
 
     def test_binary_put(self):
         request = requests.Request('PUT', 'http://example.com',
-                                   data=u"ööö".encode("utf-8")).prepare()
+                                   data="ööö".encode("utf-8")).prepare()
         assert isinstance(request.body, bytes)
 
     def test_mixed_case_scheme_acceptable(self, httpbin):
@@ -719,8 +719,8 @@ class TestRequests(object):
         jar.set(key1, value1)
 
         d1 = dict(jar)
-        d2 = dict(jar.iteritems())
-        d3 = dict(jar.items())
+        d2 = dict(iter(jar.items()))
+        d3 = dict(list(jar.items()))
 
         assert len(jar) == 2
         assert len(d1) == 2
@@ -739,8 +739,8 @@ class TestRequests(object):
         jar.set(key1, value1)
 
         d1 = dict(jar)
-        d2 = dict(jar.iteritems())
-        d3 = dict(jar.items())
+        d2 = dict(iter(jar.items()))
+        d3 = dict(list(jar.items()))
 
         assert d1['some_cookie'] == 'some_value'
         assert d2['some_cookie'] == 'some_value'
@@ -757,7 +757,7 @@ class TestRequests(object):
         jar.set(key, value)
         jar.set(key1, value1)
 
-        keys = jar.keys()
+        keys = list(jar.keys())
         assert keys == list(keys)
         # make sure one can use keys multiple times
         assert list(keys) == list(keys)
@@ -773,7 +773,7 @@ class TestRequests(object):
         jar.set(key, value)
         jar.set(key1, value1)
 
-        values = jar.values()
+        values = list(jar.values())
         assert values == list(values)
         # make sure one can use values multiple times
         assert list(values) == list(values)
@@ -789,7 +789,7 @@ class TestRequests(object):
         jar.set(key, value)
         jar.set(key1, value1)
 
-        items = jar.items()
+        items = list(jar.items())
         assert items == list(items)
         # make sure one can use items multiple times
         assert list(items) == list(items)
@@ -803,7 +803,7 @@ class TestRequests(object):
 
     def test_response_is_iterable(self):
         r = requests.Response()
-        io = StringIO.StringIO('abc')
+        io = io.StringIO('abc')
         read_ = io.read
 
         def read_mock(amt, decode_content=None):
@@ -977,8 +977,8 @@ class TestRequests(object):
 
         # This is testing that they are builtin strings. A bit weird, but there
         # we go.
-        assert 'unicode' in p.headers.keys()
-        assert 'byte' in p.headers.keys()
+        assert 'unicode' in list(p.headers.keys())
+        assert 'byte' in list(p.headers.keys())
 
     def test_can_send_nonstring_objects_with_files(self, httpbin):
         data = {'a': 0.0}
@@ -1305,8 +1305,8 @@ class TestCaseInsensitiveDict(unittest.TestCase):
             'user-Agent': 'requests',
         })
         keyset = frozenset(['Accept', 'user-Agent'])
-        assert frozenset(i[0] for i in cid.items()) == keyset
-        assert frozenset(cid.keys()) == keyset
+        assert frozenset(i[0] for i in list(cid.items())) == keyset
+        assert frozenset(list(cid.keys())) == keyset
         assert frozenset(cid) == keyset
 
     def test_preserve_last_key_case(self):
@@ -1317,8 +1317,8 @@ class TestCaseInsensitiveDict(unittest.TestCase):
         cid.update({'ACCEPT': 'application/json'})
         cid['USER-AGENT'] = 'requests'
         keyset = frozenset(['ACCEPT', 'USER-AGENT'])
-        assert frozenset(i[0] for i in cid.items()) == keyset
-        assert frozenset(cid.keys()) == keyset
+        assert frozenset(i[0] for i in list(cid.items())) == keyset
+        assert frozenset(list(cid.keys())) == keyset
         assert frozenset(cid) == keyset
 
     def test_copy(self):
@@ -1340,26 +1340,26 @@ class UtilsTestCase(unittest.TestCase):
         from io import BytesIO
         from requests.utils import super_len
 
-        assert super_len(StringIO.StringIO()) == 0
+        assert super_len(io.StringIO()) == 0
         assert super_len(
-            StringIO.StringIO('with so much drama in the LBC')) == 29
+            io.StringIO('with so much drama in the LBC')) == 29
 
         assert super_len(BytesIO()) == 0
         assert super_len(
             BytesIO(b"it's kinda hard bein' snoop d-o-double-g")) == 40
 
         try:
-            import cStringIO
+            import io
         except ImportError:
             pass
         else:
             assert super_len(
-                cStringIO.StringIO('but some how, some way...')) == 25
+                io.StringIO('but some how, some way...')) == 25
 
     def test_super_len_correctly_calculates_len_of_partially_read_file(self):
         """Ensure that we handle partially consumed file like objects."""
         from requests.utils import super_len
-        s = StringIO.StringIO()
+        s = io.StringIO()
         s.write('foobarbogus')
         assert super_len(s) == 0
 
@@ -1616,7 +1616,7 @@ class RedirectSession(SessionRedirectMixin):
         return r
 
     def _build_raw(self):
-        string = StringIO.StringIO('')
+        string = io.StringIO('')
         setattr(string, 'release_conn', lambda *args: args)
         return string
 
@@ -1731,7 +1731,7 @@ def test_urllib3_pool_connection_closed(httpbin):
     try:
         s.get(httpbin('status/200'))
     except ConnectionError as e:
-        assert u"Pool is closed." in str(e)
+        assert "Pool is closed." in str(e)
 
 
 def test_vendor_aliases():

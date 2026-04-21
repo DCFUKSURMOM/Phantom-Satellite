@@ -4,8 +4,8 @@
 #   COPYRIGHT (c) 2010 by Toni Mattis <solaris@live.de>
 #
 
-from elliptic import inv, mulf, mulp, muladdp, element
-from curves import get_curve, implemented_keys
+from .elliptic import inv, mulf, mulp, muladdp, element
+from .curves import get_curve, implemented_keys
 from os import urandom
 
 import hashlib
@@ -23,13 +23,13 @@ def keypair(bits):
     try:
         bits, cn, n, cp, cq, g = get_curve(bits)
     except KeyError:
-        raise ValueError, "Key size %s not implemented" % bits
+        raise ValueError("Key size %s not implemented" % bits)
     if n > 0:
         d = randkey(bits, n)
         q = mulp(cp, cq, cn, g, d)
         return (bits, q), (bits, d)
     else:
-        raise ValueError, "Key size %s not suitable for signing" % bits
+        raise ValueError("Key size %s not suitable for signing" % bits)
 
 def supported_keys():
     '''Return a list of all key sizes implemented for signing'''
@@ -134,17 +134,17 @@ if __name__ == "__main__":
         d = get_curve(bits)
         
         t = time.time()
-        for i in xrange(rounds):
+        for i in range(rounds):
             qk, dk = keypair(bits)
         tgen = time.time() - t
         
         t = time.time()
-        for i in xrange(rounds):
+        for i in range(rounds):
             s = sign(0, dk)
         tsign = time.time() - t
 
         t = time.time()
-        for i in xrange(rounds):
+        for i in range(rounds):
             verify(0, s, qk)
         tver = time.time() - t
 

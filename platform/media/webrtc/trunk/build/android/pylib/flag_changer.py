@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import constants
+from . import constants
 import traceback
 import warnings
 
@@ -86,7 +86,7 @@ class FlagChanger(object):
 
   def _UpdateCommandLineFile(self):
     """Writes out the command line to the file, or removes it if empty."""
-    print "Current flags: ", self._current_flags
+    print("Current flags: ", self._current_flags)
 
     if self._current_flags:
       self._android_cmd.SetFileContents(CHROME_COMMAND_FILE,

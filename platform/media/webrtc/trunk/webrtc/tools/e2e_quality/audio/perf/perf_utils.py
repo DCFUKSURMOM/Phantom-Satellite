@@ -25,7 +25,7 @@ def PrintPerfResult(graph_name, series_name, data_point, units,
                        this test on the waterfall page, not the stdio page).
   """
   waterfall_indicator = ['', '*'][show_on_waterfall]
-  print '%sRESULT %s: %s= %s %s' % (
+  print('%sRESULT %s: %s= %s %s' % (
       waterfall_indicator, graph_name, series_name,
-      str(data_point).replace(' ', ''), units)
+      str(data_point).replace(' ', ''), units))
   sys.stdout.flush()

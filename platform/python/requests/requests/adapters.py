@@ -112,7 +112,7 @@ class HTTPAdapter(BaseAdapter):
         self.proxy_manager = {}
         self.config = {}
 
-        for attr, value in state.items():
+        for attr, value in list(state.items()):
             setattr(self, attr, value)
 
         self.init_poolmanager(self._pool_connections, self._pool_maxsize,
@@ -388,7 +388,7 @@ class HTTPAdapter(BaseAdapter):
                                         url,
                                         skip_accept_encoding=True)
 
-                    for header, value in request.headers.items():
+                    for header, value in list(request.headers.items()):
                         low_conn.putheader(header, value)
 
                     low_conn.endheaders()

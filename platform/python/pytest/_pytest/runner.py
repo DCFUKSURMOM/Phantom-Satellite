@@ -31,7 +31,7 @@ def pytest_terminal_summary(terminalreporter):
         return
     tr = terminalreporter
     dlist = []
-    for replist in tr.stats.values():
+    for replist in list(tr.stats.values()):
         for rep in replist:
             if hasattr(rep, 'duration'):
                 dlist.append(rep)

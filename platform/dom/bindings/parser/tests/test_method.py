@@ -59,7 +59,7 @@ def WebIDLTest(parser, harness):
         harness.check(method.isStringifier(), stringifier, "Method has the correct stringifier value")
         harness.check(len(method.signatures()), len(signatures), "Method has the correct number of signatures")
 
-        sigpairs = zip(method.signatures(), signatures)
+        sigpairs = list(zip(method.signatures(), signatures))
         for (gotSignature, expectedSignature) in sigpairs:
             (gotRetType, gotArgs) = gotSignature
             (expectedRetType, expectedArgs) = expectedSignature
@@ -121,7 +121,7 @@ def WebIDLTest(parser, harness):
           };
         """)
         results = parser.finish()
-    except Exception, x:
+    except Exception as x:
         threw = True
     harness.ok(not threw, "Should allow integer to float type corecion")
 
@@ -134,7 +134,7 @@ def WebIDLTest(parser, harness):
           };
         """)
         results = parser.finish()
-    except Exception, x:
+    except Exception as x:
         threw = True
     harness.ok(threw, "Should not allow [GetterThrows] on methods")
 
@@ -147,7 +147,7 @@ def WebIDLTest(parser, harness):
           };
         """)
         results = parser.finish()
-    except Exception, x:
+    except Exception as x:
         threw = True
     harness.ok(threw, "Should not allow [SetterThrows] on methods")
 
@@ -160,7 +160,7 @@ def WebIDLTest(parser, harness):
           };
         """)
         results = parser.finish()
-    except Exception, x:
+    except Exception as x:
         threw = True
     harness.ok(threw, "Should spell [Throws] correctly on methods")
 
@@ -173,6 +173,6 @@ def WebIDLTest(parser, harness):
           };
         """)
         results = parser.finish()
-    except Exception, x:
+    except Exception as x:
         threw = True
     harness.ok(threw, "Should not allow __noSuchMethod__ methods")

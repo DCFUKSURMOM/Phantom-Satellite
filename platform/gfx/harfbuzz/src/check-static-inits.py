@@ -28,9 +28,9 @@ for obj in OBJS:
 	if result.returncode:
 		if result.stderr.find (b'not recognized') != -1:
 			# https://github.com/harfbuzz/harfbuzz/issues/3019
-			print ('objdump %s returned "not recognized", skipping' % obj)
+			print(('objdump %s returned "not recognized", skipping' % obj))
 			continue
-		print ('objdump %s returned error:\n%s' % (obj, result.stderr.decode ('utf-8')))
+		print(('objdump %s returned error:\n%s' % (obj, result.stderr.decode ('utf-8'))))
 		stat = 2
 
 	result = result.stdout.decode ('utf-8')
@@ -38,12 +38,12 @@ for obj in OBJS:
 	# Checking that no object file has static initializers
 	for l in re.findall (r'^.*\.[cd]tors.*$', result, re.MULTILINE):
 		if not re.match (r'.*\b0+\b', l):
-			print ('Ouch, %s has static initializers/finalizers' % obj)
+			print(('Ouch, %s has static initializers/finalizers' % obj))
 			stat = 1
 
 	# Checking that no object file has lazy static C++ constructors/destructors or other such stuff
 	if ('__cxa_' in result) and ('__ubsan_handle' not in result):
-		print ('Ouch, %s has lazy static C++ constructors/destructors or other such stuff' % obj)
+		print(('Ouch, %s has lazy static C++ constructors/destructors or other such stuff' % obj))
 		stat = 1
 
 	tested += 1

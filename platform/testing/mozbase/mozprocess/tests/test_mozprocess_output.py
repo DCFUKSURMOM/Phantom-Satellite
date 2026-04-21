@@ -44,7 +44,7 @@ class ProcTestOutput(proctest.ProcTest):
             stream.write(str(i) + '\n')
 
         buf.flush()
-        self.assertEquals(stream.getvalue().strip(), expected)
+        self.assertEqual(stream.getvalue().strip(), expected)
 
         # make sure mozprocess doesn't close the stream
         # since mozprocess didn't create it

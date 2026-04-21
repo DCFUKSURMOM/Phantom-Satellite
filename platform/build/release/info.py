@@ -4,7 +4,7 @@ from os import path
 import re
 import shutil
 import sys
-from urllib2 import urlopen
+from urllib.request import urlopen
 
 from release.paths import makeCandidatesDir
 
@@ -50,7 +50,7 @@ def findOldBuildIDs(product, version, buildNumber, platforms,
                 id = getBuildID(platform, product, version, n, nightlyDir,
                                 server)
                 ids[platform].append(id)
-            except Exception, e:
+            except Exception as e:
                 log.error("Hit exception: %s" % e)
     return ids
 
@@ -87,10 +87,10 @@ def readBranchConfig(dir, localconfig, branch, required=[]):
 
 def readConfig(configfile, keys=[], required=[]):
     c = {}
-    execfile(configfile, c)
+    exec(compile(open(configfile, "rb").read(), configfile, 'exec'), c)
     for k in keys:
         c = c[k]
-    items = c.keys()
+    items = list(c.keys())
     err = False
     for key in required:
         if key not in items:
@@ -137,7 +137,7 @@ def getReleaseName(product, version, buildNumber):
 
 
 def getRepoMatchingBranch(branch, sourceRepositories):
-    for sr in sourceRepositories.values():
+    for sr in list(sourceRepositories.values()):
         if branch in sr['path']:
             return sr
     return None

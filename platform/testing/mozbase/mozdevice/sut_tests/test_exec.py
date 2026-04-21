@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import posixpath
-from StringIO import StringIO
+from io import StringIO
 
 from dmunit import DeviceManagerTestCase
 

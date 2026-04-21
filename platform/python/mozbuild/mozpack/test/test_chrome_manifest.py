@@ -24,7 +24,7 @@ from mozpack.chrome.manifest import (
     parse_manifest_line,
 )
 from mozpack.errors import errors, AccumulatedErrors
-from test_errors import TestErrors
+from .test_errors import TestErrors
 
 
 class TestManifest(unittest.TestCase):

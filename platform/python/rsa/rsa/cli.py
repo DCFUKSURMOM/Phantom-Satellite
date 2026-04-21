@@ -87,10 +87,8 @@ def keygen():
         sys.stdout.write(data)
 
 
-class CryptoOperation(object):
+class CryptoOperation(object, metaclass=abc.ABCMeta):
     '''CLI callable that operates with input, output, and a key.'''
-
-    __metaclass__ = abc.ABCMeta
 
     keyname = 'public' # or 'private'
     usage = 'usage: %%prog [options] %(keyname)s_key'

@@ -2,8 +2,8 @@
 import os
 import re
 import subprocess
-from urlparse import urlsplit
-from ConfigParser import RawConfigParser
+from urllib.parse import urlsplit
+from configparser import RawConfigParser
 
 from util.commands import run_cmd, get_output, remove_path
 from util.retry import retry
@@ -105,7 +105,7 @@ def purge(dest):
     try:
         run_cmd(['hg', '--config', 'extensions.purge=', 'purge',
                  '-a', '--all', dest], cwd=dest)
-    except subprocess.CalledProcessError, e:
+    except subprocess.CalledProcessError as e:
         log.debug('purge failed: %s' % e)
         raise
 
@@ -306,7 +306,7 @@ def out(src, remote, **kwargs):
                     branch = "default"
                 revs.append((rev, branch))
             return revs
-        except subprocess.CalledProcessError, inst:
+        except subprocess.CalledProcessError as inst:
             # In some situations, some versions of Mercurial return "1"
             # if no changes are found, so we need to ignore this return code
             if inst.returncode == 1:
@@ -500,7 +500,7 @@ def apply_and_push(localrepo, remote, changer, max_attempts=10,
             push(src=localrepo, remote=remote, ssh_username=ssh_username,
                  ssh_key=ssh_key, force=force)
             return
-        except subprocess.CalledProcessError, e:
+        except subprocess.CalledProcessError as e:
             log.debug("Hit error when trying to push: %s" % str(e))
             if n == max_attempts:
                 log.debug("Tried %d times, giving up" % max_attempts)
@@ -515,7 +515,7 @@ def apply_and_push(localrepo, remote, changer, max_attempts=10,
             try:
                 run_cmd(['hg', '--config', 'ui.merge=internal:merge',
                          'rebase'], cwd=localrepo)
-            except subprocess.CalledProcessError, e:
+            except subprocess.CalledProcessError as e:
                 log.debug("Failed to rebase: %s" % str(e))
                 update(localrepo, branch=branch)
                 for r in reversed(new_revs):
@@ -578,7 +578,7 @@ def adjust_paths(dest, **paths):
         config.add_section('paths')
 
     changed = False
-    for path_name, path_value in paths.items():
+    for path_name, path_value in list(paths.items()):
         if (not config.has_option('paths', path_name) or
                 config.get('paths', path_name) != path_value):
             changed = True

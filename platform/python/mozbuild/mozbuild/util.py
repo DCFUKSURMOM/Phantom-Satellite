@@ -16,6 +16,7 @@ import functools
 import hashlib
 import itertools
 import os
+import io
 import re
 import stat
 import sys
@@ -24,14 +25,13 @@ import types
 
 from collections import (
     defaultdict,
-    Iterable,
     OrderedDict,
 )
-from io import (
-    StringIO,
-    BytesIO,
-)
 
+try:
+    from collections.abc import Iterable, Sequence
+except ImportError:
+    from collections import Iterable, Sequence
 
 if sys.version_info[0] == 3:
     str_type = str
@@ -78,7 +78,7 @@ def hash_file(path, hasher=None):
     return h.hexdigest()
 
 
-class EmptyValue(unicode):
+class EmptyValue(str):
     """A dummy type that behaves like an empty string and sequence.
 
     This type exists in order to support
@@ -92,7 +92,7 @@ class EmptyValue(unicode):
 class ReadOnlyNamespace(object):
     """A class for objects with immutable attributes set at initialization."""
     def __init__(self, **kwargs):
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             super(ReadOnlyNamespace, self).__setattr__(k, v)
 
     def __delattr__(self, key):
@@ -152,7 +152,7 @@ def ensureParentDir(path):
     if d and not os.path.exists(path):
         try:
             os.makedirs(d)
-        except OSError, error:
+        except OSError as error:
             if error.errno != errno.EEXIST:
                 raise
 
@@ -198,8 +198,26 @@ def simple_diff(filename, old_lines, new_lines):
     return difflib.unified_diff(old_lines or [], new_lines or [],
                                 old_name, new_name, n=4, lineterm='')
 
+def strtobool(value: str):
+    # Copied from `mach.util` since this script runs outside of a mach
+    # environment.
+    # Reimplementation of distutils.util.strtobool
+    # https://docs.python.org/3.9/distutils/apiref.html#distutils.util.strtobool
+    true_vals = ("y", "yes", "t", "true", "on", "1")
+    false_vals = ("n", "no", "f", "false", "off", "0")
 
-class FileAvoidWrite(BytesIO):
+    value = value.lower()
+    if value in true_vals:
+        return 1
+    if value in false_vals:
+        return 0
+
+    raise ValueError('Expected one of: {}'.format(", ".join(true_vals + false_vals)))
+
+
+
+
+class FileAvoidWrite:
     """File-like object that buffers output and only writes if content changed.
 
     We create an instance from an existing filename. New content is written to
@@ -215,18 +233,26 @@ class FileAvoidWrite(BytesIO):
     out, but reports whether the file was existing and would have been updated
     still occur, as well as diff capture if requested.
     """
-    def __init__(self, filename, capture_diff=False, dry_run=False, mode='rU'):
-        BytesIO.__init__(self)
+    def __init__(self, filename, capture_diff=False, dry_run=False, mode='r', encoding='utf-8'):
         self.name = filename
         self._capture_diff = capture_diff
         self._dry_run = dry_run
+        self.encoding = encoding
         self.diff = None
         self.mode = mode
+        self._buffer = io.BytesIO()
 
     def write(self, buf):
-        if isinstance(buf, unicode):
-            buf = buf.encode('utf-8')
-        BytesIO.write(self, buf)
+        if isinstance(buf, str):
+            buf = buf.encode(self.encoding, errors='replace')
+        self._buffer.write(buf)
+
+    def getvalue(self):
+        buf = self._buffer.getvalue()
+        try:
+            return buf.decode(self.encoding, errors='replace')
+        except Exception:
+            return buf.decode('utf-8', errors='replace')
 
     def close(self):
         """Stop accepting writes, compare file contents, and rewrite if needed.
@@ -239,19 +265,25 @@ class FileAvoidWrite(BytesIO):
         underlying file was changed, ``.diff`` will be populated with the diff
         of the result.
         """
-        buf = self.getvalue()
-        BytesIO.close(self)
+        buf = self._buffer.getvalue()
         existed = False
         old_content = None
 
+        # Newer Python errors on this.
+        if self.mode == 'rU':
+            self.mode = 'r'
+
         try:
-            existing = open(self.name, self.mode)
+            existing = open(self.name, 'rb')
             existed = True
         except IOError:
             pass
         else:
             try:
                 old_content = existing.read()
+                if isinstance(old_content, str):
+                    old_content = old_content.encode(self.encoding, errors='replace')
+
                 if old_content == buf:
                     return True, False
             except IOError:
@@ -261,18 +293,25 @@ class FileAvoidWrite(BytesIO):
 
         if not self._dry_run:
             ensureParentDir(self.name)
-            # Maintain 'b' if specified.  'U' only applies to modes starting with
-            # 'r', so it is dropped.
-            writemode = 'w'
-            if 'b' in self.mode:
-                writemode += 'b'
-            with open(self.name, writemode) as file:
+            # Always write in binary mode.
+            with open(self.name, 'wb') as file:
+                if isinstance(buf, str):
+                    buf = buf.encode('utf-8', errors='replace')
                 file.write(buf)
 
         if self._capture_diff:
             try:
-                old_lines = old_content.splitlines() if existed else None
-                new_lines = buf.splitlines()
+                if existed:
+                    if isinstance(old_content, bytes):
+                        old_text = old_content.decode(self.encoding, 
+                                                      errors='replace')
+                    else:
+                        old_text = old_content
+                    old_lines = old_text.splitlines()
+                else:
+                    old_lines = None
+                new_lines = buf.decode(self.encoding, 
+                                       errors='replace').splitlines()
 
                 self.diff = simple_diff(self.name, old_lines, new_lines)
             # FileAvoidWrite isn't unicode/bytes safe. So, files with non-ascii
@@ -290,8 +329,7 @@ class FileAvoidWrite(BytesIO):
     def __enter__(self):
         return self
     def __exit__(self, type, value, traceback):
-        if not self.closed:
-            self.close()
+        self.close()
 
 
 def resolve_target_to_make(topobjdir, target):
@@ -381,7 +419,7 @@ class ListMixin(object):
     def __add__(self, other):
         # Allow None and EmptyValue is a special case because it makes undefined
         # variable references in moz.build behave better.
-        other = [] if isinstance(other, (types.NoneType, EmptyValue)) else other
+        other = [] if isinstance(other, (type(None), EmptyValue)) else other
         if not isinstance(other, list):
             raise ValueError('Only lists can be appended to lists.')
 
@@ -390,7 +428,7 @@ class ListMixin(object):
         return new_list
 
     def __iadd__(self, other):
-        other = [] if isinstance(other, (types.NoneType, EmptyValue)) else other
+        other = [] if isinstance(other, (type(None), EmptyValue)) else other
         if not isinstance(other, list):
             raise ValueError('Only lists can be appended to lists.')
 
@@ -421,7 +459,7 @@ class UnsortedError(Exception):
                 break
 
     def __str__(self):
-        s = StringIO()
+        s = io.StringIO()
 
         s.write('An attempt was made to add an unsorted sequence to a list. ')
         s.write('The incoming list is unsorted starting at element %d. ' %
@@ -542,14 +580,14 @@ def FlagsFactory(flags):
     functions below.
     """
     assert isinstance(flags, dict)
-    assert all(isinstance(v, type) for v in flags.values())
+    assert all(isinstance(v, type) for v in list(flags.values()))
 
     class Flags(object):
-        __slots__ = flags.keys()
+        __slots__ = list(flags.keys())
         _flags = flags
 
         def update(self, **kwargs):
-            for k, v in kwargs.iteritems():
+            for k, v in kwargs.items():
                 setattr(self, k, v)
 
         def __getattr__(self, name):
@@ -692,7 +730,7 @@ class HierarchicalStringList(object):
         self._strings = StrictOrderingOnAppendList()
         self._children = {}
 
-    class StringListAdaptor(collections.Sequence):
+    class StringListAdaptor(Sequence):
         def __init__(self, hsl):
             self._hsl = hsl
 
@@ -976,9 +1014,8 @@ def TypedNamedTuple(name, fields):
             if len(args) == 1 and not kwargs and isinstance(args[0], tuple):
                 args = args[0]
 
-            return super(TypedTuple, klass).__new__(klass, *args, **kwargs)
+            self = super(TypedTuple, klass).__new__(klass, *args, **kwargs)
 
-        def __init__(self, *args, **kwargs):
             for i, (fname, ftype) in enumerate(self._fields):
                 value = self[i]
 
@@ -987,7 +1024,10 @@ def TypedNamedTuple(name, fields):
                                     'got %s, expected %s' % (fname,
                                     type(value), ftype))
 
-            super(TypedTuple, self).__init__(*args, **kwargs)
+            return self
+
+        def __init__(self, *args, **kwargs):
+            pass
 
     TypedTuple._fields = fields
 
@@ -1080,14 +1120,14 @@ def group_unified_files(files, unified_prefix, unified_suffix,
     # issue.  So we do a little dance to filter it out ourselves.
     dummy_fill_value = ("dummy",)
     def filter_out_dummy(iterable):
-        return itertools.ifilter(lambda x: x != dummy_fill_value,
+        return filter(lambda x: x != dummy_fill_value,
                                  iterable)
 
     # From the itertools documentation, slightly modified:
     def grouper(n, iterable):
         "grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx"
         args = [iter(iterable)] * n
-        return itertools.izip_longest(fillvalue=dummy_fill_value, *args)
+        return itertools.zip_longest(fillvalue=dummy_fill_value, *args)
 
     for i, unified_group in enumerate(grouper(files_per_unified_file,
                                               files)):
@@ -1104,10 +1144,10 @@ def pair(iterable):
         [(1,2), (3,4), (5,6)]
     '''
     i = iter(iterable)
-    return itertools.izip_longest(i, i)
+    return itertools.zip_longest(i, i)
 
 
-VARIABLES_RE = re.compile('\$\((\w+)\)')
+VARIABLES_RE = re.compile(r'\$\((\w+)\)')
 
 
 def expand_variables(s, variables):
@@ -1122,7 +1162,7 @@ def expand_variables(s, variables):
         value = variables.get(name)
         if not value:
             continue
-        if not isinstance(value, types.StringTypes):
+        if not isinstance(value, (str,)):
             value = ' '.join(value)
         result += value
     return result
@@ -1149,7 +1189,7 @@ class EnumStringComparisonError(Exception):
     pass
 
 
-class EnumString(unicode):
+class EnumString(str):
     '''A string type that only can have a limited set of values, similarly to
     an Enum, and can only be compared against that set of values.
 
@@ -1173,6 +1213,11 @@ class EnumString(unicode):
     def __ne__(self, other):
         return not (self == other)
 
+    __hash__ = str.__hash__
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__, str(self))
+
     @staticmethod
     def subclass(*possible_values):
         class EnumStringSubclass(EnumString):
@@ -1185,24 +1230,22 @@ def _escape_char(c):
     # quoting could be done with either ' or ".
     if c == "'":
         return "\\'"
-    return unicode(c.encode('unicode_escape'))
+    return c.encode('unicode_escape').decode('ascii')
 
 # Mapping table between raw characters below \x80 and their escaped
 # counterpart, when they differ
 _INDENTED_REPR_TABLE = {
     c: e
-    for c, e in map(lambda x: (x, _escape_char(x)),
-                    map(unichr, range(128)))
+    for c, e in [(x, _escape_char(x)) for x in map(chr, range(128))]
     if c != e
 }
-# Regexp matching all characters to escape.
-_INDENTED_REPR_RE = re.compile(
-    '([' + ''.join(_INDENTED_REPR_TABLE.values()) + ']+)')
 
-
+# Build regex from the KEYS (raw special chars), with a CAPTURING group
+# so re.split() returns the matched chars interleaved in the output list.
+pattern = '(' + '|'.join(re.escape(c) for c in _INDENTED_REPR_TABLE.keys()) + ')'
+_INDENTED_REPR_RE = re.compile(pattern)
 def indented_repr(o, indent=4):
     '''Similar to repr(), but returns an indented representation of the object
-
     One notable difference with repr is that the returned representation
     assumes `from __future__ import unicode_literals`.
     '''
@@ -1223,7 +1266,7 @@ def indented_repr(o, indent=4):
         elif isinstance(o, bytes):
             yield 'b'
             yield repr(o)
-        elif isinstance(o, unicode):
+        elif isinstance(o, str):
             yield "'"
             # We want a readable string (non escaped unicode), but some
             # special characters need escaping (e.g. \n, \t, etc.)
@@ -1246,19 +1289,3 @@ def indented_repr(o, indent=4):
         else:
             yield repr(o)
     return ''.join(recurse_indented_repr(o, 0))
-
-
-def encode(obj, encoding='utf-8'):
-    '''Recursively encode unicode strings with the given encoding.'''
-    if isinstance(obj, dict):
-        return {
-            encode(k, encoding): encode(v, encoding)
-            for k, v in obj.iteritems()
-        }
-    if isinstance(obj, bytes):
-        return obj
-    if isinstance(obj, unicode):
-        return obj.encode(encoding)
-    if isinstance(obj, Iterable):
-        return [encode(i, encoding) for i in obj]
-    return obj

@@ -12,7 +12,7 @@
 """Performs style checking on each diff hunk."""
 import getopt
 import os
-import StringIO
+import io
 import subprocess
 import sys
 
@@ -65,17 +65,17 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], SHORT_OPTIONS, LONG_OPTIONS)
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Usage(msg)
 
         # process options
         for o, _ in opts:
             if o in ("-h", "--help"):
-                print __doc__
+                print(__doc__)
                 sys.exit(0)
 
         if args and len(args) > 1:
-            print __doc__
+            print(__doc__)
             sys.exit(0)
 
         # Find the fully qualified path to the root of the tree
@@ -97,7 +97,7 @@ def main(argv=None):
         file_affected_line_map = {}
         p = Subprocess(diff_cmd, stdout=subprocess.PIPE)
         stdout = p.communicate()[0]
-        for hunk in diff.ParseDiffHunks(StringIO.StringIO(stdout)):
+        for hunk in diff.ParseDiffHunks(io.StringIO(stdout)):
             filename = hunk.right.filename[2:]
             if filename not in file_affected_line_map:
                 file_affected_line_map[filename] = set()
@@ -105,7 +105,7 @@ def main(argv=None):
 
         # Run each affected file through cpplint
         lint_failed = False
-        for filename, affected_lines in file_affected_line_map.iteritems():
+        for filename, affected_lines in file_affected_line_map.items():
             if filename.split(".")[-1] not in ("c", "h", "cc"):
                 continue
 
@@ -129,17 +129,17 @@ def main(argv=None):
                     continue
                 warning_line_num = int(fields[1])
                 if warning_line_num in affected_lines:
-                    print "%s:%d:%s"%(filename, warning_line_num,
-                                      ":".join(fields[2:]))
+                    print("%s:%d:%s"%(filename, warning_line_num,
+                                      ":".join(fields[2:])))
                     lint_failed = True
 
         # Set exit code if any relevant lint errors seen
         if lint_failed:
             return 1
 
-    except Usage, err:
-        print >>sys.stderr, err
-        print >>sys.stderr, "for help use --help"
+    except Usage as err:
+        print(err, file=sys.stderr)
+        print("for help use --help", file=sys.stderr)
         return 2
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@
 
 import os
 import pprint
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 try:
     import simplejson as json
     assert json
@@ -114,7 +114,7 @@ class TransferMixin(object):
         self.log("Attempting to download %s; timeout=%i" % (url, timeout),
                  level=log_level)
         try:
-            r = urllib2.urlopen(url, timeout=timeout)
+            r = urllib.request.urlopen(url, timeout=timeout)
             j = json.load(r)
             self.log(pprint.pformat(j), level=log_level)
         except:

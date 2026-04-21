@@ -259,8 +259,8 @@ class TryOptionSyntax(object):
     def parse_build_types(self, build_types_arg):
         if build_types_arg is None:
             build_types_arg = []
-        build_types = filter(None, [BUILD_TYPE_ALIASES.get(build_type) for
-                             build_type in build_types_arg])
+        build_types = [_f for _f in [BUILD_TYPE_ALIASES.get(build_type) for
+                             build_type in build_types_arg] if _f]
         return build_types
 
     def parse_platforms(self, platform_arg):
@@ -294,7 +294,7 @@ class TryOptionSyntax(object):
             return []
 
         all_platforms = set(t.attributes['test_platform']
-                            for t in full_task_graph.tasks.itervalues()
+                            for t in full_task_graph.tasks.values()
                             if 'test_platform' in t.attributes)
 
         tests = self.parse_test_opts(test_arg, all_platforms)
@@ -303,7 +303,7 @@ class TryOptionSyntax(object):
             return []
 
         all_tests = set(t.attributes[attr_name]
-                        for t in full_task_graph.tasks.itervalues()
+                        for t in full_task_graph.tasks.values()
                         if attr_name in t.attributes)
 
         # Special case where tests is 'all' and must be expanded
@@ -455,12 +455,12 @@ class TryOptionSyntax(object):
                 results.extend(self.handle_alias(test, all_tests))
 
         # uniquify the results over the test names
-        results = {test['test']: test for test in results}.values()
+        results = list({test['test']: test for test in results}.values())
         return results
 
     def find_all_attribute_suffixes(self, graph, prefix):
         rv = set()
-        for t in graph.tasks.itervalues():
+        for t in graph.tasks.values():
             for a in t.attributes:
                 if a.startswith(prefix):
                     rv.add(a[len(prefix):])

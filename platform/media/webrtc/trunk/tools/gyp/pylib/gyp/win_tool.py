@@ -9,6 +9,8 @@
 These functions are executed via gyp-win-tool when using the ninja generator.
 """
 
+from __future__ import print_function
+
 import os
 import re
 import shutil
@@ -128,13 +130,14 @@ class WinTool(object):
     # For that reason, since going through the shell doesn't seem necessary on
     # non-Windows don't do that there.
     link = subprocess.Popen(args, shell=sys.platform == 'win32', env=env,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            universal_newlines=True)
     out, _ = link.communicate()
     for line in out.splitlines():
       if (not line.startswith('   Creating library ') and
           not line.startswith('Generating code') and
           not line.startswith('Finished generating code')):
-        print line
+        print(line)
     return link.returncode
 
   def ExecLinkWithManifests(self, arch, embed_manifest, out, ldcmd, resname,
@@ -193,16 +196,18 @@ class WinTool(object):
       our_manifest = '%(out)s.manifest' % variables
       # Load and normalize the manifests. mt.exe sometimes removes whitespace,
       # and sometimes doesn't unfortunately.
-      with open(our_manifest, 'rb') as our_f:
-        with open(assert_manifest, 'rb') as assert_f:
-          our_data = our_f.read().translate(None, string.whitespace)
-          assert_data = assert_f.read().translate(None, string.whitespace)
+      with open(our_manifest, 'r') as our_f:
+        with open(assert_manifest, 'r') as assert_f:
+          our_data = re.sub(r'\s+', '', our_f.read())
+          assert_data = re.sub(r'\s+', '', assert_f.read())
       if our_data != assert_data:
         os.unlink(out)
         def dump(filename):
-          sys.stderr.write('%s\n-----\n' % filename)
-          with open(filename, 'rb') as f:
-            sys.stderr.write(f.read() + '\n-----\n')
+          print(filename, file=sys.stderr)
+          print('-----', file=sys.stderr)
+          with open(filename, 'r') as f:
+            print(f.read(), file=sys.stderr)
+            print('-----', file=sys.stderr)
         dump(intermediate_manifest)
         dump(our_manifest)
         dump(assert_manifest)
@@ -219,11 +224,12 @@ class WinTool(object):
     tool)."""
     env = self._GetEnv(arch)
     popen = subprocess.Popen(args, shell=True, env=env,
-                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True)
     out, _ = popen.communicate()
     for line in out.splitlines():
       if line and 'manifest authoring warning 81010002' not in line:
-        print line
+        print(line)
     return popen.returncode
 
   def ExecManifestToRc(self, arch, *args):
@@ -231,7 +237,7 @@ class WinTool(object):
     |args| is tuple containing path to resource file, path to manifest file
     and resource name which can be "1" (for executables) or "2" (for DLLs)."""
     manifest_path, resource_path, resource_name = args
-    with open(resource_path, 'wb') as output:
+    with open(resource_path, 'w') as output:
       output.write('#include <windows.h>\n%s RT_MANIFEST "%s"' % (
         resource_name,
         os.path.abspath(manifest_path).replace('\\', '/')))
@@ -251,7 +257,8 @@ class WinTool(object):
         idl]
     env = self._GetEnv(arch)
     popen = subprocess.Popen(args, shell=True, env=env,
-                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True)
     out, _ = popen.communicate()
     # Filter junk out of stdout, and write filtered versions. Output we want
     # to filter is pairs of lines that look like this:
@@ -263,21 +270,22 @@ class WinTool(object):
                      for x in lines if x.startswith(prefixes))
     for line in lines:
       if not line.startswith(prefixes) and line not in processing:
-        print line
+        print(line)
     return popen.returncode
 
   def ExecAsmWrapper(self, arch, *args):
     """Filter logo banner from invocations of asm.exe."""
     env = self._GetEnv(arch)
     popen = subprocess.Popen(args, shell=True, env=env,
-                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True)
     out, _ = popen.communicate()
     for line in out.splitlines():
       if (not line.startswith('Copyright (C) Microsoft Corporation') and
           not line.startswith('Microsoft (R) Macro Assembler') and
           not line.startswith(' Assembling: ') and
           line):
-        print line
+        print(line)
     return popen.returncode
 
   def ExecRcWrapper(self, arch, *args):
@@ -285,13 +293,14 @@ class WinTool(object):
     don't support the /nologo flag."""
     env = self._GetEnv(arch)
     popen = subprocess.Popen(args, shell=True, env=env,
-                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True)
     out, _ = popen.communicate()
     for line in out.splitlines():
       if (not line.startswith('Microsoft (R) Windows (R) Resource Compiler') and
           not line.startswith('Copyright (C) Microsoft Corporation') and
           line):
-        print line
+        print(line)
     return popen.returncode
 
   def ExecActionWrapper(self, arch, rspfile, *dir):
@@ -300,7 +309,7 @@ class WinTool(object):
     env = self._GetEnv(arch)
     # TODO(scottmg): This is a temporary hack to get some specific variables
     # through to actions that are set after gyp-time. http://crbug.com/333738.
-    for k, v in os.environ.iteritems():
+    for k, v in os.environ.items():
       if k not in env:
         env[k] = v
     args = open(rspfile).read()

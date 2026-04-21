@@ -8,7 +8,11 @@ dictionary of values, and returns a new iterable of test objects. It is
 possible to define custom filters if the built-in ones are not enough.
 """
 
-from collections import defaultdict, MutableSequence
+from collections import defaultdict
+try:
+    from collections.abc import MutableSequence
+except ImportError:
+    from collections import MutableSequence
 import itertools
 import os
 
@@ -92,7 +96,7 @@ class InstanceFilter(object):
     def __init__(self, *args, **kwargs):
         self.fmt_args = ', '.join(itertools.chain(
             [str(a) for a in args],
-            ['{}={}'.format(k, v) for k, v in kwargs.iteritems()]))
+            ['{}={}'.format(k, v) for k, v in kwargs.items()]))
 
     def __eq__(self, other):
         if self.unique:
@@ -249,7 +253,7 @@ class chunk_by_dir(InstanceFilter):
         # be yielded for reporting purposes. Put them all in chunk 1 for
         # simplicity.
         if self.this_chunk == 1:
-            disabled_dirs = [v for k, v in tests_by_dir.iteritems()
+            disabled_dirs = [v for k, v in tests_by_dir.items()
                              if k not in ordered_dirs]
             for disabled_test in itertools.chain(*disabled_dirs):
                 yield disabled_test

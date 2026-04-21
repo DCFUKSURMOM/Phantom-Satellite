@@ -30,9 +30,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'mozlint'
-copyright = u'2015, Andrew Halberstadt'
-author = u'Andrew Halberstadt'
+project = 'mozlint'
+copyright = '2015, Andrew Halberstadt'
+author = 'Andrew Halberstadt'
 
 # The short X.Y version.
 version = '0.1.0'
@@ -84,8 +84,8 @@ latex_elements = {}
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'mozlint.tex', u'mozlint Documentation',
-   u'Andrew Halberstadt', 'manual'),
+  (master_doc, 'mozlint.tex', 'mozlint Documentation',
+   'Andrew Halberstadt', 'manual'),
 ]
 
 # -- Options for manual page output ---------------------------------------
@@ -93,7 +93,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'mozlint', u'mozlint Documentation',
+    (master_doc, 'mozlint', 'mozlint Documentation',
      [author], 1)
 ]
 
@@ -103,7 +103,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'mozlint', u'mozlint Documentation',
+  (master_doc, 'mozlint', 'mozlint Documentation',
    author, 'mozlint', 'One line description of project.',
    'Miscellaneous'),
 ]

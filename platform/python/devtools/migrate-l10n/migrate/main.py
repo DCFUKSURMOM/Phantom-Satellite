@@ -1,11 +1,11 @@
 import argparse
 import glob
-import HTMLParser
+import html.parser
 import logging
 import os
 import re
 import sys
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 
 # Import compare-locales parser from parent folder.
@@ -34,7 +34,7 @@ CENTRAL_BASE_URL = ('https://hg.mozilla.org/'
 
 
 # HTML parser to translate HTML entities in dtd files.
-HTML_PARSER = HTMLParser.HTMLParser()
+HTML_PARSER = html.parser.HTMLParser()
 
 # Cache to store properties files retrieved over the network.
 central_prop_cache = {}
@@ -54,7 +54,7 @@ def get_central_prop_content(prop_filename):
     logging.info('loading localization file from central: {%s}' % url)
 
     try:
-        central_prop_cache[prop_filename] = urllib2.urlopen(url).readlines()
+        central_prop_cache[prop_filename] = urllib.request.urlopen(url).readlines()
     except:
         logging.error('failed to load properties file from central: {%s}'
                       % url)

@@ -34,7 +34,7 @@ def read_tc_auth(tc_auth_file):
     return json.load(open(tc_auth_file, 'rb'))
 
 def fill_template_dict(d, keys):
-    for key, val in d.items():
+    for key, val in list(d.items()):
         if isinstance(val, basestring) and '{' in val:
             d[key] = val.format(**keys)
         elif isinstance(val, dict):

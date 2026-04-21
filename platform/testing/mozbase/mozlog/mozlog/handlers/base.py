@@ -95,7 +95,7 @@ class StreamHandler(BaseHandler):
         if not formatted:
             return
         with self._lock:
-            if isinstance(formatted, unicode):
+            if isinstance(formatted, str):
                 self.stream.write(formatted.encode("utf-8", "replace"))
             elif isinstance(formatted, str):
                 self.stream.write(formatted)

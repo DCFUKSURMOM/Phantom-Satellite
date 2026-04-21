@@ -5,7 +5,7 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import mozhttpd
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import os
 import unittest
 import re
@@ -20,7 +20,7 @@ class FileListingTest(unittest.TestCase):
 
         httpd = mozhttpd.MozHttpd(port=0, docroot=here)
         httpd.start(block=False)
-        f = urllib2.urlopen("http://%s:%s/%s" % ('127.0.0.1', httpd.httpd.server_port, path))
+        f = urllib.request.urlopen("http://%s:%s/%s" % ('127.0.0.1', httpd.httpd.server_port, path))
         for line in f.readlines():
             webline = re.sub('\<[a-zA-Z0-9\-\_\.\=\"\'\/\\\%\!\@\#\$\^\&\*\(\) ]*\>',
                              '', line.strip('\n')).strip('/').strip().strip('@')

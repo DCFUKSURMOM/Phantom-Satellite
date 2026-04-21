@@ -66,7 +66,7 @@ data in a json useful for Exhibit
         logging.getLogger().setLevel(logging.WARNING -
                                      (options.v - options.q)*10)
         observer = self.handle(args, options)
-        print observer.serialize(type=options.data).encode('utf-8', 'replace')
+        print(observer.serialize(type=options.data).encode('utf-8', 'replace'))
 
     def handle(self, args, options):
         """Subclasses need to implement this method for the actual
@@ -109,8 +109,8 @@ Be careful to specify the right merge directory when using this option."""),
         try:
             observer = compareApp(app, merge_stage=options.merge,
                                   clobber=options.clobber)
-        except (OSError, IOError), exc:
-            print "FAIL: " + str(exc)
+        except (OSError, IOError) as exc:
+            print("FAIL: " + str(exc))
             self.parser.exit(2)
         return observer
 

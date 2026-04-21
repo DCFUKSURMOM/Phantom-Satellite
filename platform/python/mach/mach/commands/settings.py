@@ -122,7 +122,7 @@ class Settings(object):
 
             self.was_prompted = True
 
-            msgstr = raw_input("Translate {} to {}:\n"
+            msgstr = input("Translate {} to {}:\n"
                                .format(msgid, locale))
             entry.msgstr = msgstr
 

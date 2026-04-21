@@ -3,21 +3,21 @@
 # found in the LICENSE file.
 
 import contextlib
-import httplib
+import http.client
 import logging
 import os
 import tempfile
 import time
 
-import android_commands
-import constants
-from chrome_test_server_spawner import SpawningServer
-import constants
-from flag_changer import FlagChanger
-from forwarder import Forwarder
+from . import android_commands
+from . import constants
+from .chrome_test_server_spawner import SpawningServer
+from . import constants
+from .flag_changer import FlagChanger
+from .forwarder import Forwarder
 import lighttpd_server
-import ports
-from valgrind_tools import CreateTool
+from . import ports
+from .valgrind_tools import CreateTool
 
 
 # A file on device to store ports of net test server. The format of the file is
@@ -181,7 +181,7 @@ class BaseTestRunner(object):
     server_ready = False
     error_msgs = []
     # Try 3 times to launch test spawner server.
-    for i in xrange(0, 3):
+    for i in range(0, 3):
       # Do not allocate port for test server here. We will allocate
       # different port for individual test in TestServerThread.
       self.test_server_spawner_port = ports.AllocateTestServerPort()

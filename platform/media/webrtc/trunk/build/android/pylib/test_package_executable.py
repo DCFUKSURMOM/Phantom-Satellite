@@ -9,9 +9,9 @@ import shutil
 import sys
 import tempfile
 
-import cmd_helper
-import constants
-from test_package import TestPackage
+from . import cmd_helper
+from . import constants
+from .test_package import TestPackage
 from pylib import pexpect
 
 

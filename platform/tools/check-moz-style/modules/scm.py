@@ -118,7 +118,7 @@ class SCM:
 
     def ensure_clean_working_directory(self, force):
         if not force and not self.working_directory_is_clean():
-            print self.run_command(self.status_command(), raise_on_failure=False)
+            print(self.run_command(self.status_command(), raise_on_failure=False))
             error("Working directory has modifications, pass --force-clean or --no-clean to continue.")
         
         log("Cleaning working directory")
@@ -157,45 +157,45 @@ class SCM:
 
     @staticmethod
     def in_working_directory(path):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     @staticmethod
     def find_checkout_root(path):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     @staticmethod
     def commit_success_regexp():
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def working_directory_is_clean(self):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def clean_working_directory(self):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def update_webkit(self):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def status_command(self):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def changed_files(self):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def display_name(self):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def create_patch(self):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def commit_with_message(self, message):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
     
     # Subclasses must indicate if they support local commits,
     # but the SCM baseclass will only call local_commits methods when this is true.
     @staticmethod
     def supports_local_commits():
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def create_patch_from_local_commit(self, commit_id):
         pass

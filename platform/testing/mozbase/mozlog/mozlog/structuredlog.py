@@ -11,8 +11,8 @@ import sys
 import time
 import traceback
 
-from logtypes import Unicode, TestId, Status, SubStatus, Dict, List, Int, Any, Tuple
-from logtypes import log_action, convertor_registry
+from .logtypes import Unicode, TestId, Status, SubStatus, Dict, List, Int, Any, Tuple
+from .logtypes import log_action, convertor_registry
 
 """Structured Logging for recording test results.
 
@@ -185,7 +185,7 @@ class StructuredLogger(object):
 
         action = raw_data["action"]
         converted_data = convertor_registry[action].convert_known(**raw_data)
-        for k, v in raw_data.iteritems():
+        for k, v in raw_data.items():
             if k not in converted_data:
                 converted_data[k] = v
 
@@ -222,8 +222,8 @@ class StructuredLogger(object):
                 except Exception:
                     # Write the exception details directly to stderr because
                     # log() would call this method again which is currently locked.
-                    print >> sys.__stderr__, '%s: Failure calling log handler:' % __name__
-                    print >> sys.__stderr__, traceback.format_exc()
+                    print('%s: Failure calling log handler:' % __name__, file=sys.__stderr__)
+                    print(traceback.format_exc(), file=sys.__stderr__)
 
     def _make_log_data(self, action, data):
         all_data = {"action": action,
@@ -433,7 +433,7 @@ def _log_func(level_name):
                 exc_info = sys.exc_info()
             if exc_info != (None, None, None):
                 bt = traceback.format_exception(*exc_info)
-                data["stack"] = u"\n".join(bt)
+                data["stack"] = "\n".join(bt)
 
         data["level"] = level_name
         self._log_data("log", data)

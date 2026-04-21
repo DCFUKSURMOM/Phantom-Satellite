@@ -24,10 +24,10 @@ for soname in ['harfbuzz', 'harfbuzz-subset', 'harfbuzz-gobject', 'harfbuzz-cair
 		so = os.path.join (libs, 'lib%s.%s' % (soname, suffix))
 		if not os.path.exists (so): continue
 
-		print ('Checking that we are not linking to libstdc++ or libc++ in %s' % so)
+		print(('Checking that we are not linking to libstdc++ or libc++ in %s' % so))
 		ldd_result = subprocess.check_output (ldd.split() + [so])
 		if (b'libstdc++' in ldd_result) or (b'libc++' in ldd_result):
-			print ('Ouch, %s is linked to libstdc++ or libc++' % so)
+			print(('Ouch, %s is linked to libstdc++ or libc++' % so))
 			stat = 1
 
 		tested = True

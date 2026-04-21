@@ -35,4 +35,4 @@ fi
 # directly. We use a copy of the underlying configure script to get paths
 # correct.
 set -- "$@" --with-external-source-dir="$TOPSRCDIR"
-which python2.7 > /dev/null && exec python2.7 "$TOPSRCDIR/configure.py" "$@" || exec python "$TOPSRCDIR/configure.py" "$@"
+which python3 > /dev/null && exec python3 "$TOPSRCDIR/configure.py" "$@" || exec python "$TOPSRCDIR/configure.py" "$@"

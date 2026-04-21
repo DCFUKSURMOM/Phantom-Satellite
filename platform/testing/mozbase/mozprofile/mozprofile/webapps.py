@@ -265,7 +265,7 @@ class WebappCollection(object):
 
         apps = []
         if isinstance(app_json, dict):
-            for k, v in app_json.iteritems():
+            for k, v in app_json.items():
                 v['name'] = k
                 apps.append(v)
         else:

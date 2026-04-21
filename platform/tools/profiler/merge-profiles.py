@@ -69,7 +69,7 @@ def MergeProfiles(files):
                             symTable[newLoc] = oldLoc
 
         filesyms = fileData['symbolicationTable']
-        for sym in filesyms.keys():
+        for sym in list(filesyms.keys()):
             symTable[pidStr + sym] = filesyms[sym]
 
     # For each thread, make the time offsets line up based on the
@@ -107,7 +107,7 @@ if len(sys.argv) > 1:
     MergeProfiles(sys.argv[1:])
     sys.exit(0)
 
-print "Usage: merge-profile.py profile_<pid1>_<pname1>.sym profile_<pid2>_<pname2>.sym > merged.sym"
+print("Usage: merge-profile.py profile_<pid1>_<pname1>.sym profile_<pid2>_<pname2>.sym > merged.sym")
 
 
 

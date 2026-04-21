@@ -9,7 +9,7 @@ Run a python script, adding extra directories to the python path.
 
 def main(args):
     def usage():
-        print >>sys.stderr, "pythonpath.py -I directory script.py [args...]"
+        print("pythonpath.py -I directory script.py [args...]", file=sys.stderr)
         sys.exit(150)
 
     paths = []
@@ -45,7 +45,7 @@ def main(args):
     frozenglobals['__name__'] = '__main__'
     frozenglobals['__file__'] = script
 
-    execfile(script, frozenglobals)
+    exec(compile(open(script, "rb").read(), script, 'exec'), frozenglobals)
 
 # Freeze scope here ... why this makes things work I have no idea ...
 frozenglobals = globals()

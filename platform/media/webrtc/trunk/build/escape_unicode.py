@@ -20,17 +20,17 @@ def main(argv):
   options, arglist = parser.parse_args(argv)
 
   if not options.output_dir:
-    print "output_dir required"
+    print("output_dir required")
     return 1
 
   if len(arglist) != 2:
-    print "input_file required"
+    print("input_file required")
     return 1
 
   in_filename = arglist[1]
 
   if not in_filename.endswith('.utf8'):
-    print "input_file should end in .utf8"
+    print("input_file should end in .utf8")
     return 1
 
   out_filename = os.path.join(options.output_dir, os.path.basename(

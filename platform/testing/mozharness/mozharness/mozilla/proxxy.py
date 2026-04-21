@@ -2,7 +2,7 @@
    proxxy instances (if available). The goal of Proxxy is to lower the traffic
    from the cloud to internal servers.
 """
-import urlparse
+import urllib.parse
 import socket
 from mozharness.base.log import INFO, ERROR, LogMixin
 from mozharness.base.script import ScriptMixin
@@ -67,7 +67,7 @@ class Proxxy(ScriptMixin, LogMixin):
         proxxy_urls = config.get('urls', [])
         proxxy_instances = config.get('instances', [])
 
-        url_parts = urlparse.urlsplit(url)
+        url_parts = urllib.parse.urlsplit(url)
         url_path = url_parts.path
         if url_parts.query:
             url_path += "?" + url_parts.query

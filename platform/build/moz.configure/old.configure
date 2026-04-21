@@ -3,13 +3,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-@imports('codecs')
-@imports('sys')
-def encoded_open(path, mode):
-    encoding = 'mbcs' if sys.platform == 'win32' else 'utf-8'
-    return codecs.open(path, mode, encoding)
-
-
 m4 = check_prog(
     "M4",
     (
@@ -31,8 +24,10 @@ m4 = check_prog(
 @imports(_from='os.path', _import='exists')
 @imports(_from='mozbuild.shellutil', _import='quote')
 @imports(_from='os', _import='environ')
+@imports(_from='locale', _import='getpreferredencoding')
 def prepare_configure(old_configure, mozconfig, awk, m4, build_env, shell,
                       old_configure_assignments, build_project):
+    encoding = getpreferredencoding(False)
     # os.path.abspath in the sandbox will ensure forward slashes on Windows,
     # which is actually necessary because this path actually ends up literally
     # as $0, and backslashes there breaks autoconf's detection of the source
@@ -43,7 +38,6 @@ def prepare_configure(old_configure, mozconfig, awk, m4, build_env, shell,
         if not old_configure_dir.endswith('/js/src'):
             old_configure = os.path.join(old_configure_dir, 'js', 'src',
                                          os.path.basename(old_configure))
-
     refresh = True
     if exists(old_configure):
         mtime = getmtime(old_configure)
@@ -67,25 +61,21 @@ def prepare_configure(old_configure, mozconfig, awk, m4, build_env, shell,
         env['AWK'] = awk
         env['AC_MACRODIR'] = os.path.join(build_env.topsrcdir, 'build', 'autoconf')
         my_env = env
-        # Handle Python 2.7 not allowing unicode in the environment on Windows
-        if sys.platform == 'win32':
-            my_env = dict()
-            for e in env:
-                my_env[e.encode('ascii','ignore')] = env[e].encode('ascii','ignore')
         script = subprocess.check_output([
             shell, autoconf,
             '--localdir=%s' % os.path.dirname(old_configure),
             old_configure + '.in'], env=my_env)
+        script = script.decode(encoding, errors='replace')
 
         # Make old-configure append to config.log, where we put our own log.
         # This could be done with a m4 macro, but it's way easier this way
         script = script.replace('>./config.log', '>>./config.log')
 
-        with open(old_configure, 'wb') as fh:
+        with open(old_configure, 'w', encoding=encoding, errors='replace') as fh:
             fh.write(script)
 
     cmd = [shell, old_configure]
-    with encoded_open('old-configure.vars', 'w') as out:
+    with open('old-configure.vars', 'w', encoding=encoding, errors='replace') as out:
         log.debug('Injecting the following to old-configure:')
         def inject(command):
             print(command, file=out)
@@ -294,8 +284,11 @@ def old_configure_options(*options):
 @imports('subprocess')
 @imports('sys')
 @imports(_from='mozbuild.shellutil', _import='quote')
+@imports(_from='mozbuild.util', _import='exec_')
+@imports(_from='locale', _import='getpreferredencoding')
 def old_configure(prepare_configure, extra_old_configure_args, all_options,
                   *options):
+    encoding = getpreferredencoding()
     cmd = prepare_configure
 
     # old-configure only supports the options listed in @old_configure_options
@@ -332,7 +325,7 @@ def old_configure(prepare_configure, extra_old_configure_args, all_options,
     ret = subprocess.call(cmd)
     if ret:
         with log.queue_debug():
-            with encoded_open('config.log', 'r') as fh:
+            with open('config.log', 'r', encoding=encoding, errors='replace') as fh:
                 fh.seek(log_size)
                 for line in fh:
                     log.debug(line.rstrip())
@@ -340,12 +333,12 @@ def old_configure(prepare_configure, extra_old_configure_args, all_options,
         sys.exit(ret)
 
     raw_config = {}
-    with encoded_open('config.data', 'r') as fh:
+    with open('config.data', 'r', encoding=encoding, errors='replace') as fh:
         code = compile(fh.read(), 'config.data', 'exec')
         # Every variation of the exec() function I tried led to:
         # SyntaxError: unqualified exec is not allowed in function 'main' it
         # contains a nested function with free variables
-        exec code in raw_config
+        exec_(code, raw_config)
 
     # Ensure all the flags known to old-configure appear in the
     # @old_configure_options above.
@@ -379,9 +372,9 @@ def set_old_configure_define(name, value):
 def post_old_configure(raw_config):
     for k, v in raw_config['substs']:
         set_old_configure_config(
-            k[1:-1], v[1:-1] if isinstance(v, types.StringTypes) else v)
+            k[1:-1], v[1:-1] if isinstance(v, str) else v)
 
-    for k, v in dict(raw_config['defines']).iteritems():
+    for k, v in dict(raw_config['defines']).items():
         set_old_configure_define(k[1:-1], v[1:-1])
 
     set_old_configure_config('non_global_defines',

@@ -7,12 +7,12 @@ from __future__ import absolute_import, print_function, unicode_literals
 import logging
 import os
 
-from StringIO import StringIO
+from io import StringIO
 
 from mozunit import main
 
 from common import BaseConfigureTest
-from mozbuild.configure.util import Version
+from mozbuild.version import RichVersion
 from mozbuild.util import memoize
 from mozpack import path as mozpath
 from test_toolchain_helpers import (
@@ -56,11 +56,11 @@ SUPPORTS_CXX14 = {
 
 @memoize
 def GCC_BASE(version):
-    version = Version(version)
+    version = RichVersion(version)
     return FakeCompiler({
-        '__GNUC__': version.major,
-        '__GNUC_MINOR__': version.minor,
-        '__GNUC_PATCHLEVEL__': version.patch,
+        '__GNUC__': version.level.MAJOR,
+        '__GNUC_MINOR__': version.level.MINOR,
+        '__GNUC_PATCHLEVEL__': version.level.PATCH,
         '__STDC__': 1,
         '__ORDER_LITTLE_ENDIAN__': 1234,
         '__ORDER_BIG_ENDIAN__': 4321,
@@ -142,12 +142,12 @@ GCC_PLATFORM_X86_64_WIN = FakeCompiler(GCC_PLATFORM_X86_64, GCC_PLATFORM_WIN)
 
 @memoize
 def CLANG_BASE(version):
-    version = Version(version)
+    version = RichVersion(version)
     return FakeCompiler({
         '__clang__': 1,
-        '__clang_major__': version.major,
-        '__clang_minor__': version.minor,
-        '__clang_patchlevel__': version.patch,
+        '__clang_major__': version.level.MAJOR,
+        '__clang_minor__': version.level.MINOR,
+        '__clang_patchlevel__': version.level.PATCH,
     })
 
 
@@ -197,12 +197,13 @@ CLANG_PLATFORM_X86_64_WIN = CLANG_PLATFORM(GCC_PLATFORM_X86_64_WIN)
 
 @memoize
 def VS(version):
-    version = Version(version)
+    version = RichVersion(version)
     return FakeCompiler({
         None: {
-            '_MSC_VER': '%02d%02d' % (version.major, version.minor),
-            '_MSC_FULL_VER': '%02d%02d%05d' % (version.major, version.minor,
-                                               version.patch),
+            '_MSC_VER': '%02d%02d' % (version.level.MAJOR, version.level.MINOR),
+            '_MSC_FULL_VER': '%02d%02d%05d' % (version.level.MAJOR,
+                                               version.level.MINOR,
+                                               version.level.PATCH),
         },
         '*.cpp': DEFAULT_CXX_97,
     })
@@ -291,9 +292,9 @@ class BaseToolchainTest(BaseConfigureTest):
                 compiler = sandbox._value_for(sandbox[var])
                 # Add var on both ends to make it clear which of the
                 # variables is failing the test when that happens.
-                self.assertEquals((var, compiler), (var, result))
+                self.assertEqual((var, compiler), (var, result))
             except SystemExit:
-                self.assertEquals((var, result),
+                self.assertEqual((var, result),
                                   (var, self.out.getvalue().strip()))
                 return
 
@@ -471,7 +472,7 @@ class LinuxToolchainTest(BaseToolchainTest):
         # We'll try gcc and clang, but since there is no gcc (gcc-x.y doesn't
         # count), find clang.
         paths = {
-            k: v for k, v in self.PATHS.iteritems()
+            k: v for k, v in self.PATHS.items()
             if os.path.basename(k) not in ('gcc', 'g++')
         }
         self.do_toolchain_test(paths, {
@@ -506,7 +507,7 @@ class LinuxToolchainTest(BaseToolchainTest):
         # Even if there are gcc-x.y or clang-x.y compilers available, we
         # don't try them. This could be considered something to improve.
         paths = {
-            k: v for k, v in self.PATHS.iteritems()
+            k: v for k, v in self.PATHS.items()
             if os.path.basename(k) not in ('gcc', 'g++', 'clang', 'clang++')
         }
         self.do_toolchain_test(paths, {
@@ -687,7 +688,7 @@ class OSXToolchainTest(BaseToolchainTest):
     def test_not_gcc(self):
         # We won't pick GCC if it's the only thing available.
         paths = {
-            k: v for k, v in self.PATHS.iteritems()
+            k: v for k, v in self.PATHS.items()
             if os.path.basename(k) not in ('clang', 'clang++')
         }
         self.do_toolchain_test(paths, {
@@ -851,7 +852,7 @@ class WindowsToolchainTest(BaseToolchainTest):
     def test_clang_cl(self):
         # We'll pick clang-cl if msvc can't be found.
         paths = {
-            k: v for k, v in self.PATHS.iteritems()
+            k: v for k, v in self.PATHS.items()
             if os.path.basename(k) != 'cl'
         }
         self.do_toolchain_test(paths, {
@@ -862,7 +863,7 @@ class WindowsToolchainTest(BaseToolchainTest):
     def test_gcc(self):
         # We'll pick GCC if msvc and clang-cl can't be found.
         paths = {
-            k: v for k, v in self.PATHS.iteritems()
+            k: v for k, v in self.PATHS.items()
             if os.path.basename(k) not in ('cl', 'clang-cl')
         }
         self.do_toolchain_test(paths, {
@@ -881,7 +882,7 @@ class WindowsToolchainTest(BaseToolchainTest):
     def test_clang(self):
         # We'll pick clang if nothing else is found.
         paths = {
-            k: v for k, v in self.PATHS.iteritems()
+            k: v for k, v in self.PATHS.items()
             if os.path.basename(k) not in ('cl', 'clang-cl', 'gcc')
         }
         self.do_toolchain_test(paths, {

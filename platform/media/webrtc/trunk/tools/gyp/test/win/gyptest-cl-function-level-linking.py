@@ -22,10 +22,10 @@ if sys.platform == 'win32':
   def CheckForSectionString(binary, search_for, should_exist):
     output = test.run_dumpbin('/headers', binary)
     if should_exist and search_for not in output:
-      print 'Did not find "%s" in %s' % (search_for, binary)
+      print('Did not find "%s" in %s' % (search_for, binary))
       test.fail_test()
     elif not should_exist and search_for in output:
-      print 'Found "%s" in %s (and shouldn\'t have)' % (search_for, binary)
+      print('Found "%s" in %s (and shouldn\'t have)' % (search_for, binary))
       test.fail_test()
 
   def Object(proj, obj):

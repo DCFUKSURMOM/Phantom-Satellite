@@ -6,7 +6,7 @@ import traceback
 
 import mozfile
 
-from adb import ADBDevice, ADBError
+from .adb import ADBDevice, ADBError
 
 
 class ADBB2G(ADBDevice):

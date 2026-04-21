@@ -423,7 +423,7 @@ class TestBuildReader(unittest.TestCase):
             'simple/base.cpp',
         ])
 
-        for path, pattern_set in expected.items():
+        for path, pattern_set in list(expected.items()):
             self.assertEqual(v[path].test_files,
                              expected[path])
 
@@ -438,7 +438,7 @@ class TestBuildReader(unittest.TestCase):
                                       'default/tests/reftests/**']),
         }
 
-        for path, pattern_set in expected.items():
+        for path, pattern_set in list(expected.items()):
             self.assertEqual(v[path].test_files,
                              expected[path])
 
@@ -454,7 +454,7 @@ class TestBuildReader(unittest.TestCase):
             'tagged/src/bar.jsm': set(['tagged/**.js']),
         }
 
-        for path, pattern_set in expected_patterns.items():
+        for path, pattern_set in list(expected_patterns.items()):
             self.assertEqual(v[path].test_files,
                              expected_patterns[path])
 
@@ -462,7 +462,7 @@ class TestBuildReader(unittest.TestCase):
             'tagged/src/submodule/foo.js': set(['submodule']),
             'tagged/src/bar.jsm': set([]),
         }
-        for path, pattern_set in expected_tags.items():
+        for path, pattern_set in list(expected_tags.items()):
             self.assertEqual(v[path].test_tags,
                              expected_tags[path])
 
@@ -470,7 +470,7 @@ class TestBuildReader(unittest.TestCase):
             'tagged/src/bar.jsm': set(['browser-chrome']),
             'tagged/src/submodule/foo.js': set([]),
         }
-        for path, pattern_set in expected_flavors.items():
+        for path, pattern_set in list(expected_flavors.items()):
             self.assertEqual(v[path].test_flavors,
                              expected_flavors[path])
 

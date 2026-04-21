@@ -27,7 +27,7 @@ def run_reftest(context, **kwargs):
 
     test_root = os.path.join(context.package_root, 'reftest', 'tests')
     normalize = partial(context.normalize_test_path, test_root)
-    args.tests = map(normalize, args.tests)
+    args.tests = list(map(normalize, args.tests))
 
     return run_reftest_desktop(context, args)
 

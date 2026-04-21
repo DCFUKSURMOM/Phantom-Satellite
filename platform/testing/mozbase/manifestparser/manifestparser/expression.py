@@ -195,7 +195,7 @@ class ExpressionParser(object):
         LITERAL ::= BOOL | INT | IDENT | STRING
         BOOL ::= 'true' | 'false'
         INT ::= [0-9]+
-        IDENT ::= [a-zA-Z_]\w*
+        IDENT ::= [a-zA-Z_]\\w*
         STRING ::= '"' [^\"] '"' | ''' [^\'] '''
 
     At its core, expressions consist of booleans, integers, identifiers and.
@@ -275,7 +275,7 @@ class ExpressionParser(object):
         """
         if not isinstance(self.token, expected):
             raise Exception("Unexpected token!")
-        self.token = self.iter.next()
+        self.token = next(self.iter)
 
     def expression(self, rbp=0):
         """
@@ -283,11 +283,11 @@ class ExpressionParser(object):
         right binding power greater than rbp is encountered.
         """
         t = self.token
-        self.token = self.iter.next()
+        self.token = next(self.iter)
         left = t.nud(self)
         while rbp < self.token.lbp:
             t = self.token
-            self.token = self.iter.next()
+            self.token = next(self.iter)
             left = t.led(self, left)
         return left
 
@@ -299,7 +299,7 @@ class ExpressionParser(object):
         """
         try:
             self.iter = self._tokenize()
-            self.token = self.iter.next()
+            self.token = next(self.iter)
             return self.expression()
         except:
             extype, ex, tb = sys.exc_info()
@@ -307,7 +307,7 @@ class ExpressionParser(object):
             raise ParseError("could not parse: "
                              "%s\nexception: %svariables: %s" % (self.text,
                                                                  formatted,
-                                                                 self.valuemapping)), None, tb
+                                                                 self.valuemapping)).with_traceback(tb)
 
     __call__ = parse
 

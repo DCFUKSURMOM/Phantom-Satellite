@@ -99,7 +99,7 @@ import stat
 import string
 import sys
 import types
-import UserList
+import collections
 
 from TestCmd import *
 from TestCmd import __all__
@@ -184,8 +184,8 @@ else:
     module_suffix = '.so'
 
 def is_List(e):
-    return type(e) is types.ListType \
-        or isinstance(e, UserList.UserList)
+    return type(e) is list \
+        or isinstance(e, collections.UserList)
 
 def is_writable(f):
     mode = os.stat(f)[stat.ST_MODE]
@@ -227,7 +227,7 @@ class TestCommon(TestCmd):
         calling the base class initialization, and then changing directory
         to the workdir.
         """
-        apply(TestCmd.__init__, [self], kw)
+        TestCmd.__init__(*[self], **kw)
         os.chdir(self.workdir)
 
     def must_be_writable(self, *files):
@@ -237,13 +237,13 @@ class TestCommon(TestCmd):
         them.  Exits FAILED if any of the files does not exist or is
         not writable.
         """
-        files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
+        files = [is_List(x) and os.path.join(*x) or x for x in files]
         existing, missing = separate_files(files)
-        unwritable = filter(lambda x, iw=is_writable: not iw(x), existing)
+        unwritable = list(filter(lambda x, iw=is_writable: not iw(x), existing))
         if missing:
-            print "Missing files: `%s'" % string.join(missing, "', `")
+            print("Missing files: `%s'" % string.join(missing, "', `"))
         if unwritable:
-            print "Unwritable files: `%s'" % string.join(unwritable, "', `")
+            print("Unwritable files: `%s'" % string.join(unwritable, "', `"))
         self.fail_test(missing + unwritable)
 
     def must_contain(self, file, required, mode = 'rb'):
@@ -252,11 +252,11 @@ class TestCommon(TestCmd):
         file_contents = self.read(file, mode)
         contains = (string.find(file_contents, required) != -1)
         if not contains:
-            print "File `%s' does not contain required string." % file
-            print self.banner('Required string ')
-            print required
-            print self.banner('%s contents ' % file)
-            print file_contents
+            print("File `%s' does not contain required string." % file)
+            print(self.banner('Required string '))
+            print(required)
+            print(self.banner('%s contents ' % file))
+            print(file_contents)
             self.fail_test(not contains)
 
     def must_contain_all_lines(self, output, lines, title=None, find=None):
@@ -323,10 +323,10 @@ class TestCommon(TestCmd):
         pathname will be constructed by concatenating them.  Exits FAILED
         if any of the files does not exist.
         """
-        files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
-        missing = filter(lambda x: not os.path.exists(x), files)
+        files = [is_List(x) and os.path.join(*x) or x for x in files]
+        missing = [x for x in files if not os.path.exists(x)]
         if missing:
-            print "Missing files: `%s'" % string.join(missing, "', `")
+            print("Missing files: `%s'" % string.join(missing, "', `"))
             self.fail_test(missing)
 
     def must_match(self, file, expect, mode = 'rb'):
@@ -341,7 +341,7 @@ class TestCommon(TestCmd):
         except KeyboardInterrupt:
             raise
         except:
-            print "Unexpected contents of `%s'" % file
+            print("Unexpected contents of `%s'" % file)
             self.diff(expect, file_contents, 'contents ')
             raise
 
@@ -351,11 +351,11 @@ class TestCommon(TestCmd):
         file_contents = self.read(file, mode)
         contains = (string.find(file_contents, banned) != -1)
         if contains:
-            print "File `%s' contains banned string." % file
-            print self.banner('Banned string ')
-            print banned
-            print self.banner('%s contents ' % file)
-            print file_contents
+            print("File `%s' contains banned string." % file)
+            print(self.banner('Banned string '))
+            print(banned)
+            print(self.banner('%s contents ' % file))
+            print(file_contents)
             self.fail_test(contains)
 
     def must_not_contain_any_line(self, output, lines, title=None, find=None):
@@ -395,10 +395,10 @@ class TestCommon(TestCmd):
         which case the pathname will be constructed by concatenating them.
         Exits FAILED if any of the files exists.
         """
-        files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
-        existing = filter(os.path.exists, files)
+        files = [is_List(x) and os.path.join(*x) or x for x in files]
+        existing = list(filter(os.path.exists, files))
         if existing:
-            print "Unexpected files exist: `%s'" % string.join(existing, "', `")
+            print("Unexpected files exist: `%s'" % string.join(existing, "', `"))
             self.fail_test(existing)
 
     def must_not_be_writable(self, *files):
@@ -408,13 +408,13 @@ class TestCommon(TestCmd):
         them.  Exits FAILED if any of the files does not exist or is
         writable.
         """
-        files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
+        files = [is_List(x) and os.path.join(*x) or x for x in files]
         existing, missing = separate_files(files)
-        writable = filter(is_writable, existing)
+        writable = list(filter(is_writable, existing))
         if missing:
-            print "Missing files: `%s'" % string.join(missing, "', `")
+            print("Missing files: `%s'" % string.join(missing, "', `"))
         if writable:
-            print "Writable files: `%s'" % string.join(writable, "', `")
+            print("Writable files: `%s'" % string.join(writable, "', `"))
         self.fail_test(missing + writable)
 
     def _complete(self, actual_stdout, expected_stdout,
@@ -427,21 +427,21 @@ class TestCommon(TestCmd):
             expect = ''
             if status != 0:
                 expect = " (expected %s)" % str(status)
-            print "%s returned %s%s" % (self.program, str(_status(self)), expect)
-            print self.banner('STDOUT ')
-            print actual_stdout
-            print self.banner('STDERR ')
-            print actual_stderr
+            print("%s returned %s%s" % (self.program, str(_status(self)), expect))
+            print(self.banner('STDOUT '))
+            print(actual_stdout)
+            print(self.banner('STDERR '))
+            print(actual_stderr)
             self.fail_test()
         if not expected_stdout is None and not match(actual_stdout, expected_stdout):
             self.diff(expected_stdout, actual_stdout, 'STDOUT ')
             if actual_stderr:
-                print self.banner('STDERR ')
-                print actual_stderr
+                print(self.banner('STDERR '))
+                print(actual_stderr)
             self.fail_test()
         if not expected_stderr is None and not match(actual_stderr, expected_stderr):
-            print self.banner('STDOUT ')
-            print actual_stdout
+            print(self.banner('STDOUT '))
+            print(actual_stdout)
             self.diff(expected_stderr, actual_stderr, 'STDERR ')
             self.fail_test()
 
@@ -463,20 +463,18 @@ class TestCommon(TestCmd):
                 arguments = options + " " + arguments
 
         try:
-            return apply(TestCmd.start,
-                         (self, program, interpreter, arguments, universal_newlines),
-                         kw)
+            return TestCmd.start(*(self, program, interpreter, arguments, universal_newlines), **kw)
         except KeyboardInterrupt:
             raise
-        except Exception, e:
-            print self.banner('STDOUT ')
+        except Exception as e:
+            print(self.banner('STDOUT '))
             try:
-                print self.stdout()
+                print(self.stdout())
             except IndexError:
                 pass
-            print self.banner('STDERR ')
+            print(self.banner('STDERR '))
             try:
-                print self.stderr()
+                print(self.stderr())
             except IndexError:
                 pass
             cmd_args = self.command_args(program, interpreter, arguments)
@@ -501,7 +499,7 @@ class TestCommon(TestCmd):
                         command.  A value of None means don't
                         test exit status.
         """
-        apply(TestCmd.finish, (self, popen,), kw)
+        TestCmd.finish(*(self, popen,), **kw)
         match = kw.get('match', self.match)
         self._complete(self.stdout(), stdout,
                        self.stderr(), stderr, status, match)
@@ -539,7 +537,7 @@ class TestCommon(TestCmd):
                 arguments = options + " " + arguments
         kw['arguments'] = arguments
         match = kw.pop('match', self.match)
-        apply(TestCmd.run, [self], kw)
+        TestCmd.run(*[self], **kw)
         self._complete(self.stdout(), stdout,
                        self.stderr(), stderr, status, match)
 

@@ -115,7 +115,7 @@ def _DoSCMKeys(plist, add_keys):
   if scm_revision != None:
     plist['SCMRevision'] = scm_revision
   elif add_keys:
-    print >>sys.stderr, 'Could not determine SCM revision.  This may be OK.'
+    print('Could not determine SCM revision.  This may be OK.', file=sys.stderr)
 
   if scm_path != None:
     plist['SCMPath'] = scm_path
@@ -232,7 +232,7 @@ def Main(argv):
   (options, args) = parser.parse_args(argv)
 
   if len(args) > 0:
-    print >>sys.stderr, parser.get_usage()
+    print(parser.get_usage(), file=sys.stderr)
     return 1
 
   # Read the plist into its parsed format.
@@ -246,7 +246,7 @@ def Main(argv):
   # Add Breakpad if configured to do so.
   if options.use_breakpad:
     if options.branding is None:
-      print >>sys.stderr, 'Use of Breakpad requires branding.'
+      print('Use of Breakpad requires branding.', file=sys.stderr)
       return 1
     _AddBreakpadKeys(plist, options.branding)
     if options.breakpad_uploads:
@@ -265,7 +265,7 @@ def Main(argv):
   # Only add Keystone in Release builds.
   if options.use_keystone and env['CONFIGURATION'] == 'Release':
     if options.bundle_identifier is None:
-      print >>sys.stderr, 'Use of Keystone requires the bundle id.'
+      print('Use of Keystone requires the bundle id.', file=sys.stderr)
       return 1
     _AddKeystoneKeys(plist, options.bundle_identifier)
   else:

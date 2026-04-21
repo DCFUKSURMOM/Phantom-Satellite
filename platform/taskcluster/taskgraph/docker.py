@@ -11,7 +11,7 @@ import os
 import subprocess
 import tarfile
 import tempfile
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import which
 
 from taskgraph.util import docker
@@ -28,7 +28,7 @@ def load_image_by_name(image_name):
 
     image_index_url = INDEX_URL.format('mozilla-central', image_name, context_hash)
     print("Fetching", image_index_url)
-    task = json.load(urllib2.urlopen(image_index_url))
+    task = json.load(urllib.request.urlopen(image_index_url))
 
     return load_image_by_task_id(task['taskId'])
 
@@ -51,8 +51,8 @@ def load_image_by_task_id(task_id):
     print("Determining image name")
     tf = tarfile.open(filename)
     repositories = json.load(tf.extractfile('repositories'))
-    name = repositories.keys()[0]
-    tag = repositories[name].keys()[0]
+    name = list(repositories.keys())[0]
+    tag = list(repositories[name].keys())[0]
     name = '{}:{}'.format(name, tag)
     print("Image name:", name)
 

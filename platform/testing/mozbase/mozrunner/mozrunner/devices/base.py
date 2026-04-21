@@ -1,4 +1,4 @@
-from ConfigParser import (
+from configparser import (
     ConfigParser,
     RawConfigParser
 )
@@ -89,7 +89,7 @@ class Device(object):
                 break
             time.sleep(1)
         else:
-            print "timed out waiting for profiles.ini"
+            print("timed out waiting for profiles.ini")
 
         local_profiles_ini = tempfile.NamedTemporaryFile()
         self.dm.getFile(self.app_ctx.remote_profiles_ini, local_profiles_ini.name)
@@ -175,7 +175,7 @@ class Device(object):
         :param busybox: Path to busybox binary to install.
         """
         self.dm.remount()
-        print 'pushing %s' % self.app_ctx.remote_busybox
+        print('pushing %s' % self.app_ctx.remote_busybox)
         self.dm.pushFile(busybox, self.app_ctx.remote_busybox, retryLimit=10)
         # TODO for some reason using dm.shellCheckOutput doesn't work,
         #      while calling adb shell directly does.
@@ -292,12 +292,12 @@ class ProfileConfigParser(RawConfigParser):
     def write(self, fp):
         if self._defaults:
             fp.write("[%s]\n" % ConfigParser.DEFAULTSECT)
-            for (key, value) in self._defaults.items():
+            for (key, value) in list(self._defaults.items()):
                 fp.write("%s=%s\n" % (key, str(value).replace('\n', '\n\t')))
             fp.write("\n")
         for section in self._sections:
             fp.write("[%s]\n" % section)
-            for (key, value) in self._sections[section].items():
+            for (key, value) in list(self._sections[section].items()):
                 if key == "__name__":
                     continue
                 if (value is not None) or (self._optcre == self.OPTCRE):

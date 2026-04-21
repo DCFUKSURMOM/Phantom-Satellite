@@ -58,7 +58,7 @@ eff = lEff
              'details': {}
              }
         )
-        self.assert_(not os.path.exists(os.path.join(cc.merge_stage,
+        self.assertTrue(not os.path.exists(os.path.join(cc.merge_stage,
                                                      'l10n.properties')))
 
     def testMissing(self):
@@ -81,7 +81,7 @@ eff = effVal""")
              'details': {
                  'children': [
                      ('l10n.properties',
-                         {'value': {'missingEntity': [u'eff', u'foo']}}
+                         {'value': {'missingEntity': ['eff', 'foo']}}
                       )
                  ]}
              }
@@ -91,7 +91,7 @@ eff = effVal""")
         p = getParser(mergefile)
         p.readFile(mergefile)
         [m, n] = p.parse()
-        self.assertEqual(map(lambda e: e.key,  m), ["bar", "eff", "foo"])
+        self.assertEqual([e.key for e in m], ["bar", "eff", "foo"])
 
     def testError(self):
         self.assertTrue(os.path.isdir(self.tmp))
@@ -115,9 +115,9 @@ eff = leffVal
                  'children': [
                      ('l10n.properties',
                          {'value': {
-                          'error': [u'argument 1 `S` should be `d` '
-                                    u'at line 1, column 6 for bar'],
-                          'missingEntity': [u'foo']}}
+                          'error': ['argument 1 `S` should be `d` '
+                                    'at line 1, column 6 for bar'],
+                          'missingEntity': ['foo']}}
                       )
                  ]}
              }
@@ -151,7 +151,7 @@ eff = leffVal
              'details': {
                  'children': [
                      ('l10n.properties',
-                         {'value': {'obsoleteEntity': [u'other']}})]},
+                         {'value': {'obsoleteEntity': ['other']}})]},
              }
         )
 
@@ -189,7 +189,7 @@ class TestDTD(unittest.TestCase, ContentMixin):
              'details': {}
              }
         )
-        self.assert_(
+        self.assertTrue(
             not os.path.exists(os.path.join(cc.merge_stage, 'l10n.dtd')))
 
     def testMissing(self):
@@ -212,7 +212,7 @@ class TestDTD(unittest.TestCase, ContentMixin):
              'details': {
                  'children': [
                      ('l10n.dtd',
-                         {'value': {'missingEntity': [u'eff', u'foo']}}
+                         {'value': {'missingEntity': ['eff', 'foo']}}
                       )
                  ]}
              }
@@ -222,7 +222,7 @@ class TestDTD(unittest.TestCase, ContentMixin):
         p = getParser(mergefile)
         p.readFile(mergefile)
         [m, n] = p.parse()
-        self.assertEqual(map(lambda e: e.key,  m), ["bar", "eff", "foo"])
+        self.assertEqual([e.key for e in m], ["bar", "eff", "foo"])
 
     def testJunk(self):
         self.assertTrue(os.path.isdir(self.tmp))
@@ -247,9 +247,9 @@ class TestDTD(unittest.TestCase, ContentMixin):
                  'children': [
                      ('l10n.dtd',
                          {'value': {
-                             'error': [u'Unparsed content "<!ENTY bar '
-                                       u'\'gimmick\'>" at 23-44'],
-                             'missingEntity': [u'bar']}}
+                             'error': ['Unparsed content "<!ENTY bar '
+                                       '\'gimmick\'>" at 23-44'],
+                             'missingEntity': ['bar']}}
                       )
                  ]}
              }
@@ -259,7 +259,7 @@ class TestDTD(unittest.TestCase, ContentMixin):
         p = getParser(mergefile)
         p.readFile(mergefile)
         [m, n] = p.parse()
-        self.assertEqual(map(lambda e: e.key,  m), ["foo", "eff", "bar"])
+        self.assertEqual([e.key for e in m], ["foo", "eff", "bar"])
 
 if __name__ == '__main__':
     unittest.main()

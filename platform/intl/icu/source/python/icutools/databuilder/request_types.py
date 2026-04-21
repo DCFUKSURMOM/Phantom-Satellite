@@ -106,7 +106,7 @@ class AbstractExecutionRequest(AbstractRequest):
 
     def _del_at(self, i):
         del self.input_files[i]
-        for _, v in self.format_with.items():
+        for _, v in list(self.format_with.items()):
             if isinstance(v, list):
                 assert len(v) == len(self.input_files) + 1
                 del v[i]
@@ -177,7 +177,7 @@ class RepeatedExecutionRequest(AbstractExecutionRequest):
         super(RepeatedExecutionRequest, self)._del_at(i)
         del self.output_files[i]
         del self.specific_dep_files[i]
-        for _, v in self.repeat_with.items():
+        for _, v in list(self.repeat_with.items()):
             if isinstance(v, list):
                 del v[i]
 
@@ -222,7 +222,7 @@ class RepeatedOrSingleExecutionRequest(AbstractExecutionRequest):
     def _del_at(self, i):
         super(RepeatedOrSingleExecutionRequest, self)._del_at(i)
         del self.output_files[i]
-        for _, v in self.repeat_with.items():
+        for _, v in list(self.repeat_with.items()):
             if isinstance(v, list):
                 del v[i]
 

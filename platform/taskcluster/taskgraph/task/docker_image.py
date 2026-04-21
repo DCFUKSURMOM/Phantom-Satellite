@@ -7,7 +7,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import logging
 import json
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from . import base
 from taskgraph.util.docker import (
@@ -58,7 +58,7 @@ class DockerImageTask(base.Task):
 
         tasks = []
         templates = Templates(path)
-        for image_name, image_symbol in config['images'].iteritems():
+        for image_name, image_symbol in config['images'].items():
             context_path = os.path.join('testing', 'docker', image_name)
             context_hash = generate_context_hash(GECKO, context_path, image_name)
 
@@ -95,20 +95,20 @@ class DockerImageTask(base.Task):
         for index_path in self.index_paths:
             try:
                 url = INDEX_URL.format(index_path)
-                existing_task = json.load(urllib2.urlopen(url))
+                existing_task = json.load(urllib.request.urlopen(url))
                 # Only return the task ID if the artifact exists for the indexed
                 # task.  Otherwise, continue on looking at each of the branches.  Method
                 # continues trying other branches in case mozilla-central has an expired
                 # artifact, but 'project' might not. Only return no task ID if all
                 # branches have been tried
-                request = urllib2.Request(
+                request = urllib.request.Request(
                     ARTIFACT_URL.format(existing_task['taskId'], 'public/image.tar.zst'))
                 request.get_method = lambda: 'HEAD'
-                urllib2.urlopen(request)
+                urllib.request.urlopen(request)
 
                 # HEAD success on the artifact is enough
                 return True, existing_task['taskId']
-            except urllib2.HTTPError:
+            except urllib.error.HTTPError:
                 pass
 
         return False, None

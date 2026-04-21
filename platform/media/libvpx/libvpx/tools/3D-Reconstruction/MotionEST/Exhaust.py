@@ -44,8 +44,8 @@ class Exhaust(MotionEST):
     ref_x = cur_x
     ref_y = cur_y
     #search all validate positions and select the one with minimum distortion
-    for y in xrange(cur_y - self.wnd_sz, cur_y + self.wnd_sz):
-      for x in xrange(cur_x - self.wnd_sz, cur_x + self.wnd_sz):
+    for y in range(cur_y - self.wnd_sz, cur_y + self.wnd_sz):
+      for x in range(cur_x - self.wnd_sz, cur_x + self.wnd_sz):
         if 0 <= x < self.width - self.blk_sz and 0 <= y < self.height - self.blk_sz:
           loss = self.block_dist(cur_r, cur_c, [y - cur_y, x - cur_x],
                                  self.metric)
@@ -56,8 +56,8 @@ class Exhaust(MotionEST):
     return ref_x, ref_y
 
   def motion_field_estimation(self):
-    for i in xrange(self.num_row):
-      for j in xrange(self.num_col):
+    for i in range(self.num_row):
+      for j in range(self.num_col):
         ref_x, ref_y = self.search(i, j)
         self.mf[i, j] = np.array(
             [ref_y - i * self.blk_sz, ref_x - j * self.blk_sz])
@@ -119,8 +119,8 @@ class ExhaustNeighbor(MotionEST):
     ref_y = cur_y
     #search all validate positions and select the one with minimum distortion
     # as well as weighted neighbor loss
-    for y in xrange(cur_y - self.wnd_sz, cur_y + self.wnd_sz):
-      for x in xrange(cur_x - self.wnd_sz, cur_x + self.wnd_sz):
+    for y in range(cur_y - self.wnd_sz, cur_y + self.wnd_sz):
+      for x in range(cur_x - self.wnd_sz, cur_x + self.wnd_sz):
         if 0 <= x < self.width - self.blk_sz and 0 <= y < self.height - self.blk_sz:
           dist_loss = self.block_dist(cur_r, cur_c, [y - cur_y, x - cur_x],
                                       self.metric)
@@ -133,8 +133,8 @@ class ExhaustNeighbor(MotionEST):
     return ref_x, ref_y
 
   def motion_field_estimation(self):
-    for i in xrange(self.num_row):
-      for j in xrange(self.num_col):
+    for i in range(self.num_row):
+      for j in range(self.num_col):
         ref_x, ref_y = self.search(i, j)
         self.mf[i, j] = np.array(
             [ref_y - i * self.blk_sz, ref_x - j * self.blk_sz])
@@ -178,14 +178,14 @@ class ExhaustNeighborFeatureScore(MotionEST):
 
   def getFeatureScore(self):
     fs = np.zeros((self.num_row, self.num_col))
-    for r in xrange(self.num_row):
-      for c in xrange(self.num_col):
+    for r in range(self.num_row):
+      for c in range(self.num_col):
         IxIx = 0
         IyIy = 0
         IxIy = 0
         #get ssd surface
-        for x in xrange(self.blk_sz - 1):
-          for y in xrange(self.blk_sz - 1):
+        for x in range(self.blk_sz - 1):
+          for y in range(self.blk_sz - 1):
             ox = c * self.blk_sz + x
             oy = r * self.blk_sz + y
             Ix = self.cur_yuv[oy, ox + 1, 0] - self.cur_yuv[oy, ox, 0]
@@ -214,8 +214,8 @@ class ExhaustNeighborFeatureScore(MotionEST):
     ref_x = cur_x
     ref_y = cur_y
     #search all validate positions and select the one with minimum distortion
-    for y in xrange(cur_y - self.wnd_sz, cur_y + self.wnd_sz):
-      for x in xrange(cur_x - self.wnd_sz, cur_x + self.wnd_sz):
+    for y in range(cur_y - self.wnd_sz, cur_y + self.wnd_sz):
+      for x in range(cur_x - self.wnd_sz, cur_x + self.wnd_sz):
         if 0 <= x < self.width - self.blk_sz and 0 <= y < self.height - self.blk_sz:
           loss = self.block_dist(cur_r, cur_c, [y - cur_y, x - cur_x],
                                  self.metric)
@@ -231,8 +231,8 @@ class ExhaustNeighborFeatureScore(MotionEST):
 
   def smooth(self, uvs, mvs):
     sm_uvs = np.zeros(uvs.shape)
-    for r in xrange(self.num_row):
-      for c in xrange(self.num_col):
+    for r in range(self.num_row):
+      for c in range(self.num_col):
         avg_uv = np.array([0.0, 0.0])
         for i, j in {(r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)}:
           if 0 <= i < self.num_row and 0 <= j < self.num_col:
@@ -248,12 +248,12 @@ class ExhaustNeighborFeatureScore(MotionEST):
   def motion_field_estimation(self):
     #get matching results
     mvs = np.zeros(self.mf.shape)
-    for r in xrange(self.num_row):
-      for c in xrange(self.num_col):
+    for r in range(self.num_row):
+      for c in range(self.num_col):
         ref_x, ref_y = self.search(r, c)
         mvs[r, c] = np.array([ref_y - r * self.blk_sz, ref_x - c * self.blk_sz])
     #add smoothness constraint
     uvs = np.zeros(self.mf.shape)
-    for _ in xrange(self.max_iter):
+    for _ in range(self.max_iter):
       uvs = self.smooth(uvs, mvs)
     self.mf = uvs

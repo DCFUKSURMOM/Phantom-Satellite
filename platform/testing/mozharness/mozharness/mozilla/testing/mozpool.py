@@ -48,7 +48,7 @@ class MozpoolMixin(object):
                 self.MozpoolException = MozpoolException
                 self.MozpoolConflictException = MozpoolConflictException
                 self.mozpool_handler = MozpoolHandler(self.mozpool_api_url, log_obj=self)
-            except ImportError, e:
+            except ImportError as e:
                 self.fatal("Can't instantiate MozpoolHandler until mozpoolclient python "
                            "package is installed! (VirtualenvMixin?): \n%s" % str(e))
             return self.mozpool_handler
@@ -66,7 +66,7 @@ class MozpoolMixin(object):
                 break
             except self.MozpoolConflictException:
                 self.warning("Device unavailable. Retry#%i.." % retry)
-            except self.MozpoolException, e:
+            except self.MozpoolException as e:
                 self.buildbot_status(TBPL_RETRY)
                 self.fatal("We could not request the device: %s" % str(e))
 
@@ -87,7 +87,7 @@ class MozpoolMixin(object):
                 break
             except self.MozpoolConflictException:
                 self.warning("Device unavailable. Retry#%i.." % retry)
-            except self.MozpoolException, e:
+            except self.MozpoolException as e:
                 self.buildbot_status(TBPL_RETRY)
                 self.fatal("We could not request the device: %s" % str(e))
 

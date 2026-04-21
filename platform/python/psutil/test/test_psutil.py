@@ -53,7 +53,7 @@ except ImportError:
     import mock  # requires "pip install mock"
 
 import psutil
-from psutil._compat import PY3, callable, long, unicode
+from psutil._compat import PY3, callable, int, str
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest  # https://pypi.python.org/pypi/unittest2
@@ -85,7 +85,7 @@ TESTFN_UNICODE = TESTFN + "ƒőő"
 TESTFILE_PREFIX = 'psutil-test-suite-'
 if not PY3:
     try:
-        TESTFN_UNICODE = unicode(TESTFN_UNICODE, sys.getfilesystemencoding())
+        TESTFN_UNICODE = str(TESTFN_UNICODE, sys.getfilesystemencoding())
     except UnicodeDecodeError:
         TESTFN_UNICODE = TESTFN + "???"
 
@@ -325,13 +325,13 @@ def check_ip_address(addr, family):
             assert 0 <= num <= 255, addr
         if ipaddress:
             if not PY3:
-                addr = unicode(addr)
+                addr = str(addr)
             ipaddress.IPv4Address(addr)
     elif family == AF_INET6:
         assert isinstance(addr, str), addr
         if ipaddress:
             if not PY3:
-                addr = unicode(addr)
+                addr = str(addr)
             ipaddress.IPv6Address(addr)
     elif family == psutil.AF_LINK:
         assert re.match('([a-fA-F0-9]{2}[:|\-]?){6}', addr) is not None, addr
@@ -664,7 +664,7 @@ class TestSystemAPIs(unittest.TestCase):
         for name in mem._fields:
             value = getattr(mem, name)
             if name != 'percent':
-                self.assertIsInstance(value, (int, long))
+                self.assertIsInstance(value, (int, int))
             if name != 'total':
                 if not value >= 0:
                     self.fail("%r < 0 (%s)" % (name, value))
@@ -709,7 +709,7 @@ class TestSystemAPIs(unittest.TestCase):
                 time.sleep(.1)
                 if pid in psutil.pids():
                     self.fail(pid)
-        pids = range(max(pids) + 5000, max(pids) + 6000)
+        pids = list(range(max(pids) + 5000, max(pids) + 6000))
         for pid in pids:
             self.assertFalse(psutil.pid_exists(pid), msg=pid)
 
@@ -990,7 +990,7 @@ class TestSystemAPIs(unittest.TestCase):
                     self.assertIn(conn.type, types_, msg=conn)
 
         from psutil._common import conn_tmap
-        for kind, groups in conn_tmap.items():
+        for kind, groups in list(conn_tmap.items()):
             if SUNOS and kind == 'unix':
                 continue
             families, types_ = groups
@@ -1035,7 +1035,7 @@ class TestSystemAPIs(unittest.TestCase):
         #                  sorted(psutil.net_io_counters(pernic=True).keys()))
 
         families = set([socket.AF_INET, AF_INET6, psutil.AF_LINK])
-        for nic, addrs in nics.items():
+        for nic, addrs in list(nics.items()):
             self.assertEqual(len(set(addrs)), len(addrs))
             for addr in addrs:
                 self.assertIsInstance(addr.family, int)
@@ -1080,7 +1080,7 @@ class TestSystemAPIs(unittest.TestCase):
         all_duplexes = (psutil.NIC_DUPLEX_FULL,
                         psutil.NIC_DUPLEX_HALF,
                         psutil.NIC_DUPLEX_UNKNOWN)
-        for nic, stats in nics.items():
+        for nic, stats in list(nics.items()):
             isup, duplex, speed, mtu = stats
             self.assertIsInstance(isup, bool)
             self.assertIn(duplex, all_duplexes)
@@ -1120,7 +1120,7 @@ class TestSystemAPIs(unittest.TestCase):
                 # https://github.com/giampaolo/psutil/issues/338
                 while key[-1].isdigit():
                     key = key[:-1]
-                self.assertNotIn(key, ret.keys())
+                self.assertNotIn(key, list(ret.keys()))
 
     def test_users(self):
         users = psutil.users()
@@ -1422,13 +1422,13 @@ class TestProcess(unittest.TestCase):
                 self.assertRaises(ValueError, p.ionice, 2, -1)
                 self.assertRaises(ValueError, p.ionice, 4)
                 self.assertRaises(TypeError, p.ionice, 2, "foo")
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     ValueError, "can't specify value with IOPRIO_CLASS_NONE",
                     p.ionice, psutil.IOPRIO_CLASS_NONE, 1)
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     ValueError, "can't specify value with IOPRIO_CLASS_IDLE",
                     p.ionice, psutil.IOPRIO_CLASS_IDLE, 1)
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     ValueError, "'ioclass' argument must be specified",
                     p.ionice, value=1)
             finally:
@@ -1578,7 +1578,7 @@ class TestProcess(unittest.TestCase):
                 elif fname in ('addr', 'perms'):
                     assert value, value
                 else:
-                    self.assertIsInstance(value, (int, long))
+                    self.assertIsInstance(value, (int, int))
                     assert value >= 0, value
 
     def test_memory_percent(self):
@@ -1779,7 +1779,7 @@ class TestProcess(unittest.TestCase):
         p.cpu_affinity(tuple(all_cpus))
         invalid_cpu = [len(psutil.cpu_times(percpu=True)) + 10]
         self.assertRaises(ValueError, p.cpu_affinity, invalid_cpu)
-        self.assertRaises(ValueError, p.cpu_affinity, range(10000, 11000))
+        self.assertRaises(ValueError, p.cpu_affinity, list(range(10000, 11000)))
         self.assertRaises(TypeError, p.cpu_affinity, [0, "1"])
 
     # TODO
@@ -2085,7 +2085,7 @@ class TestProcess(unittest.TestCase):
             except psutil.Error:
                 pass
         # this is the one, now let's make sure there are no duplicates
-        pid = sorted(table.items(), key=lambda x: x[1])[-1][0]
+        pid = sorted(list(table.items()), key=lambda x: x[1])[-1][0]
         p = psutil.Process(pid)
         try:
             c = p.children(recursive=True)
@@ -2280,7 +2280,7 @@ class TestProcess(unittest.TestCase):
             except psutil.AccessDenied:
                 pass
 
-            self.assertRaisesRegexp(
+            self.assertRaisesRegex(
                 ValueError, "preventing sending signal to process with PID 0",
                 p.send_signal, signal.SIGTERM)
 
@@ -2434,7 +2434,7 @@ class TestFetchAllProcesses(unittest.TestCase):
         self.assertTrue(ret >= 0)
 
     def name(self, ret):
-        self.assertIsInstance(ret, (str, unicode))
+        self.assertIsInstance(ret, (str, str))
         self.assertTrue(ret)
 
     def create_time(self, ret):
@@ -2568,7 +2568,7 @@ class TestFetchAllProcesses(unittest.TestCase):
                 elif fname in ('addr', 'perms'):
                     self.assertTrue(value)
                 else:
-                    self.assertIsInstance(value, (int, long))
+                    self.assertIsInstance(value, (int, int))
                     assert value >= 0, value
 
     def num_handles(self, ret):

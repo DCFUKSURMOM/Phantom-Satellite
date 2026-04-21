@@ -7,7 +7,7 @@ import contextlib
 import logging
 import re
 import time
-from StringIO import StringIO
+from io import StringIO
 from test import test_support
 
 from concurrent import futures
@@ -146,7 +146,7 @@ class ExecutorMixin:
         self.executor.shutdown(wait=True)
         dt = time.time() - self.t1
         if test_support.verbose:
-            print("%.2fs" % dt)
+            print(("%.2fs" % dt))
         self.assertLess(dt, 60, "synchronization issue: test lasted too long")
 
     def _prime_executor(self):
@@ -211,7 +211,7 @@ class ThreadPoolShutdownTest(ThreadPoolMixin, ExecutorShutdownTest):
     def test_context_manager_shutdown(self):
         with futures.ThreadPoolExecutor(max_workers=5) as e:
             executor = e
-            self.assertEqual(list(e.map(abs, range(-5, 5))),
+            self.assertEqual(list(e.map(abs, list(range(-5, 5)))),
                              [5, 4, 3, 2, 1, 0, 1, 2, 3, 4])
 
         for t in executor._threads:
@@ -219,7 +219,7 @@ class ThreadPoolShutdownTest(ThreadPoolMixin, ExecutorShutdownTest):
 
     def test_del_shutdown(self):
         executor = futures.ThreadPoolExecutor(max_workers=5)
-        executor.map(abs, range(-5, 5))
+        executor.map(abs, list(range(-5, 5)))
         threads = executor._threads
         del executor
 
@@ -245,7 +245,7 @@ class ProcessPoolShutdownTest(ProcessPoolMixin, ExecutorShutdownTest):
     def test_context_manager_shutdown(self):
         with futures.ProcessPoolExecutor(max_workers=5) as e:
             processes = e._processes
-            self.assertEqual(list(e.map(abs, range(-5, 5))),
+            self.assertEqual(list(e.map(abs, list(range(-5, 5)))),
                              [5, 4, 3, 2, 1, 0, 1, 2, 3, 4])
 
         for p in processes:
@@ -253,7 +253,7 @@ class ProcessPoolShutdownTest(ProcessPoolMixin, ExecutorShutdownTest):
 
     def test_del_shutdown(self):
         executor = futures.ProcessPoolExecutor(max_workers=5)
-        list(executor.map(abs, range(-5, 5)))
+        list(executor.map(abs, list(range(-5, 5))))
         queue_management_thread = executor._queue_management_thread
         processes = executor._processes
         del executor
@@ -452,8 +452,8 @@ class ExecutorTest(unittest.TestCase):
 
     def test_map(self):
         self.assertEqual(
-                list(self.executor.map(pow, range(10), range(10))),
-                list(map(pow, range(10), range(10))))
+                list(self.executor.map(pow, list(range(10)), list(range(10)))),
+                list(map(pow, list(range(10)), list(range(10)))))
 
     def test_map_exception(self):
         i = self.executor.map(divmod, [1, 1, 1, 1], [2, 3, 0, 5])
@@ -483,7 +483,7 @@ class ThreadPoolExecutorTest(ThreadPoolMixin, ExecutorTest):
         def record_finished(n):
             finished.append(n)
 
-        self.executor.map(record_finished, range(10))
+        self.executor.map(record_finished, list(range(10)))
         self.executor.shutdown(wait=True)
         self.assertEqual(len(finished), 10)
 
@@ -574,18 +574,18 @@ class FutureTests(unittest.TestCase):
         self.assertTrue(was_cancelled[0])
 
     def test_repr(self):
-        self.assertRegexpMatches(repr(PENDING_FUTURE),
+        self.assertRegex(repr(PENDING_FUTURE),
                                  '<Future at 0x[0-9a-f]+ state=pending>')
-        self.assertRegexpMatches(repr(RUNNING_FUTURE),
+        self.assertRegex(repr(RUNNING_FUTURE),
                                  '<Future at 0x[0-9a-f]+ state=running>')
-        self.assertRegexpMatches(repr(CANCELLED_FUTURE),
+        self.assertRegex(repr(CANCELLED_FUTURE),
                                  '<Future at 0x[0-9a-f]+ state=cancelled>')
-        self.assertRegexpMatches(repr(CANCELLED_AND_NOTIFIED_FUTURE),
+        self.assertRegex(repr(CANCELLED_AND_NOTIFIED_FUTURE),
                                  '<Future at 0x[0-9a-f]+ state=cancelled>')
-        self.assertRegexpMatches(
+        self.assertRegex(
                 repr(EXCEPTION_FUTURE),
                 '<Future at 0x[0-9a-f]+ state=finished raised IOError>')
-        self.assertRegexpMatches(
+        self.assertRegex(
                 repr(SUCCESSFUL_FUTURE),
                 '<Future at 0x[0-9a-f]+ state=finished returned int>')
 

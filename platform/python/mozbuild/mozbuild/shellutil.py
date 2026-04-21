@@ -15,7 +15,7 @@ def _tokens2re(**tokens):
     # which matches the pattern and captures it in a named match group.
     # The group names and patterns are given as arguments.
     all_tokens = '|'.join('(?P<%s>%s)' % (name, value)
-                          for name, value in tokens.iteritems())
+                          for name, value in tokens.items())
     nonescaped = r'(?<!\\)(?:%s)' % all_tokens
 
     # The final pattern matches either the above pattern, or an escaped
@@ -33,7 +33,7 @@ UNQUOTED_TOKENS_RE = _tokens2re(
 DOUBLY_QUOTED_TOKENS_RE = _tokens2re(
   quote='"',
   backslashedquote=r'\\"',
-  special='\$',
+  special=r'\$',
   backslashed=r'\\[^\\"]',
 )
 
@@ -96,7 +96,7 @@ class _ClineSplitter(object):
             self.cline = self.cline[m.end():]
 
             match = {name: value
-                     for name, value in m.groupdict().items() if value}
+                     for name, value in list(m.groupdict().items()) if value}
             if 'quote' in match:
                 # " or ' start a quoted string
                 if match['quote'] == '"':
@@ -144,7 +144,7 @@ class _ClineSplitter(object):
             self._push(self.cline[:m.start()])
             self.cline = self.cline[m.end():]
             match = {name: value
-                     for name, value in m.groupdict().items() if value}
+                     for name, value in list(m.groupdict().items()) if value}
             if 'quote' in match:
                 # a double quote ends the quoted string, so go back to
                 # unquoted parsing

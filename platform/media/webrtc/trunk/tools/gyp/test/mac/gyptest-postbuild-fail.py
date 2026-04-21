@@ -39,7 +39,7 @@ if sys.platform == 'darwin':
                          stderr=subprocess.STDOUT)
   out, err = job.communicate()
   if job.returncode != 0:
-    print out
+    print(out)
     raise Exception('Error %d running xcodebuild' % job.returncode)
   if out.startswith('Xcode 3.'):
     test.pass_test()

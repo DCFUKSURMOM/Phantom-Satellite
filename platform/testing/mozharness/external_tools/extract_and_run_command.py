@@ -20,7 +20,7 @@ import logging
 import os
 from os import path
 import sys
-from Queue import Queue
+from queue import Queue
 import shutil
 import subprocess
 import tempfile
@@ -75,7 +75,7 @@ def find_files(d):
             yield path.abspath(path.join(root, f))
 
 
-def rchmod(d, mode=0755):
+def rchmod(d, mode=0o755):
     """chmods everything in `d' to `mode', including `d' itself"""
     os.chmod(d, mode)
     for root, dirs, files in os.walk(d):
@@ -90,7 +90,7 @@ def maybe_extract(filename):
        directory and chmods it. The consumer is responsible for removing
        the extracted files, if desired."""
     ext = path.splitext(filename)[1]
-    if ext not in EXTRACTORS.keys():
+    if ext not in list(EXTRACTORS.keys()):
         return None
     # Append the full filepath to the tempdir
     tempdir_root = tempfile.mkdtemp()

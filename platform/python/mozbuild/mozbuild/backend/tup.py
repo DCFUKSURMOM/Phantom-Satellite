@@ -253,7 +253,7 @@ class TupOnly(CommonBackend, PartialBackend):
         backend_file = self._get_backend_file('xpcom/xpidl')
         backend_file.export_shell()
 
-        for module, data in sorted(manager.modules.iteritems()):
+        for module, data in sorted(manager.modules.items()):
             dest, idls = data
             cmd = [
                 '$(PYTHON_PATH)',

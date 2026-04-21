@@ -41,7 +41,7 @@ class TestTask(transform.TransformTask):
         test_descriptions = load_yaml(path, 'tests.yml')
 
         # generate all tests for all test platforms
-        for test_platform_name, test_platform in test_platforms.iteritems():
+        for test_platform_name, test_platform in test_platforms.items():
             for test_name in test_platform['test-names']:
                 test = copy.deepcopy(test_descriptions[test_name])
                 test['build-platform'] = test_platform['build-platform']
@@ -79,7 +79,7 @@ class TestTask(transform.TransformTask):
         based on the available build platforms.  Returns a dictionary mapping
         test platform to {test-set, build-platform, build-label}."""
         test_platforms = {}
-        for test_platform, cfg in test_platforms_cfg.iteritems():
+        for test_platform, cfg in test_platforms_cfg.items():
             build_platform = cfg['build-platform']
             if build_platform not in builds_by_platform:
                 logger.warning(
@@ -100,7 +100,7 @@ class TestTask(transform.TransformTask):
         `test-names` key for each test platform, containing a set of test
         names."""
         rv = {}
-        for test_platform, cfg in test_platforms.iteritems():
+        for test_platform, cfg in test_platforms.items():
             test_set = cfg['test-set']
             if test_set not in test_sets_cfg:
                 raise Exception(

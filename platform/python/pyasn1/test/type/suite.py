@@ -1,4 +1,4 @@
-import test_tag, test_constraint, test_namedtype, test_univ
+from . import test_tag, test_constraint, test_namedtype, test_univ
 from pyasn1.error import PyAsn1Error
 from sys import version_info
 if version_info[0:2] < (2, 7) or \

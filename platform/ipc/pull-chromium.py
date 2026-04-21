@@ -19,11 +19,11 @@ from shutil import rmtree
 topsrcdir, chromiumtree, rev = sys.argv[1:]
 
 if not os.path.exists(os.path.join(topsrcdir, 'client.py')):
-    print >>sys.stderr, "Incorrect topsrcdir"
+    print("Incorrect topsrcdir", file=sys.stderr)
     sys.exit(1)
 
 if not os.path.exists(os.path.join(chromiumtree, 'src/DEPS')):
-    print >>sys.stderr, "Incorrect chromium directory, missing DEPS"
+    print("Incorrect chromium directory, missing DEPS", file=sys.stderr)
     sys.exit(1)
 
 check_call(['gclient', 'sync', '--force', '--revision=src@%s' % rev], cwd=chromiumtree)

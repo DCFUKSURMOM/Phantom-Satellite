@@ -8,7 +8,7 @@
 import copy
 import os
 import re
-import urlparse
+import urllib.parse
 
 from mozharness.base.log import ERROR, WARNING
 from mozharness.base.script import PreScriptAction
@@ -257,7 +257,7 @@ class FirefoxMediaTestsBase(TestingMixin, VCSToolsScript):
             dirs = self.query_abs_dirs()
             manifest_path = os.path.join(dirs['abs_work_dir'], 'releng.manifest')
             try:
-                self.download_file(urlparse.urljoin(url_base, tooltool_manifest),
+                self.download_file(urllib.parse.urljoin(url_base, tooltool_manifest),
                                    manifest_path)
             except Exception as e:
                 self.fatal('Download of tooltool manifest file failed: %s' % e.message)

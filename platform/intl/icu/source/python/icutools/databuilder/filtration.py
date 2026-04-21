@@ -398,7 +398,7 @@ class ResourceFilterInfo(object):
 
         new_requests = []
         i = 0
-        for rules, filter_files in unique_rules.items():
+        for rules, filter_files in list(unique_rules.items()):
             base_filter_file = filter_files[0]
             new_requests += [
                 PrintFileRequest(
@@ -451,7 +451,7 @@ def _apply_resource_filters(all_requests, config, io):
     # Add the filter generation requests to the beginning so that by default
     # they are made before genrb gets run (order is required by windirect)
     new_requests = []
-    for filter_info in collected.values():
+    for filter_info in list(collected.values()):
         new_requests += filter_info.make_requests()
     new_requests += all_requests
     return new_requests

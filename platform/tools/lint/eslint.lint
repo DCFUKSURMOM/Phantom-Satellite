@@ -10,7 +10,7 @@ import re
 import signal
 import subprocess
 import sys
-from distutils.version import LooseVersion
+from mozbuild.version import RichVersion
 
 import which
 from mozprocess import ProcessHandler
@@ -160,7 +160,7 @@ def version_in_range(version, version_range):
     version_match = VERSION_RE.match(version)
     if not version_match:
         raise RuntimeError("mach eslint doesn't understand module version %s" % version)
-    version = LooseVersion(version)
+    version = RichVersion(version)
 
     # Caret ranges as specified by npm allow changes that do not modify the left-most non-zero
     # digit in the [major, minor, patch] tuple.  The code below assumes the major digit is
@@ -170,8 +170,8 @@ def version_in_range(version, version_range):
         range_version = range_match.group(1)
         range_major = int(range_match.group(2))
 
-        range_min = LooseVersion(range_version)
-        range_max = LooseVersion("%d.0.0" % (range_major + 1))
+        range_min = RichVersion(range_version)
+        range_max = RichVersion("%d.0.0" % (range_major + 1))
 
         return range_min <= version < range_max
 
@@ -238,7 +238,7 @@ def is_valid(path, minversion=None):
                                               stderr=subprocess.STDOUT)
         if minversion:
             # nodejs prefixes its version strings with "v"
-            version = LooseVersion(version_str.lstrip('v'))
+            version = RichVersion(version_str.lstrip('v'))
             return version >= minversion
         return True
     except (subprocess.CalledProcessError, OSError):
@@ -262,7 +262,7 @@ def lint(paths, binary=None, fix=None, setup=None, **lintargs):
     module_path = get_eslint_module_path()
 
     # eslint requires at least node 4.2.3
-    node_path = get_node_or_npm_path("node", LooseVersion("4.2.3"))
+    node_path = get_node_or_npm_path("node", RichVersion("4.2.3"))
     if not node_path:
         return 1
 

@@ -3,7 +3,7 @@ import io, datetime, sys
 
 if sys.version_info[0] == 3:
     long = int
-    unicode = str
+    str = str
 
 
 def dumps(obj, sort_keys=False):
@@ -58,11 +58,11 @@ def _total_seconds(td):
 def _format_value(v):
     if isinstance(v, bool):
         return 'true' if v else 'false'
-    if isinstance(v, int) or isinstance(v, long):
-        return unicode(v)
+    if isinstance(v, int) or isinstance(v, int):
+        return str(v)
     if isinstance(v, float):
         return '{0:.17f}'.format(v)
-    elif isinstance(v, unicode) or isinstance(v, bytes):
+    elif isinstance(v, str) or isinstance(v, bytes):
         return _escape_string(v)
     elif isinstance(v, datetime.datetime):
         offs = v.utcoffset()
@@ -102,7 +102,7 @@ def dump(fout, obj, sort_keys=False):
             else:
                 fout.write('[{0}]\n'.format(section_name))
 
-        table_keys = sorted(table.keys()) if sort_keys else table.keys()
+        table_keys = sorted(table.keys()) if sort_keys else list(table.keys())
         for k in table_keys:
             v = table[k]
             if isinstance(v, dict):

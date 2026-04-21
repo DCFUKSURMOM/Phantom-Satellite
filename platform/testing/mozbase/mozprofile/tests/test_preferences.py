@@ -62,7 +62,7 @@ class PreferencesTest(unittest.TestCase):
 
         _prefs = {"browser.startup.homepage": "http://planet.mozilla.org/"}
         commandline = []
-        _prefs = _prefs.items()
+        _prefs = list(_prefs.items())
         for pref, value in _prefs:
             commandline += ["--pref", "%s:%s" % (pref, value)]
         self.compare_generated(_prefs, commandline)

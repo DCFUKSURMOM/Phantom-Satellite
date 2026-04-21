@@ -279,7 +279,7 @@ class LocalPath(FSBase):
         res = []
         parts = self.strpath.split(self.sep)
 
-        args = filter(None, spec.split(',') )
+        args = [_f for _f in spec.split(',') if _f]
         append = res.append
         for name in args:
             if name == 'drive':

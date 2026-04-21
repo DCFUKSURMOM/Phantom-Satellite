@@ -94,7 +94,7 @@ class WebappTest(unittest.TestCase):
         self.assertEqual(len(webapps), 2)
         self.assertTrue(webapp_1 in webapps)
         self.assertTrue(webapp_2 in webapps)
-        self.assertNotEquals(webapps[0], webapps[1])
+        self.assertNotEqual(webapps[0], webapps[1])
 
         # Insert a webapp object
         webapps.insert(1, webapp_3)

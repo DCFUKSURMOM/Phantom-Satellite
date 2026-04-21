@@ -9,8 +9,8 @@ import sys
 if len(sys.argv) == 2 and sys.argv[1] == '-d':
     debug.setLogger(debug.Debug('all'))
 elif len(sys.argv) != 1:
-    print("""Usage:
-$ cat cmp.pem | %s [-d]""" % sys.argv[0])
+    print(("""Usage:
+$ cat cmp.pem | %s [-d]""" % sys.argv[0]))
     sys.exit(-1)
     
 pkiMessage = rfc4210.PKIMessage()
@@ -21,7 +21,7 @@ if not substrate:
         
 pkiMsg, rest = decoder.decode(substrate, asn1Spec=pkiMessage)
 
-print(pkiMsg.prettyPrint())
+print((pkiMsg.prettyPrint()))
 
 assert encoder.encode(pkiMsg, defMode=False) == substrate or \
        encoder.encode(pkiMsg, defMode=True) == substrate, \

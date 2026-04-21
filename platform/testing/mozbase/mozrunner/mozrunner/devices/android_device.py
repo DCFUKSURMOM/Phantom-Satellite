@@ -12,8 +12,8 @@ import signal
 import sys
 import telnetlib
 import time
-import urlparse
-import urllib2
+import urllib.parse
+import urllib.request, urllib.error, urllib.parse
 from distutils.spawn import find_executable
 
 from mozdevice import DeviceManagerADB, DMError
@@ -96,7 +96,7 @@ def verify_android_device(build_obj, install=False, xre=False, debugger=False, v
     if (len(devices) > 0) and ('device' in [d[1] for d in devices]):
         device_verified = True
     elif emulator.is_available():
-        response = raw_input(
+        response = input(
             "No Android devices connected. Start an emulator? (Y/n) ").strip()
         if response.lower().startswith('y') or response == '':
             if not emulator.check_avd():
@@ -124,7 +124,7 @@ def verify_android_device(build_obj, install=False, xre=False, debugger=False, v
         installed = emulator.dm.shellCheckOutput(['pm', 'list',
                                                   'packages', 'org.mozilla.'])
         if 'fennec' not in installed and 'firefox' not in installed:
-            response = raw_input(
+            response = input(
                 "It looks like Firefox is not installed on this device.\n"
                 "Install Firefox? (Y/n) ").strip()
             if response.lower().startswith('y') or response == '':
@@ -153,7 +153,7 @@ def verify_android_device(build_obj, install=False, xre=False, debugger=False, v
                     break
         if err:
             _log_info("Host utilities not found: %s" % err)
-            response = raw_input(
+            response = input(
                 "Download and setup your host utilities? (Y/n) ").strip()
             if response.lower().startswith('y') or response == '':
                 _log_info("Installing host utilities. This may take a while...")
@@ -188,7 +188,7 @@ def verify_android_device(build_obj, install=False, xre=False, debugger=False, v
             err = '%s not found' % gdb_path
         if err:
             _log_info("JimDB (%s) not found: %s" % (build_platform, err))
-            response = raw_input(
+            response = input(
                 "Download and setup JimDB (%s)? (Y/n) " % build_platform).strip()
             if response.lower().startswith('y') or response == '':
                 host_platform = _get_host_platform()
@@ -252,7 +252,7 @@ def run_firefox_for_android(build_obj, params):
         cmd = ['am', 'start', '-a', 'android.activity.MAIN', '-n', app]
         if params:
             for p in params:
-                if urlparse.urlparse(p).scheme != "":
+                if urllib.parse.urlparse(p).scheme != "":
                     cmd.extend(['-d', p])
                     params.remove(p)
                     break
@@ -570,7 +570,7 @@ class AndroidEmulator(object):
         return telnet_ok
 
     def _get_avd_type(self, requested):
-        if requested in AVD_DICT.keys():
+        if requested in list(AVD_DICT.keys()):
             return requested
         if self.substs:
             if not self.substs['TARGET_CPU'].startswith('arm'):
@@ -646,23 +646,23 @@ def _find_sdk_exe(substs, exe, tools):
 
 def _log_debug(text):
     if verbose_logging:
-        print "DEBUG: %s" % text
+        print("DEBUG: %s" % text)
 
 
 def _log_warning(text):
-    print "WARNING: %s" % text
+    print("WARNING: %s" % text)
 
 
 def _log_info(text):
-    print "%s" % text
+    print("%s" % text)
 
 
 def _download_file(url, filename, path):
-    f = urllib2.urlopen(url)
+    f = urllib.request.urlopen(url)
     if not os.path.isdir(path):
         try:
             os.makedirs(path)
-        except Exception, e:
+        except Exception as e:
             _log_warning(str(e))
             return False
     local_file = open(os.path.join(path, filename), 'wb')
@@ -676,7 +676,7 @@ def _get_tooltool_manifest(substs, src_path, dst_path, filename):
     if not os.path.isdir(dst_path):
         try:
             os.makedirs(dst_path)
-        except Exception, e:
+        except Exception as e:
             _log_warning(str(e))
     copied = False
     if substs and 'top_srcdir' in substs:
@@ -750,13 +750,13 @@ def _update_gdbinit(substs, path):
         # update existing objdir/srcroot in place
         for line in fileinput.input(path, inplace=True):
             if "feninit.default.objdir" in line and substs and 'MOZ_BUILD_ROOT' in substs:
-                print("python feninit.default.objdir = '%s'" % substs['MOZ_BUILD_ROOT'])
+                print(("python feninit.default.objdir = '%s'" % substs['MOZ_BUILD_ROOT']))
                 obj_replaced = True
             elif "feninit.default.srcroot" in line and substs and 'top_srcdir' in substs:
-                print("python feninit.default.srcroot = '%s'" % substs['top_srcdir'])
+                print(("python feninit.default.srcroot = '%s'" % substs['top_srcdir']))
                 src_replaced = True
             else:
-                print(line.strip())
+                print((line.strip()))
         # append objdir/srcroot if not updated
         if (not obj_replaced) and substs and 'MOZ_BUILD_ROOT' in substs:
             with open(path, "a") as f:

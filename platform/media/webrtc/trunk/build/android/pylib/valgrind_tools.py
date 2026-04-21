@@ -24,7 +24,7 @@ Call tool.CleanUpEnvironment().
 import os.path
 import sys
 
-from constants import CHROME_DIR
+from .constants import CHROME_DIR
 
 
 def SetChromeTimeoutScale(adb, scale):
@@ -250,6 +250,6 @@ def CreateTool(tool_name, adb):
   if ctor:
     return ctor(adb)
   else:
-    print 'Unknown tool %s, available tools: %s' % (
-        tool_name, ', '.join(sorted(TOOL_REGISTRY.keys())))
+    print('Unknown tool %s, available tools: %s' % (
+        tool_name, ', '.join(sorted(TOOL_REGISTRY.keys()))))
     sys.exit(1)

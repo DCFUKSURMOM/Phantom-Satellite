@@ -9,8 +9,8 @@ from pyasn1.codec.der import encoder, decoder
 import sys
 
 if len(sys.argv) != 1:
-    print("""Usage:
-$ cat crl.pem | %s""" % sys.argv[0])
+    print(("""Usage:
+$ cat crl.pem | %s""" % sys.argv[0]))
     sys.exit(-1)
     
 asn1Spec = rfc2459.CertificateList()
@@ -27,7 +27,7 @@ while 1:
 
     if rest: substrate = substrate[:-len(rest)]
         
-    print(key.prettyPrint())
+    print((key.prettyPrint()))
 
     assert encoder.encode(key, defMode=False) == substrate or \
            encoder.encode(key, defMode=True) == substrate, \
@@ -35,4 +35,4 @@ while 1:
         
     cnt = cnt + 1
  
-print('*** %s CRL(s) re/serialized' % cnt)
+print(('*** %s CRL(s) re/serialized' % cnt))

@@ -275,20 +275,18 @@ def print_opcode(opcode):
     names_template = '{name} [-{nuses}, +{ndefs}]{flags}'
     opcodes = sorted([opcode] + opcode.group,
                      key=lambda opcode: opcode.name)
-    names = map(lambda code: names_template.format(name=escape(code.name),
+    names = [names_template.format(name=escape(code.name),
                                                    nuses=override(code.nuses,
                                                                   opcode.nuses_override),
                                                    ndefs=override(code.ndefs,
                                                                   opcode.ndefs_override),
-                                                   flags=format_flags(code.flags)),
-                opcodes)
+                                                   flags=format_flags(code.flags)) for code in opcodes]
     if len(opcodes) == 1:
         values = ['{value} (0x{value:02x})'.format(value=opcode.value)]
     else:
         values_template = '{name}: {value} (0x{value:02x})'
-        values = map(lambda code: values_template.format(name=escape(code.name),
-                                                         value=code.value),
-                    opcodes)
+        values = [values_template.format(name=escape(code.name),
+                                                         value=code.value) for code in opcodes]
 
     print("""<dt id="{id}">{names}</dt>
 <dd>

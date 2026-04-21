@@ -305,11 +305,11 @@ class SectionFinder(object):
         return syms
 
 def print_command(out, args):
-    print >>out, "Executing: " + " ".join(args)
+    print("Executing: " + " ".join(args), file=out)
     for tmp in [f for f in args.tmp if os.path.isfile(f)]:
-        print >>out, tmp + ":"
+        print(tmp + ":", file=out)
         with open(tmp) as file:
-            print >>out, "".join(["    " + l for l in file.readlines()])
+            print("".join(["    " + l for l in file.readlines()]), file=out)
     out.flush()
 
 def main(args, proc_callback=None):
@@ -339,13 +339,13 @@ def main(args, proc_callback=None):
             proc = subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
             if proc_callback:
                 proc_callback(proc)
-        except Exception, e:
-            print >>sys.stderr, 'error: Launching', args, ':', e
+        except Exception as e:
+            print('error: Launching', args, ':', e, file=sys.stderr)
             raise e
         (stdout, stderr) = proc.communicate()
         if proc.returncode and not options.verbose:
             print_command(sys.stderr, args)
-        sys.stderr.write(stdout)
+        sys.stderr.write(stdout.decode(encoding='utf-8'))
         sys.stderr.flush()
         if proc.returncode:
             return proc.returncode

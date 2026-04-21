@@ -95,7 +95,7 @@ def taskgraph_decision(options):
     _, _ = TaskGraph.from_json(full_task_json)
 
     # write out the target task set to allow reproducing this as input
-    write_artifact('target-tasks.json', tgg.target_task_set.tasks.keys())
+    write_artifact('target-tasks.json', list(tgg.target_task_set.tasks.keys()))
 
     # write out the optimized task graph to describe what will actually happen,
     # and the map of labels to taskids

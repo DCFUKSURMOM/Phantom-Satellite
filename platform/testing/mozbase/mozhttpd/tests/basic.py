@@ -18,7 +18,7 @@ class TestBasic(unittest.TestCase):
         # sizes is a dict of the form: name -> [size, binary_string, filepath]
         sizes = {'small': [128], 'large': [16384]}
 
-        for k in sizes.keys():
+        for k in list(sizes.keys()):
             # Generate random binary string
             sizes[k].append(os.urandom(sizes[k][0]))
 
@@ -35,7 +35,7 @@ class TestBasic(unittest.TestCase):
         server_url = server.get_url()
 
         # Retrieve file and check contents matchup
-        for k in sizes.keys():
+        for k in list(sizes.keys()):
             retrieved_content = mozfile.load(server_url + k).read()
             self.assertEqual(retrieved_content, sizes[k][1])
 

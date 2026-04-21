@@ -10,7 +10,7 @@ add permissions to the profile
 import codecs
 import os
 import sqlite3
-import urlparse
+import urllib.parse
 
 __all__ = ['MissingPrimaryLocationError', 'MultiplePrimaryLocationsError',
            'DEFAULT_PORTS', 'DuplicateLocationError', 'BadPortLocationError',
@@ -180,7 +180,7 @@ class ServerLocations(object):
             # parse the server url
             if '://' not in server:
                 server = 'http://' + server
-            scheme, netloc, path, query, fragment = urlparse.urlsplit(server)
+            scheme, netloc, path, query, fragment = urllib.parse.urlsplit(server)
             # get the host and port
             try:
                 host, port = netloc.rsplit(':', 1)
@@ -267,7 +267,7 @@ class Permissions(object):
         for location in locations:
             # set the permissions
             permissions = {'allowXULXBL': 'noxul' not in location.options}
-            for perm, allow in permissions.iteritems():
+            for perm, allow in permissions.items():
                 if allow:
                     permission_type = 1
                 else:

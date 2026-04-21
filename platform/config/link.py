@@ -18,7 +18,7 @@ def periodically_print_status(proc):
         time.sleep(0.5)
         idleTime += 0.5
         if idleTime > 20 * 60:
-          print "Still linking, 20 minutes passed..."
+          print("Still linking, 20 minutes passed...")
           sys.stdout.flush()
           idleTime = 0
 
@@ -42,6 +42,6 @@ def wrap_linker(args):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print >>sys.stderr, "Usage: link.py <commandline>"
+        print("Usage: link.py <commandline>", file=sys.stderr)
         sys.exit(1)
     sys.exit(wrap_linker(sys.argv[1:]))

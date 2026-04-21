@@ -24,7 +24,7 @@ CONCURRENCY = 50
 
 
 def create_tasks(taskgraph, label_to_taskid, params):
-    taskid_to_label = {t: l for l, t in label_to_taskid.iteritems()}
+    taskid_to_label = {t: l for l, t in label_to_taskid.items()}
 
     session = requests.Session()
 
@@ -85,7 +85,7 @@ def create_tasks(taskgraph, label_to_taskid, params):
                                        taskid_to_label[task_id], task_def)
 
         # Wait for all futures to complete.
-        for f in futures.as_completed(fs.values()):
+        for f in futures.as_completed(list(fs.values())):
             f.result()
 
 
@@ -113,10 +113,10 @@ def resolve_timestamps(now, task_def):
         if isinstance(val, list):
             return [recurse(v) for v in val]
         elif isinstance(val, dict):
-            if val.keys() == ['relative-datestamp']:
+            if list(val.keys()) == ['relative-datestamp']:
                 return json_time_from_now(val['relative-datestamp'], now)
             else:
-                return {k: recurse(v) for k, v in val.iteritems()}
+                return {k: recurse(v) for k, v in val.items()}
         else:
             return val
     return recurse(task_def)

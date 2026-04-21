@@ -13,7 +13,7 @@ import re
 import os
 import pty
 import termios
-from StringIO import StringIO
+from io import StringIO
 
 class unbufferedLineConverter:
     """
@@ -40,7 +40,7 @@ class unbufferedLineConverter:
     def test():
         assert unbufferedLineConverter("rev").convert("123") == "321"
         assert unbufferedLineConverter("cut", ["-c3"]).convert("abcde") == "c"
-        print "Pass"
+        print("Pass")
 
 objdump_section_re = re.compile("^ [0-9a-f]* ([0-9a-f ]{8}) ([0-9a-f ]{8}) ([0-9a-f ]{8}) ([0-9a-f ]{8}).*")
 def elf_section(file, section):
@@ -173,11 +173,11 @@ def separate_debug_file_for(file):
 
     def word32(s):
         if type(s) != str or len(s) != 4:
-            raise StandardError("expected 4 byte string input")
+            raise Exception("expected 4 byte string input")
         s = list(s)
         if endian == "big":
             s.reverse()
-        return sum(map(lambda idx: ord(s[idx]) * (256 ** idx), range(0, 4)))
+        return sum([ord(s[idx]) * (256 ** idx) for idx in list(range(0, 4))])
 
     buildid = elf_section(file, ".note.gnu.build-id");
     if buildid is not None:
@@ -192,7 +192,7 @@ def separate_debug_file_for(file):
            note_header[12:16] != "GNU\0":
             sys.stderr.write("malformed .note.gnu.build_id in " + file + "\n")
         else:
-            buildid = "".join(map(lambda ch: "%02X" % ord(ch), buildid)).lower()
+            buildid = "".join(["%02X" % ord(ch) for ch in buildid]).lower()
             f = os.path.join(global_debug_dir, ".build-id", buildid[0:2], buildid[2:] + ".debug")
             if have_debug_file(f):
                 return f

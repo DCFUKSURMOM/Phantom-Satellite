@@ -10,7 +10,7 @@ import signal
 import subprocess
 import sys
 import tempfile
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import zipfile
 from collections import namedtuple
 
@@ -105,10 +105,10 @@ def check_for_crashes(dump_directory,
                 stackwalk_output.append("minidump_stackwalk exited with return code %d" %
                                         info.stackwalk_retcode)
             signature = info.signature if info.signature else "unknown top frame"
-            print "PROCESS-CRASH | %s | application crashed [%s]" % (test_name,
-                                                                     signature)
-            print '\n'.join(stackwalk_output)
-            print '\n'.join(info.stackwalk_errors)
+            print("PROCESS-CRASH | %s | application crashed [%s]" % (test_name,
+                                                                     signature))
+            print('\n'.join(stackwalk_output))
+            print('\n'.join(info.stackwalk_errors))
 
     return crash_count
 
@@ -177,7 +177,7 @@ class CrashInfo(object):
             self.remove_symbols = True
             self.logger.info("Downloading symbols from: %s" % self.symbols_path)
             # Get the symbols and write them to a temporary zipfile
-            data = urllib2.urlopen(self.symbols_path)
+            data = urllib.request.urlopen(self.symbols_path)
             with tempfile.TemporaryFile() as symbols_file:
                 symbols_file.write(data.read())
                 # extract symbols to a temporary directory (which we'll delete after
@@ -371,12 +371,12 @@ def check_for_java_exception(logcat, test_name=None, quiet=False):
                 if m and m.group(1):
                     exception_location = m.group(1)
                 if not quiet:
-                    print "PROCESS-CRASH | %s | java-exception %s %s" % (test_name,
+                    print("PROCESS-CRASH | %s | java-exception %s %s" % (test_name,
                                                                          exception_type,
-                                                                         exception_location)
+                                                                         exception_location))
             else:
-                print "Automation Error: java exception in logcat at line " \
-                    "%d of %d: %s" % (i, len(logcat), line)
+                print("Automation Error: java exception in logcat at line " \
+                    "%d of %d: %s" % (i, len(logcat), line))
             break
 
     return found_exception
@@ -422,7 +422,7 @@ if mozinfo.isWin:
                 log.error("minidumpwriter not found in %s" % utility_path)
                 return
 
-            if isinstance(file_name, unicode):
+            if isinstance(file_name, str):
                 # Convert to a byte string before sending to the shell.
                 file_name = file_name.encode(sys.getfilesystemencoding())
 
@@ -436,10 +436,10 @@ if mozinfo.isWin:
         if not proc_handle:
             return
 
-        if not isinstance(file_name, unicode):
+        if not isinstance(file_name, str):
             # Convert to unicode explicitly so our path will be valid as input
             # to CreateFileW
-            file_name = unicode(file_name, sys.getfilesystemencoding())
+            file_name = str(file_name, sys.getfilesystemencoding())
 
         file_handle = kernel32.CreateFileW(file_name,
                                            GENERIC_READ | GENERIC_WRITE,

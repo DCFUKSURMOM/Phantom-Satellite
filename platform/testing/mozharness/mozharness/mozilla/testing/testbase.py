@@ -10,7 +10,7 @@ import os
 import platform
 import pprint
 import re
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import socket
 
@@ -258,7 +258,7 @@ class TestingMixin(VirtualenvMixin, BuildbotMixin, ResourceMonitoringMixin,
         if c.get("test_packages_url"):
             c["test_packages_url"] = _replace_url(c["test_packages_url"], c["replace_urls"])
 
-        for key, value in self.config.iteritems():
+        for key, value in self.config.items():
             if type(value) == str and value.startswith("http"):
                 self.config[key] = _replace_url(value, c["replace_urls"])
 
@@ -281,19 +281,19 @@ class TestingMixin(VirtualenvMixin, BuildbotMixin, ResourceMonitoringMixin,
 
             self.https_username, self.https_password = get_credentials()
             # This creates a password manager
-            passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            passman = urllib.request.HTTPPasswordMgrWithDefaultRealm()
             # Because we have put None at the start it will use this username/password combination from here on
             passman.add_password(None, url, self.https_username, self.https_password)
-            authhandler = urllib2.HTTPBasicAuthHandler(passman)
+            authhandler = urllib.request.HTTPBasicAuthHandler(passman)
 
-            return urllib2.build_opener(authhandler).open(url, **kwargs)
+            return urllib.request.build_opener(authhandler).open(url, **kwargs)
 
         # If we have the developer_run flag enabled then we will switch
         # URLs to the right place and enable http authentication
         if "developer_config.py" in self.config["config_files"]:
             return _urlopen_basic_auth(url, **kwargs)
         else:
-            return urllib2.urlopen(url, **kwargs)
+            return urllib.request.urlopen(url, **kwargs)
 
     # read_buildbot_config is in BuildbotMixin.
 
@@ -310,7 +310,7 @@ class TestingMixin(VirtualenvMixin, BuildbotMixin, ResourceMonitoringMixin,
             if c.get("require_test_zip") and not self.test_url:
                 expected_length = [2, 3]
             if buildbot_prop_branch.startswith('gaia-try'):
-                expected_length = range(1, 1000)
+                expected_length = list(range(1, 1000))
             actual_length = len(files)
             if actual_length not in expected_length:
                 self.fatal("Unexpected number of files in buildbot config %s.\nExpected these number(s) of files: %s, but got: %d" %
@@ -331,7 +331,7 @@ class TestingMixin(VirtualenvMixin, BuildbotMixin, ResourceMonitoringMixin,
                     if not self.installer_url:
                         self.installer_url = str(f['name'])
                         self.info("Found installer url %s." % self.installer_url)
-        except IndexError, e:
+        except IndexError as e:
             self.error(str(e))
 
     def find_artifacts_from_taskcluster(self):
@@ -734,7 +734,7 @@ Did you run with --create-virtualenv? Is mozinstall in virtualenv_modules?""")
 
         if os.path.exists(abs_nodejs_path):
             if self.platform_name() not in ('win32', 'win64'):
-                self.chmod(abs_nodejs_path, 0755)
+                self.chmod(abs_nodejs_path, 0o755)
             self.nodejs_path = abs_nodejs_path
         else:
             self.warning("nodejs path was given but couldn't be found. Tried looking in '%s'" % abs_nodejs_path)
@@ -774,7 +774,7 @@ Did you run with --create-virtualenv? Is mozinstall in virtualenv_modules?""")
             abs_minidump_path = os.path.join(dirs['abs_work_dir'],
                                              minidump_stackwalk_path)
             if os.path.exists(abs_minidump_path):
-                self.chmod(abs_minidump_path, 0755)
+                self.chmod(abs_minidump_path, 0o755)
                 self.minidump_stackwalk_path = abs_minidump_path
             else:
                 self.warning("minidump stackwalk path was given but couldn't be found. "

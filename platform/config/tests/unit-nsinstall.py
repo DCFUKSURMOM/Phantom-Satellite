@@ -28,9 +28,9 @@ class TestNsinstall(unittest.TestCase):
         # Unicode strings means non-ASCII children can be deleted properly on
         # Windows
         if sys.stdin.encoding is None:
-            tmpdir = unicode(self.tmpdir)
+            tmpdir = str(self.tmpdir)
         else:
-            tmpdir = unicode(self.tmpdir, sys.stdin.encoding)
+            tmpdir = str(self.tmpdir, sys.stdin.encoding)
         rmtree(tmpdir)
 
     # utility methods for tests
@@ -50,14 +50,14 @@ class TestNsinstall(unittest.TestCase):
         "Test nsinstall -D <dir>"
         testdir = os.path.join(self.tmpdir, "test")
         self.assertEqual(nsinstall(["-D", testdir]), 0)
-        self.assert_(os.path.isdir(testdir))
+        self.assertTrue(os.path.isdir(testdir))
 
     def test_nsinstall_basic(self):
         "Test nsinstall <file> <dir>"
         testfile = self.touch("testfile")
         testdir = self.mkdirs("testdir")
         self.assertEqual(nsinstall([testfile, testdir]), 0)
-        self.assert_(os.path.isfile(os.path.join(testdir, "testfile")))
+        self.assertTrue(os.path.isfile(os.path.join(testdir, "testfile")))
 
     def test_nsinstall_basic_recursive(self):
         "Test nsinstall <dir> <dest dir>"
@@ -76,12 +76,12 @@ class TestNsinstall(unittest.TestCase):
                                     '-X', Xdir]), 0)
 
         testdir = os.path.join(destdir, "sourcedir")
-        self.assert_(os.path.isdir(testdir))
-        self.assert_(os.path.isfile(os.path.join(testdir, "testfile")))
-        self.assert_(not os.path.exists(os.path.join(testdir, "Xfile")))
-        self.assert_(os.path.isdir(os.path.join(testdir, "copieddir")))
-        self.assert_(os.path.isfile(os.path.join(testdir, "copieddir", "testfile2")))
-        self.assert_(not os.path.exists(os.path.join(testdir, "Xdir")))
+        self.assertTrue(os.path.isdir(testdir))
+        self.assertTrue(os.path.isfile(os.path.join(testdir, "testfile")))
+        self.assertTrue(not os.path.exists(os.path.join(testdir, "Xfile")))
+        self.assertTrue(os.path.isdir(os.path.join(testdir, "copieddir")))
+        self.assertTrue(os.path.isfile(os.path.join(testdir, "copieddir", "testfile2")))
+        self.assertTrue(not os.path.exists(os.path.join(testdir, "Xdir")))
 
     def test_nsinstall_multiple(self):
         "Test nsinstall <three files> <dest dir>"
@@ -91,7 +91,7 @@ class TestNsinstall(unittest.TestCase):
         testdir = self.mkdirs("testdir")
         self.assertEqual(nsinstall(testfiles + [testdir]), 0)
         for f in testfiles:
-            self.assert_(os.path.isfile(os.path.join(testdir,
+            self.assertTrue(os.path.isfile(os.path.join(testdir,
                                                      os.path.basename(f))))
 
     def test_nsinstall_dir_exists(self):
@@ -99,7 +99,7 @@ class TestNsinstall(unittest.TestCase):
         srcdir = self.mkdirs("test")
         destdir = self.mkdirs("testdir/test")
         self.assertEqual(nsinstall([srcdir, os.path.dirname(destdir)]), 0)
-        self.assert_(os.path.isdir(destdir))
+        self.assertTrue(os.path.isdir(destdir))
 
     def test_nsinstall_t(self):
         "Test that nsinstall -t works (preserve timestamp)"
@@ -110,7 +110,7 @@ class TestNsinstall(unittest.TestCase):
         os.utime(testfile, (t, t))
         self.assertEqual(nsinstall(["-t", testfile, testdir]), 0)
         destfile = os.path.join(testdir, "testfile")
-        self.assert_(os.path.isfile(destfile))
+        self.assertTrue(os.path.isfile(destfile))
         self.assertEqual(os.stat(testfile).st_mtime,
                          os.stat(destfile).st_mtime)
 
@@ -125,7 +125,7 @@ class TestNsinstall(unittest.TestCase):
             self.assertEqual(nsinstall(["-m", "{0:04o}"
                                         .format(mode), testfile, testdir]), 0)
             destfile = os.path.join(testdir, "testfile")
-            self.assert_(os.path.isfile(destfile))
+            self.assertTrue(os.path.isfile(destfile))
             self.assertEqual(os.stat(testfile).st_mode,
                              os.stat(destfile).st_mode)
 
@@ -136,25 +136,25 @@ class TestNsinstall(unittest.TestCase):
         testdir = self.mkdirs("testdir")
         destdir = os.path.join(testdir, "subdir")
         self.assertEqual(nsinstall(["-d", testfile, destdir]), 0)
-        self.assert_(os.path.isdir(os.path.join(destdir, "testfile")))
+        self.assertTrue(os.path.isdir(os.path.join(destdir, "testfile")))
 
     if RUN_NON_ASCII_TESTS:
         def test_nsinstall_non_ascii(self):
             "Test that nsinstall handles non-ASCII files"
-            filename = u"\u2325\u3452\u2415\u5081"
+            filename = "\u2325\u3452\u2415\u5081"
             testfile = self.touch(filename)
-            testdir = self.mkdirs(u"\u4241\u1D04\u1414")
+            testdir = self.mkdirs("\u4241\u1D04\u1414")
             self.assertEqual(nsinstall([testfile.encode("utf-8"),
                                         testdir.encode("utf-8")]), 0)
 
             destfile = os.path.join(testdir, filename)
-            self.assert_(os.path.isfile(destfile))
+            self.assertTrue(os.path.isfile(destfile))
 
         def test_nsinstall_non_ascii_subprocess(self):
             "Test that nsinstall as a subprocess handles non-ASCII files"
-            filename = u"\u2325\u3452\u2415\u5081"
+            filename = "\u2325\u3452\u2415\u5081"
             testfile = self.touch(filename)
-            testdir = self.mkdirs(u"\u4241\u1D04\u1414")
+            testdir = self.mkdirs("\u4241\u1D04\u1414")
             # We don't use subprocess because it can't handle Unicode on
             # Windows <http://bugs.python.org/issue1759845>. mozprocess calls
             # CreateProcessW directly so it's perfect.
@@ -166,7 +166,7 @@ class TestNsinstall(unittest.TestCase):
 
             self.assertEqual(rv, 0)
             destfile = os.path.join(testdir, filename)
-            self.assert_(os.path.isfile(destfile))
+            self.assertTrue(os.path.isfile(destfile))
 
     #TODO: implement -R, -l, -L and test them!
 

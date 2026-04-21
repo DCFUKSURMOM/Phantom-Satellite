@@ -85,6 +85,7 @@ import socket
 import threading
 import select
 import traceback
+from functools import reduce
 
 __all__ = ["Zeroconf", "ServiceInfo", "ServiceBrowser"]
 
@@ -819,7 +820,7 @@ class DNSCache(object):
         """Returns a list of all entries"""
         def add(x, y): return x+y
         try:
-            return reduce(add, self.cache.values())
+            return reduce(add, list(self.cache.values()))
         except:
             return []
 
@@ -870,7 +871,7 @@ class Engine(threading.Thread):
     def getReaders(self):
         result = []
         self.condition.acquire()
-        result = self.readers.keys()
+        result = list(self.readers.keys())
         self.condition.release()
         return result
     
@@ -1010,7 +1011,7 @@ class ServiceBrowser(threading.Thread):
             if self.nextTime <= now:
                 out = DNSOutgoing(_FLAGS_QR_QUERY)
                 out.addQuestion(DNSQuestion(self.type, _TYPE_PTR, _CLASS_IN))
-                for record in self.services.values():
+                for record in list(self.services.values()):
                     if not record.isExpired(now):
                         out.addAnswerAtTime(record, now)
                 self.zeroconf.send(out)
@@ -1387,7 +1388,7 @@ class Zeroconf(object):
                     now = currentTimeMillis()
                     continue
                 out = DNSOutgoing(_FLAGS_QR_RESPONSE | _FLAGS_AA)
-                for info in self.services.values():
+                for info in list(self.services.values()):
                     out.addAnswerAtTime(DNSPointer(info.type, _TYPE_PTR, _CLASS_IN, 0, info.name), 0)
                     out.addAnswerAtTime(DNSService(info.name, _TYPE_SRV, _CLASS_IN, 0, info.priority, info.weight, info.port, info.server), 0)
                     out.addAnswerAtTime(DNSText(info.name, _TYPE_TXT, _CLASS_IN, 0, info.text), 0)
@@ -1483,7 +1484,7 @@ class Zeroconf(object):
         
         for question in msg.questions:
             if question.type == _TYPE_PTR:
-                for service in self.services.values():
+                for service in list(self.services.values()):
                     if question.name == service.type:
                         if out is None:
                             out = DNSOutgoing(_FLAGS_QR_RESPONSE | _FLAGS_AA)
@@ -1495,7 +1496,7 @@ class Zeroconf(object):
                     
                     # Answer A record queries for any service addresses we know
                     if question.type == _TYPE_A or question.type == _TYPE_ANY:
-                        for service in self.services.values():
+                        for service in list(self.services.values()):
                             if service.server == question.name.lower():
                                 out.addAnswer(msg, DNSAddress(question.name, _TYPE_A, _CLASS_IN | _CLASS_UNIQUE, _DNS_TTL, service.address))
                     
@@ -1540,21 +1541,21 @@ class Zeroconf(object):
 # query (for Zoe), and service unregistration.
 
 if __name__ == '__main__':    
-    print "Multicast DNS Service Discovery for Python, version", __version__
+    print("Multicast DNS Service Discovery for Python, version", __version__)
     r = Zeroconf()
-    print "1. Testing registration of a service..."
+    print("1. Testing registration of a service...")
     desc = {'version':'0.10','a':'test value', 'b':'another value'}
     info = ServiceInfo("_http._tcp.local.", "My Service Name._http._tcp.local.", socket.inet_aton("127.0.0.1"), 1234, 0, 0, desc)
-    print "   Registering service..."
+    print("   Registering service...")
     r.registerService(info)
-    print "   Registration done."
-    print "2. Testing query of service information..."
-    print "   Getting ZOE service:", str(r.getServiceInfo("_http._tcp.local.", "ZOE._http._tcp.local."))
-    print "   Query done."
-    print "3. Testing query of own service..."
-    print "   Getting self:", str(r.getServiceInfo("_http._tcp.local.", "My Service Name._http._tcp.local."))
-    print "   Query done."
-    print "4. Testing unregister of service information..."
+    print("   Registration done.")
+    print("2. Testing query of service information...")
+    print("   Getting ZOE service:", str(r.getServiceInfo("_http._tcp.local.", "ZOE._http._tcp.local.")))
+    print("   Query done.")
+    print("3. Testing query of own service...")
+    print("   Getting self:", str(r.getServiceInfo("_http._tcp.local.", "My Service Name._http._tcp.local.")))
+    print("   Query done.")
+    print("4. Testing unregister of service information...")
     r.unregisterService(info)
-    print "   Unregister done."
+    print("   Unregister done.")
     r.close()

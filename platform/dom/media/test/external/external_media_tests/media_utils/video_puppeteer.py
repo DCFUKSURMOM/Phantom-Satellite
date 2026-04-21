@@ -181,7 +181,7 @@ class VideoPuppeteer(object):
                 played_ranges.end(0) > 0.0
             )
         except Exception as e:
-            print ('Got exception {}'.format(e))
+            print(('Got exception {}'.format(e)))
             return False
 
     def playback_done(self):
@@ -366,7 +366,7 @@ class VideoPuppeteer(object):
                 'corrupted_frames']
         values = self._execute_video_script(self._fetch_state_script)
         self._last_seen_video_state = (
-            self._create_video_state_info(**dict(zip(keys, values))))
+            self._create_video_state_info(**dict(list(zip(keys, values)))))
 
     def _measure_progress(self):
         self._refresh_state()
@@ -408,7 +408,7 @@ class VideoPuppeteer(object):
         for field in self._last_seen_video_state._fields:
             # For compatibility with different test environments we force ascii
             field_ascii = (
-                unicode(getattr(self._last_seen_video_state, field))
+                str(getattr(self._last_seen_video_state, field))
                 .encode('ascii','replace'))
             messages += [('\t{}: {}'.format(field, field_ascii))]
         messages += '}'

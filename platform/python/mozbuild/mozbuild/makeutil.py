@@ -6,8 +6,10 @@ from __future__ import absolute_import
 
 import os
 import re
-from types import StringTypes
-from collections import Iterable
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 
 
 class Makefile(object):
@@ -66,7 +68,7 @@ class _SimpleOrderedSet(object):
         self._list = []
         self._set = set()
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self._set)
 
     def __iter__(self):
@@ -103,19 +105,19 @@ class Rule(object):
 
     def add_targets(self, targets):
         '''Add additional targets to the rule.'''
-        assert isinstance(targets, Iterable) and not isinstance(targets, StringTypes)
+        assert isinstance(targets, Iterable) and not isinstance(targets, str)
         self._targets.update(targets)
         return self
 
     def add_dependencies(self, deps):
         '''Add dependencies to the rule.'''
-        assert isinstance(deps, Iterable) and not isinstance(deps, StringTypes)
+        assert isinstance(deps, Iterable) and not isinstance(deps, str)
         self._dependencies.update(deps)
         return self
 
     def add_commands(self, commands):
         '''Add commands to the rule.'''
-        assert isinstance(commands, Iterable) and not isinstance(commands, StringTypes)
+        assert isinstance(commands, Iterable) and not isinstance(commands, str)
         self._commands.extend(commands)
         return self
 
@@ -160,6 +162,8 @@ def read_dep_makefile(fh):
 
     rule = ''
     for line in fh.readlines():
+        if isinstance(line, bytes):
+            line = line.decode('utf-8')
         assert not line.startswith('\t')
         line = line.strip()
         if line.endswith('\\'):

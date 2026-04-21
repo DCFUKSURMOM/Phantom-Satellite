@@ -377,7 +377,7 @@ def get_test(config, global_overrides, counters, test_instance):
             _counters = getattr(test_instance, key)
             _counters.extend([counter for counter in counters
                               if counter not in _counters])
-    return dict(test_instance.items())
+    return dict(list(test_instance.items()))
 
 
 @validator
@@ -415,7 +415,7 @@ def get_browser_config(config):
     browser_config = dict(title=config['title'])
     browser_config.update(dict([(i, config[i]) for i in required]))
     browser_config.update(dict([(i, config.get(i, j))
-                          for i, j in optional.items()]))
+                          for i, j in list(optional.items())]))
     return browser_config
 
 
@@ -448,7 +448,7 @@ def get_config(argv=None):
     for validate in CONF_VALIDATORS:
         validate(config)
     # remove None Values
-    for k, v in config.items():
+    for k, v in list(config.items()):
         if v is None:
             del config[k]
     return config
@@ -462,6 +462,6 @@ def get_configs(argv=None):
 
 if __name__ == '__main__':
     cfgs = get_configs()
-    print(cfgs[0])
-    print
-    print(cfgs[1])
+    print((cfgs[0]))
+    print()
+    print((cfgs[1]))

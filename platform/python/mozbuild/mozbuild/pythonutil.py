@@ -11,7 +11,7 @@ import sys
 def iter_modules_in_path(*paths):
     paths = [os.path.abspath(os.path.normcase(p)) + os.sep
              for p in paths]
-    for name, module in sys.modules.items():
+    for name, module in list(sys.modules.items()):
         if not hasattr(module, '__file__'):
             continue
 

@@ -80,14 +80,14 @@ def split_list_per_column(reserved_word_list, column):
         per_column = column_dict.setdefault(word[column], [])
         per_column.append(item)
 
-    return sorted(column_dict.items(), key=lambda (char, word): ord(char))
+    return sorted(list(column_dict.items()), key=lambda char_word: ord(char_word[0]))
 
 def generate_letter_switch(opt, unprocessed_columns, reserved_word_list,
                            columns=None):
     assert(len(reserved_word_list) != 0);
 
     if not columns:
-        columns = range(0, unprocessed_columns)
+        columns = list(range(0, unprocessed_columns))
 
     if len(reserved_word_list) == 1:
         index, word = reserved_word_list[0]
@@ -161,7 +161,7 @@ def split_list_per_length(reserved_word_list):
         per_length = length_dict.setdefault(len(word), [])
         per_length.append(item)
 
-    return sorted(length_dict.items(), key=lambda (length, word): length)
+    return sorted(list(length_dict.items()), key=lambda length_word: length_word[0])
 
 def generate_switch(opt, reserved_word_list):
     assert(len(reserved_word_list) != 0);

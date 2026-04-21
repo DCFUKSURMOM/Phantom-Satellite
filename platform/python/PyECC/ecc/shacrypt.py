@@ -17,7 +17,7 @@ BPOS = tuple(range(64))
 def enc_block(block, key, rounds = 16):
     x = block[:64]
     y = block[64:]
-    for i in xrange(rounds):
+    for i in range(rounds):
         h = sha512(x + key).digest()
         y = ''.join([chr(ord(y[k]) ^ ord(h[k])) for k in BPOS])
         h = sha512(y + key).digest()
@@ -27,7 +27,7 @@ def enc_block(block, key, rounds = 16):
 def dec_block(block, key, rounds = 16):
     x = block[:64]
     y = block[64:]
-    for i in xrange(rounds):
+    for i in range(rounds):
         h = sha512(y + key).digest()
         x = ''.join([chr(ord(x[k]) ^ ord(h[k])) for k in BPOS])
         h = sha512(x + key).digest()

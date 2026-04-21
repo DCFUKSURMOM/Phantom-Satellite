@@ -52,8 +52,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'macholib'
-copyright = u'2010-2011, Ronald Oussoren'
+project = 'macholib'
+copyright = '2010-2011, Ronald Oussoren'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -190,8 +190,8 @@ htmlhelp_basename = 'macholibdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'macholib.tex', u'macholib Documentation',
-   u'Ronald Oussoren', 'manual'),
+  ('index', 'macholib.tex', 'macholib Documentation',
+   'Ronald Oussoren', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -223,18 +223,18 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'macholib', u'macholib Documentation',
-     [u'Ronald Oussoren'], 1)
+    ('index', 'macholib', 'macholib Documentation',
+     ['Ronald Oussoren'], 1)
 ]
 
 
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'macholib'
-epub_author = u'Ronald Oussoren'
-epub_publisher = u'Ronald Oussoren'
-epub_copyright = u'2010, Ronald Oussoren'
+epub_title = 'macholib'
+epub_author = 'Ronald Oussoren'
+epub_publisher = 'Ronald Oussoren'
+epub_copyright = '2010, Ronald Oussoren'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

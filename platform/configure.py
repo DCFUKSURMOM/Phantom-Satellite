@@ -10,13 +10,11 @@ import subprocess
 import sys
 import textwrap
 
-
 base_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(base_dir, 'python', 'mozbuild'))
 from mozbuild.configure import ConfigureSandbox
 from mozbuild.util import (
     indented_repr,
-    encode,
 )
 
 
@@ -36,20 +34,24 @@ def config_status(config):
     # Ideally, all the backend and frontend code would handle the booleans, but
     # there are so many things involved, that it's easier to keep config.status
     # untouched for now.
-    def sanitized_bools(v):
+    def sanitized_values(v):
         if v is True:
             return '1'
         if v is False:
             return ''
+        if isinstance(v, dict):
+            return {key: sanitized_values(value) for key, value in v.items()}
+        if isinstance(v, (list, tuple)):
+            return [sanitized_values(value) for value in v]
         return v
 
     sanitized_config = {}
     sanitized_config['substs'] = {
-        k: sanitized_bools(v) for k, v in config.iteritems()
-        if k not in ('DEFINES', 'non_global_defines', 'TOPSRCDIR', 'TOPOBJDIR')
+        key: sanitized_values(value) for key, value in config.items()
+        if key not in ('DEFINES', 'non_global_defines', 'TOPSRCDIR', 'TOPOBJDIR')
     }
     sanitized_config['defines'] = {
-        k: sanitized_bools(v) for k, v in config['DEFINES'].iteritems()
+        key: sanitized_values(value) for key, value in config['DEFINES'].items()
     }
     sanitized_config['non_global_defines'] = config['non_global_defines']
     sanitized_config['topsrcdir'] = config['TOPSRCDIR']
@@ -60,19 +62,16 @@ def config_status(config):
     # here, when we're able to skip configure tests/use cached results/not rely
     # on autoconf.
     print("Creating config.status", file=sys.stderr)
-    encoding = 'mbcs' if sys.platform == 'win32' else 'utf-8'
-    with codecs.open('config.status', 'w', encoding) as fh:
+    with codecs.open('config.status', 'w', encoding='utf-8', errors='replace') as fh:
         fh.write(textwrap.dedent('''\
             #!%(python)s
             # coding=%(encoding)s
             from __future__ import unicode_literals
-            from mozbuild.util import encode
-            encoding = '%(encoding)s'
-        ''') % {'python': config['PYTHON'], 'encoding': encoding})
+        ''') % {'python': config['PYTHON'], 'encoding': 'utf-8'})
         # A lot of the build backend code is currently expecting byte
         # strings and breaks in subtle ways with unicode strings. (bug 1296508)
-        for k, v in sanitized_config.iteritems():
-            fh.write('%s = encode(%s, encoding)\n' % (k, indented_repr(v)))
+        for k, v in sanitized_config.items():
+            fh.write('%s = %s\n' % (k, indented_repr(v)))
         fh.write("__all__ = ['topobjdir', 'topsrcdir', 'defines', "
                  "'non_global_defines', 'substs', 'mozconfig']")
 
@@ -88,18 +87,14 @@ def config_status(config):
     # executable permissions.
     os.chmod('config.status', 0o755)
     if config.get('MOZ_BUILD_APP') != 'js' or config.get('JS_STANDALONE'):
-        os.environ[b'WRITE_MOZINFO'] = b'1'
+        os.environ['WRITE_MOZINFO'] = '1'
         from mozbuild.config_status import config_status
 
         # Some values in sanitized_config also have more complex types, such as
-        # EnumString, which using when calling config_status would currently
-        # break the build, as well as making it inconsistent with re-running
-        # config.status. Fortunately, EnumString derives from unicode, so it's
-        # covered by converting unicode strings.
-
-        # A lot of the build backend code is currently expecting byte strings
-        # and breaks in subtle ways with unicode strings.
-        return config_status(args=[], **encode(sanitized_config, encoding))
+        # EnumString and tuples. Converting string subclasses to plain strings
+        # and tuples to lists keeps this code path consistent with the
+        # generated config.status file, which serializes iterables as lists.
+        return config_status(args=[], **sanitized_config)
     return 0
 
 

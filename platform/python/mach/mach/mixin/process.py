@@ -103,17 +103,16 @@ class ProcessExecutionMixin(LoggingMixin):
 
         self.log(logging.DEBUG, 'process', {'env': use_env}, 'Environment: {env}')
 
-        # There is a bug in subprocess where it doesn't like unicode types in
-        # environment variables. Here, ensure all unicode are converted to
-        # binary. utf-8 is our globally assumed default. If the caller doesn't
-        # want UTF-8, they shouldn't pass in a unicode instance.
+        # Here, ensure all bytes are converted to utf-8.
+        # utf-8 is our globally assumed default.
         normalized_env = {}
-        for k, v in use_env.items():
-            if isinstance(k, unicode):
-                k = k.encode('utf-8', 'strict')
+        for k, v in list(use_env.items()):
 
-            if isinstance(v, unicode):
-                v = v.encode('utf-8', 'strict')
+            if isinstance(k, bytes):
+                k = k.decode('utf-8', 'strict')
+
+            if isinstance(v, bytes):
+                v = v.decode('utf-8', 'strict')
 
             normalized_env[k] = v
 
@@ -135,6 +134,7 @@ class ProcessExecutionMixin(LoggingMixin):
             p = ProcessHandlerMixin(args, cwd=cwd, env=use_env,
                 processOutputLine=[handleLine], universal_newlines=True,
                 ignore_children=ignore_children)
+
             p.run()
             p.processOutput()
             status = p.wait()

@@ -4,7 +4,7 @@
 
 import json
 
-from base import BaseFormatter
+from .base import BaseFormatter
 
 
 class ErrorSummaryFormatter(BaseFormatter):

@@ -18,7 +18,7 @@ flavors = {
     'Linux': 'linux',
     'Darwin': 'mac',
     'SunOS': 'solaris',
-    'GNU/kFreeBSD': 'freebsd',
+    'kFreeBSD': 'freebsd',
     'DragonFly': 'dragonfly',
     'FreeBSD': 'freebsd',
     'NetBSD': 'netbsd',

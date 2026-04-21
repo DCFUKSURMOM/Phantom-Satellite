@@ -41,7 +41,7 @@ extensions = [
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'Mozilla Source Tree Docs'
+project = 'Mozilla Source Tree Docs'
 year = datetime.utcnow().year
 
 # Grab the version from the source tree's milestone.

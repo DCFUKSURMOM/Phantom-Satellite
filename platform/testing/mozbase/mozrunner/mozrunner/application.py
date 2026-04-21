@@ -35,8 +35,7 @@ class DefaultContext(object):
     profile_class = Profile
 
 
-class RemoteContext(object):
-    __metaclass__ = ABCMeta
+class RemoteContext(object, metaclass=ABCMeta):
     _dm = None
     _remote_profile = None
     _adb = None

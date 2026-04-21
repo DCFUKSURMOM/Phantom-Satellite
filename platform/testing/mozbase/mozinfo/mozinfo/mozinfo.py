@@ -24,13 +24,28 @@ _os = os
 class unknown(object):
     """marker class for unknown information"""
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False
 
     def __str__(self):
         return 'UNKNOWN'
 unknown = unknown()  # singleton
 
+
+def read_os_release(path="/etc/os-release"):
+    data = {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                key, _, value = line.partition("=")
+                # strip optional quotes
+                data[key] = value.strip().strip('"')
+    except FileNotFoundError:
+        pass
+    return data
 
 def get_windows_version():
     import ctypes
@@ -92,18 +107,17 @@ elif system.startswith('MINGW'):
     info['os'] = 'win'
     os_version = version = unknown
 elif system == "Linux":
-    if hasattr(platform, "linux_distribution"):
-        (distro, os_version, codename) = platform.linux_distribution()
-    else:
-        (distro, os_version, codename) = platform.dist()
+    # Python 3 ripped out all the distro detection logic.
+    # Have to open /etc/os-version manually.
+    os_release = read_os_release()
+    distro = os_release.get("ID")
+    os_version = os_release.get("VERSION_ID")
+    codename = os_release.get("VERSION_CODENAME")
     if not processor:
         processor = machine
     version = "%s %s" % (distro, os_version)
 
-    # Bug in Python 2's `platform` library:
-    # It will return a triple of empty strings if the distribution is not supported.
-    # It works on Python 3. If we don't have an OS version,
-    # the unit tests fail to run.
+    # Fallback to lfs if info not available.
     if not distro and not os_version and not codename:
         distro = 'lfs'
         version = release
@@ -140,7 +154,7 @@ elif processor.upper() == "AMD64":
     processor = "x86_64"
 elif processor == "Power Macintosh":
     processor = "ppc"
-bits = re.search('(\d+)bit', bits).group(1)
+bits = re.search(r'(\d+)bit', bits).group(1)
 info.update({'processor': processor,
              'bits': int(bits),
              })
@@ -184,7 +198,7 @@ def update(new_info):
                      to a json file containing the new info.
     """
 
-    if isinstance(new_info, basestring):
+    if isinstance(new_info, str):
         # lazy import
         import mozfile
         import json
@@ -246,7 +260,7 @@ def output_to_file(path):
 update({})
 
 # exports
-__all__ = info.keys()
+__all__ = list(info.keys())
 __all__ += ['is' + os_name.title() for os_name in choices['os']]
 __all__ += [
     'info',
@@ -284,17 +298,17 @@ def main(args=None):
 
     # print out choices if requested
     flag = False
-    for key, value in options.__dict__.items():
+    for key, value in list(options.__dict__.items()):
         if value is True:
-            print '%s choices: %s' % (key, ' '.join([str(choice)
-                                                     for choice in choices[key]]))
+            print('%s choices: %s' % (key, ' '.join([str(choice)
+                                                     for choice in choices[key]])))
             flag = True
     if flag:
         return
 
     # otherwise, print out all info
-    for key, value in info.items():
-        print '%s: %s' % (key, value)
+    for key, value in list(info.items()):
+        print('%s: %s' % (key, value))
 
 if __name__ == '__main__':
     main()

@@ -8,7 +8,7 @@
 """
 
 import os
-from urlparse import urljoin
+from urllib.parse import urljoin
 import sys
 from copy import deepcopy
 
@@ -126,7 +126,7 @@ class LocalesMixin(ChunkingMixin):
 
         if locales_file.endswith('json'):
             locales_json = parse_config_file(locales_file)
-            for locale in locales_json.keys():
+            for locale in list(locales_json.keys()):
                 if isinstance(locales_json[locale], dict):
                     if platform and platform not in locales_json[locale]['platforms']:
                         continue
@@ -196,7 +196,7 @@ class LocalesMixin(ChunkingMixin):
             dirs['abs_locales_dir'] = os.path.join(dirs['abs_objdir'],
                                                    c['locales_dir'])
 
-        for key in dirs.keys():
+        for key in list(dirs.keys()):
             if key not in abs_dirs:
                 abs_dirs[key] = dirs[key]
         self.abs_dirs = abs_dirs

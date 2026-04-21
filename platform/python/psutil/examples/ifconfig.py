@@ -57,7 +57,7 @@ duplex_map = {
 
 def main():
     stats = psutil.net_if_stats()
-    for nic, addrs in psutil.net_if_addrs().items():
+    for nic, addrs in list(psutil.net_if_addrs().items()):
         if nic in stats:
             print("%s (speed=%sMB, duplex=%s, mtu=%s, up=%s):" % (
                 nic, stats[nic].speed, duplex_map[stats[nic].duplex],

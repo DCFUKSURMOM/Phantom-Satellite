@@ -15,7 +15,7 @@ def main(header, propFile):
         if len(parts) == 2 and len(parts[0]) > 0:
           mappings[parts[0].strip()] = parts[1].strip()
  
-  keys = mappings.keys()
+  keys = list(mappings.keys())
   keys.sort()
 
   header.write("// This is a generated file. Please do not edit.\n")

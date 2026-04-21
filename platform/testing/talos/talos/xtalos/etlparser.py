@@ -8,7 +8,7 @@ import csv
 import re
 import os
 import sys
-import xtalos
+from . import xtalos
 import subprocess
 import json
 import mozfile
@@ -79,7 +79,7 @@ def getIndex(eventType, colName):
 
 
 def readFile(filename):
-    print("etlparser: in readfile: %s" % filename)
+    print(("etlparser: in readfile: %s" % filename))
     data = csv.reader(open(filename, 'rb'), delimiter=',', quotechar='"',
                       skipinitialspace=True)
     data = filterOutHeader(data)
@@ -150,7 +150,7 @@ def etl2csv(xperf_path, etl_filename, debug=False):
                  '%s.kernel' % etl_filename,
                  etl_filename]
     if debug:
-        print("executing '%s'" % subprocess.list2cmdline(xperf_cmd))
+        print(("executing '%s'" % subprocess.list2cmdline(xperf_cmd)))
     subprocess.call(xperf_cmd)
 
     csv_filename = '%s.csv' % etl_filename
@@ -158,7 +158,7 @@ def etl2csv(xperf_path, etl_filename, debug=False):
                  '-i', etl_filename,
                  '-o', csv_filename]
     if debug:
-        print("executing '%s'" % subprocess.list2cmdline(xperf_cmd))
+        print(("executing '%s'" % subprocess.list2cmdline(xperf_cmd)))
     subprocess.call(xperf_cmd)
     return csv_filename
 
@@ -226,7 +226,7 @@ def loadWhitelist(filename):
     if not filename:
         return
     if not os.path.exists(filename):
-        print("Warning: xperf whitelist %s was not found" % filename)
+        print(("Warning: xperf whitelist %s was not found" % filename))
         return
     lines = open(filename).readlines()
     # Expand paths
@@ -276,7 +276,7 @@ def etlparser(xperf_path, etl_filename, processID, approot=None,
     io = {}
     stage = 0
 
-    print("reading etl filename: %s" % etl_filename)
+    print(("reading etl filename: %s" % etl_filename))
     csvname = etl2csv(xperf_path, etl_filename, debug=debug)
     for row in readFile(csvname):
         event = row[EVENTNAME_INDEX]
@@ -297,7 +297,7 @@ def etlparser(xperf_path, etl_filename, processID, approot=None,
         mozfile.remove(csvname)
 
     output = "thread, stage, counter, value\n"
-    for cntr in sorted(io.iterkeys()):
+    for cntr in sorted(io.keys()):
         output += "%s, %s\n" % (", ".join(cntr), str(io[cntr]))
     if outputFile:
         fname = "%s_thread_stats%s" % os.path.splitext(outputFile)
@@ -314,11 +314,10 @@ def etlparser(xperf_path, etl_filename, processID, approot=None,
 
     # Filter out stages, threads, and whitelisted files that we're not
     # interested in
-    filekeys = filter(lambda x: (all_stages or x[2] == stages[0]) and
+    filekeys = [x for x in files.keys() if (all_stages or x[2] == stages[0]) and
                                 (all_threads or x[1].endswith("(main)")) and
                                 (all_stages and x[2] != stages[0] or
-                                 not checkWhitelist(x[0], whitelist)),
-                      files.iterkeys())
+                                 not checkWhitelist(x[0], whitelist))]
 
     # output data
     for row in filekeys:
@@ -447,7 +446,7 @@ def etlparser(xperf_path, etl_filename, processID, approot=None,
         for error in errors:
             # NOTE: the ' :' is intentional, without the space before the :,
             # some parser will translate this
-            print("TEST-UNEXPECTED-FAIL : xperf: %s" % error)
+            print(("TEST-UNEXPECTED-FAIL : xperf: %s" % error))
 
         # We detect if browser_failures.txt exists to exit and turn the job
         # orange

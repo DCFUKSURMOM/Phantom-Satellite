@@ -111,7 +111,7 @@ class StructuredOutputParser(OutputParser):
             'suite_end': 'No suite end message was emitted by this harness.',
             'test_end': 'No checks run.',
         }
-        for action, diagnostic_message in required_actions.iteritems():
+        for action, diagnostic_message in required_actions.items():
             if action not in summary.action_counts:
                 self.log(diagnostic_message, ERROR)
                 self.update_levels(*error_pair)

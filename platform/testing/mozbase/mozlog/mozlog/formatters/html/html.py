@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import base64
-import cgi
+import html
 from datetime import datetime
 import os
 
@@ -148,7 +148,7 @@ class HTMLFormatter(base.BaseFormatter):
                     html.a(html.img(src=screenshot), href="#"),
                     class_='screenshot'))
 
-            for name, content in debug.items():
+            for name, content in list(debug.items()):
                 if name in ['screenshot', 'image1', 'image2']:
                     if not content.startswith('data:image/png;base64,'):
                         href = 'data:image/png;base64,%s' % content
@@ -158,7 +158,7 @@ class HTMLFormatter(base.BaseFormatter):
                     # Encode base64 to avoid that some browsers (such as Firefox, Opera)
                     # treats '#' as the start of another link if it is contained in the data URL.
                     # Use 'charset=utf-8' to show special characters like Chinese.
-                    utf_encoded = unicode(content).encode('utf-8', 'xmlcharrefreplace')
+                    utf_encoded = str(content).encode('utf-8', 'xmlcharrefreplace')
                     href = 'data:text/html;charset=utf-8;base64,%s' % base64.b64encode(utf_encoded)
 
                 links_html.append(html.a(
@@ -177,9 +177,9 @@ class HTMLFormatter(base.BaseFormatter):
                     log.append(line[:80])
                 else:
                     if line.lower().find("error") != -1 or line.lower().find("exception") != -1:
-                        log.append(html.span(raw(cgi.escape(line)), class_='error'))
+                        log.append(html.span(raw(html.escape(line)), class_='error'))
                     else:
-                        log.append(raw(cgi.escape(line)))
+                        log.append(raw(html.escape(line)))
                 log.append(html.br())
             additional_html.append(log)
 
@@ -208,7 +208,7 @@ class HTMLFormatter(base.BaseFormatter):
                         id='environment'),
 
                     html.h2('Summary'),
-                    html.p('%i tests ran in %.1f seconds.' % (sum(self.test_count.itervalues()),
+                    html.p('%i tests ran in %.1f seconds.' % (sum(self.test_count.values()),
                                                               (self.suite_times["end"] -
                                                                self.suite_times["start"]) / 1000.),
                            html.br(),
@@ -233,4 +233,4 @@ class HTMLFormatter(base.BaseFormatter):
                         html.tbody(self.result_rows,
                                    id='results-table-body')], id='results-table')))
 
-        return u"<!DOCTYPE html>\n" + doc.unicode(indent=2)
+        return "<!DOCTYPE html>\n" + doc.str(indent=2)

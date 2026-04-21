@@ -96,7 +96,7 @@ class MarkMapping:
     resolves to True if the marker is present. """
     def __init__(self, keywords):
         mymarks = set()
-        for key, value in keywords.items():
+        for key, value in list(keywords.items()):
             if isinstance(value, MarkInfo) or isinstance(value, MarkDecorator):
                 mymarks.add(key)
         self._mymarks = mymarks

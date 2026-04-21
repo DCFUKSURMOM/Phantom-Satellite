@@ -170,7 +170,7 @@ def net_connections(kind='inet'):
 
 def net_if_stats():
     """Get NIC stats (isup, duplex, speed, mtu)."""
-    names = net_io_counters().keys()
+    names = list(net_io_counters().keys())
     ret = {}
     for name in names:
         isup, duplex, speed, mtu = cext_posix.net_if_stats(name)

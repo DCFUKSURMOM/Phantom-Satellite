@@ -215,7 +215,7 @@ def main(argv=None):
     version_info.revision = '0'
 
   if opts.revision_only:
-    print version_info.revision
+    print(version_info.revision)
   else:
     contents = "LASTCHANGE=%s\n" % version_info.revision
     if out_file:

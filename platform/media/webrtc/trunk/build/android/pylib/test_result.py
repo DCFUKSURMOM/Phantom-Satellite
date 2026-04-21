@@ -9,8 +9,8 @@ import os
 import time
 import traceback
 
-import buildbot_report
-import constants
+from . import buildbot_report
+from . import constants
 
 
 class BaseTestResult(object):
@@ -146,9 +146,9 @@ class TestResults(object):
       full_file_name = os.path.join(log_file_path, test_group)
       if not os.path.exists(full_file_name):
         with open(full_file_name, 'w') as log_file:
-          print >> log_file, '\n%s results for %s build %s:' % (
+          print('\n%s results for %s build %s:' % (
               test_group, os.environ.get('BUILDBOT_BUILDERNAME'),
-              os.environ.get('BUILDBOT_BUILDNUMBER'))
+              os.environ.get('BUILDBOT_BUILDNUMBER')), file=log_file)
       log_contents = ['  %s result : %d tests ran' % (test_suite,
                                                       len(self.ok) +
                                                       len(self.failed) +
@@ -160,14 +160,14 @@ class TestResults(object):
         if count:
           log_contents.append(', %d tests %s' % (count, result))
       with open(full_file_name, 'a') as log_file:
-        print >> log_file, ''.join(log_contents)
+        print(''.join(log_contents), file=log_file)
       content = {'test_group': test_group,
                  'ok': [t.name for t in self.ok],
                  'failed': [t.name for t in self.failed],
                  'crashed': [t.name for t in self.failed],
                  'unknown': [t.name for t in self.unknown],}
       with open(os.path.join(log_file_path, 'results.json'), 'a') as json_file:
-        print >> json_file, json.dumps(content)
+        print(json.dumps(content), file=json_file)
 
     # Summarize in the test output.
     summary_string = 'Summary:\n'
@@ -190,4 +190,4 @@ class TestResults(object):
     elif self.failed or self.crashed or self.overall_fail:
       buildbot_report.PrintError()
     else:
-      print 'Step success!'  # No annotation needed
+      print('Step success!')  # No annotation needed

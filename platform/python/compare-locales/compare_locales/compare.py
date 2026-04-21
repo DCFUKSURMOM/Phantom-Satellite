@@ -42,7 +42,7 @@ class Tree(object):
         old = None
         new = tuple(parts)
         t = self
-        for k, v in self.branches.iteritems():
+        for k, v in self.branches.items():
             for i, part in enumerate(zip(k, parts)):
                 if part[0] != part[1]:
                     i -= 1
@@ -79,7 +79,7 @@ class Tree(object):
         If flag is 'value', key_or_value is a value object, otherwise
         (flag is 'key') it's a key string.
         '''
-        keys = self.branches.keys()
+        keys = list(self.branches.keys())
         keys.sort()
         if self.value is not None:
             yield (depth, 'value', self.value)
@@ -94,7 +94,7 @@ class Tree(object):
         Only the values need to take care that they're JSON-able.
         '''
         json = {}
-        keys = self.branches.keys()
+        keys = list(self.branches.keys())
         keys.sort()
         if self.value is not None:
             json['value'] = self.value
@@ -110,7 +110,7 @@ class Tree(object):
                 return self.indent * t[0] + '/'.join(t[2])
             return self.indent * (t[0] + 1) + str(t[2])
 
-        return map(tostr, self.getContent())
+        return list(map(tostr, self.getContent()))
 
     def __str__(self):
         return '\n'.join(self.getStrRows())
@@ -164,18 +164,18 @@ class DirectoryCompare(SequenceMatcher):
         self.set_seq2([i for i in other])
         for tag, i1, i2, j1, j2 in self.get_opcodes():
             if tag == 'equal':
-                for i, j in zip(xrange(i1, i2), xrange(j1, j2)):
+                for i, j in zip(range(i1, i2), range(j1, j2)):
                     self.watcher.compare(self.a[i], self.b[j])
             elif tag == 'delete':
-                for i in xrange(i1, i2):
+                for i in range(i1, i2):
                     self.watcher.add(self.a[i], other.cloneFile(self.a[i]))
             elif tag == 'insert':
-                for j in xrange(j1, j2):
+                for j in range(j1, j2):
                     self.watcher.remove(self.b[j])
             else:
-                for j in xrange(j1, j2):
+                for j in range(j1, j2):
                     self.watcher.remove(self.b[j])
-                for i in xrange(i1, i2):
+                for i in range(i1, i2):
                     self.watcher.add(self.a[i], other.cloneFile(self.a[i]))
 
 
@@ -203,14 +203,14 @@ class Observer(object):
 
         self.summary = defaultdict(intdict)
         if 'summary' in state:
-            for loc, stats in state['summary'].iteritems():
+            for loc, stats in state['summary'].items():
                 self.summary[loc].update(stats)
         self.details = state['details']
         self.filter = None
 
     def getSummary(self):
         plaindict = {}
-        for k, v in self.summary.iteritems():
+        for k, v in self.summary.items():
             plaindict[k] = dict(v)
         return plaindict
 
@@ -261,7 +261,7 @@ class Observer(object):
 
     def toExhibit(self):
         items = []
-        for locale in sorted(self.summary.iterkeys()):
+        for locale in sorted(self.summary.keys()):
             summary = self.summary[locale]
             if locale is not None:
                 item = {'id': 'xxx/' + locale,
@@ -339,10 +339,10 @@ class Observer(object):
             return '\n'.join(o)
 
         out = []
-        for locale, summary in sorted(self.summary.iteritems()):
+        for locale, summary in sorted(self.summary.items()):
             if locale is not None:
                 out.append(locale + ':')
-            out += [k + ': ' + str(v) for k, v in sorted(summary.iteritems())]
+            out += [k + ': ' + str(v) for k, v in sorted(summary.items())]
             total = sum([summary[k]
                          for k in ['changed', 'unchanged', 'report', 'missing',
                                    'missingInFiles']
@@ -352,7 +352,7 @@ class Observer(object):
                 rate = (('changed' in summary and summary['changed'] * 100) or
                         0) / total
             out.append('%d%% of entries changed' % rate)
-        return '\n'.join(map(tostr, self.details.getContent()) + out)
+        return '\n'.join(list(map(tostr, self.details.getContent())) + out)
 
     def __str__(self):
         return 'observer'
@@ -391,7 +391,7 @@ class ContentComparer:
             os.makedirs(outdir)
         if not p.canMerge:
             shutil.copyfile(ref_file.fullpath, outfile)
-            print "copied reference to " + outfile
+            print("copied reference to " + outfile)
             return
         if skips:
             # skips come in ordered by key name, we need them in file order
@@ -412,7 +412,7 @@ class ContentComparer:
         else:
             shutil.copyfile(l10n_file.fullpath, outfile)
             f = codecs.open(outfile, 'ab', p.encoding)
-        print "adding to " + outfile
+        print("adding to " + outfile)
 
         def ensureNewline(s):
             if not s.endswith('\n'):
@@ -448,17 +448,17 @@ class ContentComparer:
             # we didn't parse this before
             try:
                 p.readContents(ref_file.getContents())
-            except Exception, e:
+            except Exception as e:
                 self.notify('error', ref_file, str(e))
                 return
             self.reference[ref_file] = p.parse()
         ref = self.reference[ref_file]
-        ref_list = ref[1].keys()
+        ref_list = list(ref[1].keys())
         ref_list.sort()
         try:
             p.readContents(l10n.getContents())
             l10n_entities, l10n_map = p.parse()
-        except Exception, e:
+        except Exception as e:
             self.notify('error', l10n, str(e))
             return
         lines = []
@@ -468,12 +468,12 @@ class ContentComparer:
                 lines.append(0)
                 for m in self.nl.finditer(p.contents):
                     lines.append(m.end())
-            for i in xrange(len(lines), 0, -1):
+            for i in range(len(lines), 0, -1):
                 if offset >= lines[i - 1]:
                     return (i, offset - lines[i - 1])
             return (1, offset)
 
-        l10n_list = l10n_map.keys()
+        l10n_list = list(l10n_map.keys())
         l10n_list.sort()
         ar = AddRemove()
         ar.set_left(ref_list)
@@ -542,7 +542,7 @@ class ContentComparer:
                         if tp == 'error' and self.merge_stage is not None:
                             skips.append(l10nent)
                         self.notify(tp, l10n,
-                                    u"%s at line %d, column %d for %s" %
+                                    "%s at line %d, column %d for %s" %
                                     (msg, _l, col, refent.key))
                 pass
         if missing:
@@ -573,7 +573,7 @@ class ContentComparer:
         try:
             p.readContents(f.getContents())
             entities, map = p.parse()
-        except Exception, e:
+        except Exception as e:
             self.notify('error', f, str(e))
             return
         self.notify('missingInFiles', missing, len(map))
@@ -615,7 +615,7 @@ def compareApp(app, other_observer=None, merge_stage=None, clobber=False):
                     clobberdir = os.path.join(locale_merge, module)
                     if os.path.exists(clobberdir):
                         shutil.rmtree(clobberdir)
-                        print "clobbered " + clobberdir
+                        print("clobbered " + clobberdir)
             dir_comp.compareWith(localization)
     return comparer.observer
 

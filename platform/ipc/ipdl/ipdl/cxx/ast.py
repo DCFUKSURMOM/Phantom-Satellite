@@ -3,11 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import copy, sys
+from functools import reduce
 
 class Visitor:
     def defaultVisit(self, node):
-        raise Exception, "INTERNAL ERROR: no visitor for node type `%s'"% (
-            node.__class__.__name__)
+        raise Exception("INTERNAL ERROR: no visitor for node type `%s'"% (
+            node.__class__.__name__))
 
     def visitWhitespace(self, ws):
         pass
@@ -375,11 +376,22 @@ class Typedef(Node):
         self.totypename = totypename
         self.templateargs = templateargs
 
-    def __cmp__(self, o):
-        return cmp(self.totypename, o.totypename)
     def __eq__(self, o):
         return (self.__class__ == o.__class__
-                and 0 == cmp(self, o))
+                and self.totypename == o.totypename)
+    def __lt__(self, o):
+        return (self.__class__ == o.__class__
+                and self.totypename < o.totypename)
+    def __le__(self, o):
+        return (self.__class__ == o.__class__
+                and self.totypename <= o.totypename)
+    def __gt__(self, o):
+        return (self.__class__ == o.__class__
+                and self.totypename > o.totypename)
+    def __ge__(self, o):
+        return (self.__class__ == o.__class__
+                and self.totypename >= o.totypename)
+
     def __hash__(self):
         return hash(self.totypename)
 

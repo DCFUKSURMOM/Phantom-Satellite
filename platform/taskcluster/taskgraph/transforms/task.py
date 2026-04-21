@@ -457,12 +457,12 @@ def build_generic_worker_payload(config, task, task_def):
 @payload_builder('macosx-engine')
 def build_macosx_engine_payload(config, task, task_def):
     worker = task['worker']
-    artifacts = map(lambda artifact: {
+    artifacts = [{
         'name': artifact['name'],
         'path': artifact['path'],
         'type': artifact['type'],
         'expires': task_def['expires'],
-    }, worker['artifacts'])
+    } for artifact in worker['artifacts']]
 
     task_def['payload'] = {
         'link': worker['link'],

@@ -108,7 +108,7 @@ if os_bsd:
         'src/base/atomicops_internals_x86_gcc.cc',
         'src/base/time_posix.cc',
     ]
-    if CONFIG['OS_ARCH'] == 'GNU_kFreeBSD':
+    if CONFIG['OS_ARCH'] == 'kFreeBSD':
         SOURCES += [
             'src/base/process_util_linux.cc'
         ]

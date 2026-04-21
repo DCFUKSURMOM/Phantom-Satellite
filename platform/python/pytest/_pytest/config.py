@@ -325,7 +325,7 @@ class PytestPluginManager(PluginManager):
             self._conftestpath2mod[conftestpath] = mod
             dirpath = conftestpath.dirpath()
             if dirpath in self._path2confmods:
-                for path, mods in self._path2confmods.items():
+                for path, mods in list(self._path2confmods.items()):
                     if path and path.relto(dirpath) or path == dirpath:
                         assert mod not in mods
                         mods.append(mod)
@@ -485,7 +485,7 @@ class Parser:
 
     def parse_setoption(self, args, option, namespace=None):
         parsedoption = self.parse(args, namespace=namespace)
-        for name, value in parsedoption.__dict__.items():
+        for name, value in list(parsedoption.__dict__.items()):
             setattr(option, name, value)
         return getattr(parsedoption, FILE_OR_DIR)
 
@@ -1016,7 +1016,7 @@ class Config(object):
         elif type == "args":
             return shlex.split(value)
         elif type == "linelist":
-            return [t for t in map(lambda x: x.strip(), value.split("\n")) if t]
+            return [t for t in [x.strip() for x in value.split("\n")] if t]
         elif type == "bool":
             return bool(_strtobool(value.strip()))
         else:
@@ -1142,7 +1142,7 @@ def determine_setup(inifile, args):
 
 def setns(obj, dic):
     import pytest
-    for name, value in dic.items():
+    for name, value in list(dic.items()):
         if isinstance(value, dict):
             mod = getattr(obj, name, None)
             if mod is None:

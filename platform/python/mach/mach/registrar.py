@@ -78,7 +78,7 @@ class MachRegistrar(object):
                     fail_conditions.append(c)
 
             if fail_conditions:
-                print(self._condition_failed_message(handler.name, fail_conditions))
+                print((self._condition_failed_message(handler.name, fail_conditions)))
                 return 1
 
         fn = getattr(instance, handler.method)
@@ -90,7 +90,7 @@ class MachRegistrar(object):
             result = fn(**kwargs)
 
         result = result or 0
-        assert isinstance(result, (int, long))
+        assert isinstance(result, (int, int))
 
         if context:
             postrun = getattr(context, 'post_dispatch_handler', None)

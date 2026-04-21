@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 
-import cPickle as pickle
+import pickle as pickle
 import json
 import os
 import unittest
@@ -331,7 +331,7 @@ class TestRecursiveMakeBackend(BackendTester):
             ],
         }
 
-        for var, val in expected.items():
+        for var, val in list(expected.items()):
             # print("test_variable_passthru[%s]" % (var))
             found = [str for str in lines if str.startswith(var)]
             self.assertEqual(found, val)
@@ -370,7 +370,7 @@ class TestRecursiveMakeBackend(BackendTester):
             ],
         }
 
-        for var, val in expected.items():
+        for var, val in list(expected.items()):
             found = [str for str in lines if str.startswith(var)]
             self.assertEqual(found, val)
 
@@ -544,7 +544,7 @@ class TestRecursiveMakeBackend(BackendTester):
 
         # This is not the most robust test in the world, but it gets the job
         # done.
-        entries = [e for e in m._dests.keys() if '**' in e]
+        entries = [e for e in list(m._dests.keys()) if '**' in e]
         self.assertEqual(len(entries), 1)
         self.assertIn('support/**', entries[0])
 
@@ -562,7 +562,7 @@ class TestRecursiveMakeBackend(BackendTester):
                          set(['child/test_sub.js',
                               'child/data/**',
                               'child/another-file.sjs']))
-        for key in test_installs.keys():
+        for key in list(test_installs.keys()):
             self.assertIn(key, test_installs)
 
         test_files_manifest = mozpath.join(env.topobjdir,
@@ -576,7 +576,7 @@ class TestRecursiveMakeBackend(BackendTester):
         # Then, synthesize one from the test-installs.pkl file. This should
         # allow us to re-create a subset of the above.
         synthesized_manifest = InstallManifest()
-        for item, installs in test_installs.items():
+        for item, installs in list(test_installs.items()):
             for install_info in installs:
                 if len(install_info) == 3:
                     synthesized_manifest.add_pattern_symlink(*install_info)
@@ -584,7 +584,7 @@ class TestRecursiveMakeBackend(BackendTester):
                     synthesized_manifest.add_symlink(*install_info)
 
         self.assertEqual(len(synthesized_manifest), 3)
-        for item, info in synthesized_manifest._dests.items():
+        for item, info in list(synthesized_manifest._dests.items()):
             self.assertIn(item, m)
             self.assertEqual(info, m._dests[item])
 
@@ -758,7 +758,7 @@ class TestRecursiveMakeBackend(BackendTester):
         expected[mozpath.join(env.topobjdir, 'final-target')] = [
             'FINAL_TARGET = $(DEPTH)/random-final-target'
         ]
-        for key, expected_rules in expected.iteritems():
+        for key, expected_rules in expected.items():
             backend_path = mozpath.join(key, 'backend.mk')
             lines = [l.strip() for l in open(backend_path, 'rt').readlines()[2:]]
             found = [str for str in lines if

@@ -36,7 +36,7 @@ def ensureParentDir(file):
     if dir and not os.path.exists(dir):
         try:
             os.makedirs(dir)
-        except OSError, error:
+        except OSError as error:
             if error.errno != errno.EEXIST:
                 raise
 
@@ -140,4 +140,4 @@ class ExpandArgs(list):
         return [relativize(arg)]
 
 if __name__ == '__main__':
-    print " ".join(ExpandArgs(sys.argv[1:]))
+    print(" ".join(ExpandArgs(sys.argv[1:])))

@@ -190,13 +190,13 @@ def main(argv=None):
       tests.extend(find_all_gyptest_files(os.path.normpath(arg)))
     else:
       if not is_test_name(os.path.basename(arg)):
-        print >>sys.stderr, arg, 'is not a valid gyp test name.'
+        print(arg, 'is not a valid gyp test name.', file=sys.stderr)
         sys.exit(1)
       tests.append(arg)
 
   if opts.list:
     for test in tests:
-      print test
+      print(test)
     sys.exit(0)
 
   CommandRunner.verbose = not opts.quiet

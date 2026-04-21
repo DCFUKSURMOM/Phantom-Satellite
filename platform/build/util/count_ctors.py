@@ -36,7 +36,7 @@ def count_ctors(filename):
         # Even if we have .ctors, we shouldn't have any constructors in .ctors.
         # Complain if .ctors does not look how we expect it to.
         if have_ctors and n_ctors_ctors != 0:
-            print >>sys.stderr, "Unexpected .ctors contents for", filename
+            print("Unexpected .ctors contents for", filename, file=sys.stderr)
             sys.exit(1)
         return n_init_array_ctors
     if have_ctors:
@@ -44,7 +44,7 @@ def count_ctors(filename):
 
     # We didn't find anything; somebody switched initialization mechanisms on
     # us, or the binary is completely busted.  Complain either way.
-    print >>sys.stderr, "Couldn't find .init_array or .ctors in", filename
+    print("Couldn't find .init_array or .ctors in", filename, file=sys.stderr)
     sys.exit(1)
 
 if __name__ == '__main__':
@@ -60,5 +60,5 @@ if __name__ == '__main__':
                 }]}
             ]
         }
-        print "PERFHERDER_DATA: %s" % json.dumps(perfherder_data)
+        print("PERFHERDER_DATA: %s" % json.dumps(perfherder_data))
 

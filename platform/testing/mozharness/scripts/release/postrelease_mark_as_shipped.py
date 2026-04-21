@@ -90,7 +90,7 @@ class MarkReleaseAsShipped(BaseScript, VirtualenvMixin, BuildbotMixin):
         credentials_file = os.path.join(os.getcwd(),
                                         self.config["credentials_file"])
         credentials = {}
-        execfile(credentials_file, credentials)
+        exec(compile(open(credentials_file, "rb").read(), credentials_file, 'exec'), credentials)
         ship_it_credentials = credentials["ship_it_credentials"]
         auth = (self.config["ship_it_username"],
                 ship_it_credentials.get(self.config["ship_it_username"]))

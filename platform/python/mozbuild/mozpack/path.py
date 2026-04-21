@@ -7,6 +7,7 @@ from __future__ import absolute_import
 import posixpath
 import os
 import re
+import sys
 
 '''
 Like os.path, with a reduced set of functions, and with normalized path
@@ -20,12 +21,18 @@ def normsep(path):
     Normalize path separators, by using forward slashes instead of whatever
     os.sep is.
     '''
+    # Normalize separators
     if os.sep != '/':
         path = path.replace(os.sep, '/')
     if os.altsep and os.altsep != '/':
         path = path.replace(os.altsep, '/')
-    return path
 
+    # Also normalize drive letter case (for Python 3.8+)
+    if sys.platform.startswith('win'):
+        if len(path) >= 2 and path[1] == ':' and path[0].isalpha():
+            path = path[0].lower() + path[1:]
+
+    return path
 
 def relpath(path, start):
     rel = normsep(os.path.relpath(path, start))

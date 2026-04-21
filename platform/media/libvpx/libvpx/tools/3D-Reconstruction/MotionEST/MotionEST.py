@@ -73,8 +73,8 @@ class MotionEST(object):
   def distortion(self, mask=None, metric=MSE):
     loss = 0
     count = 0
-    for i in xrange(self.num_row):
-      for j in xrange(self.num_col):
+    for i in range(self.num_row):
+      for j in range(self.num_col):
         if mask is not None and mask[i, j]:
           continue
         loss += self.block_dist(i, j, self.mf[i, j], metric)
@@ -88,8 +88,8 @@ class MotionEST(object):
     count = 0
     gt = ground_truth.mf
     mask = ground_truth.mask
-    for i in xrange(self.num_row):
-      for j in xrange(self.num_col):
+    for i in range(self.num_row):
+      for j in range(self.num_col):
         if mask is not None and mask[i][j]:
           continue
         loss += LA.norm(gt[i, j] - self.mf[i, j])

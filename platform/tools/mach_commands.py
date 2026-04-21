@@ -75,9 +75,9 @@ class UUIDProvider(object):
                 print('')
         if format in [None, 'cpp', 'c++']:
             u = u.hex
-            print('{ 0x%s, 0x%s, 0x%s, \\' % (u[0:8], u[8:12], u[12:16]))
-            pairs = tuple(map(lambda n: u[n:n+2], range(16, 32, 2)))
-            print(('  { ' + '0x%s, ' * 7 + '0x%s } }') % pairs)
+            print(('{ 0x%s, 0x%s, 0x%s, \\' % (u[0:8], u[8:12], u[12:16])))
+            pairs = tuple([u[n:n+2] for n in list(range(16, 32, 2))])
+            print((('  { ' + '0x%s, ' * 7 + '0x%s } }') % pairs))
 
 
 @CommandProvider
@@ -92,7 +92,7 @@ class RageProvider(MachCommandBase):
         form where you can submit feedback. Just close the tab when done.
         """
         import getpass
-        import urllib
+        import urllib.request, urllib.parse, urllib.error
         import webbrowser
 
         # Try to resolve the current user.
@@ -127,7 +127,7 @@ class RageProvider(MachCommandBase):
 
         url = 'https://docs.google.com/a/mozilla.com/forms/d/e/1FAIpQLSeDVC3IXJu5d33Hp_ZTCOw06xEUiYH1pBjAqJ1g_y63sO2vvA/viewform'
         if user:
-            url += '?entry.1281044204=%s' % urllib.quote(user)
+            url += '?entry.1281044204=%s' % urllib.parse.quote(user)
 
         print('Please leave your feedback in the opened web form')
         webbrowser.open_new_tab(url)
@@ -148,8 +148,8 @@ class PastebinProvider(object):
                      help='Specify the file to upload to pastebin.mozilla.org')
 
     def pastebin(self, language, poster, duration, file):
-        import urllib
-        import urllib2
+        import urllib.request, urllib.parse, urllib.error
+        import urllib.request, urllib.error, urllib.parse
 
         URL = 'https://pastebin.mozilla.org/'
 
@@ -183,7 +183,7 @@ class PastebinProvider(object):
                 extension = file.split('.')[-1]
                 for l in FILE_TYPES:
                     if extension == l['extension']:
-                        print('Identified file as %s' % l['name'])
+                        print(('Identified file as %s' % l['name']))
                         lang = l['value']
             except IOError:
                 print('ERROR. No such file')
@@ -204,18 +204,18 @@ class PastebinProvider(object):
             ('expiry', duration),
             ('paste', 'Send')]
 
-        data = urllib.urlencode(params)
+        data = urllib.parse.urlencode(params)
         print('Uploading ...')
         try:
-            req = urllib2.Request(URL, data)
-            response = urllib2.urlopen(req)
+            req = urllib.request.Request(URL, data)
+            response = urllib.request.urlopen(req)
             http_response_code = response.getcode()
             if http_response_code == 200:
-                print(response.geturl())
+                print((response.geturl()))
             else:
-                print('Could not upload the file, '
-                      'HTTP Response Code %s' %(http_response_code))
-        except urllib2.URLError:
+                print(('Could not upload the file, '
+                      'HTTP Response Code %s' %(http_response_code)))
+        except urllib.error.URLError:
             print('ERROR. Could not connect to pastebin.mozilla.org.')
             return 1
         return 0
@@ -228,7 +228,7 @@ class FormatProvider(MachCommandBase):
     @CommandArgument('--show', '-s', action = 'store_true',
         help = 'Show diff output on instead of applying changes')
     def clang_format(self, show=False):
-        import urllib2
+        import urllib.request, urllib.error, urllib.parse
 
         plat = platform.system()
         fmt = plat.lower() + "/clang-format-3.5"
@@ -242,8 +242,8 @@ class FormatProvider(MachCommandBase):
         else:
             arch = os.uname()[4]
             if (plat != "Linux" and plat != "Darwin") or arch != 'x86_64':
-                print("Unsupported platform " + plat + "/" + arch +
-                      ". Supported platforms are Windows/*, Linux/x86_64 and Darwin/x86_64")
+                print(("Unsupported platform " + plat + "/" + arch +
+                      ". Supported platforms are Windows/*, Linux/x86_64 and Darwin/x86_64"))
                 return 1
 
         os.chdir(self.topsrcdir)
@@ -256,8 +256,8 @@ class FormatProvider(MachCommandBase):
             if not clang_format_diff:
                 return 1
 
-        except urllib2.HTTPError as e:
-            print("HTTP error {0}: {1}".format(e.code, e.reason))
+        except urllib.error.HTTPError as e:
+            print(("HTTP error {0}: {1}".format(e.code, e.reason)))
             return 1
 
         from subprocess import Popen, PIPE
@@ -276,7 +276,7 @@ class FormatProvider(MachCommandBase):
                 if e.errno == errno.ENOENT:
                     print("Can't find filterdiff. Please install patchutils.")
                 else:
-                    print("OSError {0}: {1}".format(e.code, e.reason))
+                    print(("OSError {0}: {1}".format(e.code, e.reason)))
                 return 1
 
 
@@ -290,14 +290,14 @@ class FormatProvider(MachCommandBase):
         target = os.path.join(self._mach_context.state_dir, os.path.basename(root))
         if not os.path.exists(target):
             site = "https://people.mozilla.org/~ajones/clang-format/"
-            if self.prompt and raw_input("Download clang-format executables from {0} (yN)? ".format(site)).lower() != 'y':
+            if self.prompt and input("Download clang-format executables from {0} (yN)? ".format(site)).lower() != 'y':
                 print("Download aborted.")
                 return 1
             self.prompt = False
 
             u = site + root
-            print("Downloading {0} to {1}".format(u, target))
-            data = urllib2.urlopen(url=u).read()
+            print(("Downloading {0} to {1}".format(u, target)))
+            data = urllib.request.urlopen(url=u).read()
             temp = target + ".tmp"
             with open(temp, "wb") as fh:
                 fh.write(data)
@@ -340,8 +340,8 @@ def mozregression_create_parser():
                 'install',
                 'mozregression==%s' % release
             ])
-            print("mozregression was updated to version %s. please"
-                  " re-run your command." % release)
+            print(("mozregression was updated to version %s. please"
+                  " re-run your command." % release))
         else:
             # mozregression is up to date, return the parser.
             return mozregression.parser()

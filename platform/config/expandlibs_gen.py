@@ -38,4 +38,4 @@ if __name__ == '__main__':
 
     ensureParentDir(options.output)
     with open(options.output, 'w') as outfile:
-        print >>outfile, generate(args)
+        print(generate(args), file=outfile)

@@ -6,15 +6,15 @@
 
 import contextlib
 import fcntl
-import httplib
+import http.client
 import logging
 import os
 import re
 import socket
 import traceback
 
-import cmd_helper
-import constants
+from . import cmd_helper
+from . import constants
 
 
 #The following two methods are used to allocate the port source for various
@@ -143,10 +143,10 @@ def IsHttpServerConnectable(host, port, tries=3, command='GET', path='/',
     message the server returns when connect status is false.
   """
   assert tries >= 1
-  for i in xrange(0, tries):
+  for i in range(0, tries):
     client_error = None
     try:
-      with contextlib.closing(httplib.HTTPConnection(
+      with contextlib.closing(http.client.HTTPConnection(
           host, port, timeout=timeout)) as http:
         # Output some debug information when we have tried more than 2 times.
         http.set_debuglevel(i >= 2)
@@ -158,7 +158,7 @@ def IsHttpServerConnectable(host, port, tries=3, command='GET', path='/',
         client_error = ('Bad response: %s %s version %s\n  ' %
                         (r.status, r.reason, r.version) +
                         '\n  '.join([': '.join(h) for h in r.getheaders()]))
-    except (httplib.HTTPException, socket.error) as e:
+    except (http.client.HTTPException, socket.error) as e:
       # Probably too quick connecting: try again.
       exception_error_msgs = traceback.format_exception_only(type(e), e)
       if exception_error_msgs:

@@ -111,9 +111,9 @@ class TestDTDs(BaseHelper):
                    (('warning', (0, 0), 'Referencing unknown entity `not`',
                      'xmlparse'),))
         # make sure we only handle translated entity references
-        self._test(u'''<!ENTITY foo "This is &ƞǿŧ; good">
+        self._test('''<!ENTITY foo "This is &ƞǿŧ; good">
 '''.encode('utf-8'),
-            (('warning', (0, 0), u'Referencing unknown entity `ƞǿŧ`',
+            (('warning', (0, 0), 'Referencing unknown entity `ƞǿŧ`',
               'xmlparse'),))
 
     def testErrorFirstLine(self):
@@ -233,10 +233,10 @@ class TestAndroid(unittest.TestCase):
     Make sure we're hitting our extra rules only if
     we're passing in a DTD file in the embedding/android module.
     """
-    apos_msg = u"Apostrophes in Android DTDs need escaping with \\' or " + \
-               u"\\u0027, or use \u2019, or put string in quotes."
-    quot_msg = u"Quotes in Android DTDs need escaping with \\\" or " + \
-               u"\\u0022, or put string in apostrophes."
+    apos_msg = "Apostrophes in Android DTDs need escaping with \\' or " + \
+               "\\u0027, or use \u2019, or put string in quotes."
+    quot_msg = "Quotes in Android DTDs need escaping with \\\" or " + \
+               "\\u0022, or put string in apostrophes."
 
     def getEntity(self, v):
         return Entity(v, lambda s: s, (0, len(v)), (), (0, 0), (), (),
@@ -267,7 +267,7 @@ class TestAndroid(unittest.TestCase):
                          (('warning', (0, 0),
                            'Referencing unknown entity `ref`', 'xmlparse'),))
         # no report on stray ampersand or quote, if not completely quoted
-        for i in xrange(3):
+        for i in range(3):
             # make sure we're catching unescaped apostrophes,
             # try 0..5 backticks
             l10n = self.getDTDEntity("\\"*(2*i) + "'")
@@ -318,12 +318,12 @@ class TestAndroid(unittest.TestCase):
                          (('error', 2, self.quot_msg, 'android'),))
 
         # broken unicode escape
-        l10n = self.getDTDEntity("Some broken \u098 unicode")
+        l10n = self.getDTDEntity("Some broken \\u098 unicode")
         self.assertEqual(tuple(checker.check(ref, l10n)),
                          (('error', 12, 'truncated \\uXXXX escape',
                            'android'),))
         # broken unicode escape, try to set the error off
-        l10n = self.getDTDEntity(u"\u9690"*14+"\u006"+"  "+"\u0064")
+        l10n = self.getDTDEntity("\u9690"*14+"\\u006"+"  "+"\\u0064")
         self.assertEqual(tuple(checker.check(ref, l10n)),
                          (('error', 14, 'truncated \\uXXXX escape',
                            'android'),))

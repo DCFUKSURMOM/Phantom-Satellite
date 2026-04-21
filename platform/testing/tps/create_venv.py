@@ -14,7 +14,7 @@ import os
 import shutil
 import subprocess
 import sys
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import zipfile
 
 
@@ -53,7 +53,7 @@ else:
 
 def download(url, target):
     """Downloads the specified url to the given target."""
-    response = urllib2.urlopen(url)
+    response = urllib.request.urlopen(url)
     with open(target, 'wb') as f:
         f.write(response.read())
 
@@ -64,7 +64,7 @@ def setup_virtualenv(target, python_bin=None):
     script_path = os.path.join(here, 'virtualenv-%s' % VERSION_VIRTUALENV,
                                'virtualenv.py')
 
-    print 'Downloading virtualenv %s' % VERSION_VIRTUALENV
+    print('Downloading virtualenv %s' % VERSION_VIRTUALENV)
     zip_path = download(URL_VIRTUALENV + VERSION_VIRTUALENV,
                         os.path.join(here, 'virtualenv.zip'))
 
@@ -72,7 +72,7 @@ def setup_virtualenv(target, python_bin=None):
         with zipfile.ZipFile(zip_path, 'r') as f:
             f.extractall(here)
 
-        print 'Creating new virtual environment'
+        print('Creating new virtual environment')
         cmd_args = [sys.executable, script_path, target]
 
         if python_bin:
@@ -93,7 +93,7 @@ def update_configfile(source, target, replacements):
 
     with open(source) as config:
         for line in config:
-            for source_string, target_string in replacements.iteritems():
+            for source_string, target_string in replacements.items():
                 if target_string:
                     line = line.replace(source_string, target_string)
             lines.append(line)
@@ -153,7 +153,7 @@ def main():
 
     # Activate tps environment
     tps_env = os.path.join(target, activate_env)
-    execfile(tps_env, dict(__file__=tps_env))
+    exec(compile(open(tps_env, "rb").read(), tps_env, 'exec'), dict(__file__=tps_env))
 
     # Install TPS in environment
     subprocess.check_call([os.path.join(target, python_env),
@@ -182,13 +182,13 @@ def main():
                       '__SYNC_ACCOUNT_PASSPHRASE__': options.sync_passphrase})
 
     if not (options.username and options.password):
-        print '\nFirefox Account credentials not specified.'
+        print('\nFirefox Account credentials not specified.')
     if not (options.sync_username and options.sync_password and options.passphrase):
-        print '\nFirefox Sync account credentials not specified.'
+        print('\nFirefox Sync account credentials not specified.')
 
     # Print the user instructions
-    print usage_message.format(TARGET=target,
-                               BIN_NAME=bin_name)
+    print(usage_message.format(TARGET=target,
+                               BIN_NAME=bin_name))
 
 if __name__ == "__main__":
     main()

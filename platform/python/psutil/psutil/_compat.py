@@ -17,17 +17,17 @@ PY3 = sys.version_info[0] == 3
 if PY3:
     long = int
     xrange = range
-    unicode = str
+    str = str
 
     def u(s):
         return s
 else:
-    long = long
+    long = int
     xrange = xrange
-    unicode = unicode
+    str = str
 
     def u(s):
-        return unicode(s, "unicode_escape")
+        return str(s, "unicode_escape")
 
 
 # removed in 3.0, reintroduced in 3.2

@@ -37,9 +37,9 @@ proto_map = {
 
 def main():
     templ = "%-5s %-30s %-30s %-13s %-6s %s"
-    print(templ % (
+    print((templ % (
         "Proto", "Local address", "Remote address", "Status", "PID",
-        "Program name"))
+        "Program name")))
     proc_names = {}
     for p in psutil.process_iter():
         try:
@@ -51,14 +51,14 @@ def main():
         raddr = ""
         if c.raddr:
             raddr = "%s:%s" % (c.raddr)
-        print(templ % (
+        print((templ % (
             proto_map[(c.family, c.type)],
             laddr,
             raddr or AD,
             c.status,
             c.pid or AD,
             proc_names.get(c.pid, '?')[:15],
-        ))
+        )))
 
 if __name__ == '__main__':
     main()

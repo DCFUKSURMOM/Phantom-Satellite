@@ -52,7 +52,7 @@ def main(argv):
 
   # Get the initial default capture device, to restore later.
   command = ['pacmd', 'list-sources']
-  print ' '.join(command)
+  print(' '.join(command))
   proc = subprocess.Popen(command, stdout=subprocess.PIPE)
   output = proc.communicate()[0]
   if proc.returncode != 0:
@@ -67,14 +67,14 @@ def main(argv):
   # We pass the render device for VoiceEngine to select because (for unknown
   # reasons) the virtual device is sometimes not used when the default.
   command = ['pacmd', 'set-default-source', options.play_sink + '.monitor']
-  print ' '.join(command)
+  print(' '.join(command))
   retcode = subprocess.call(command, stdout=subprocess.PIPE)
   if retcode != 0:
     return retcode
 
   command = [options.harness, '--render=' + options.rec_sink,
       '--codec=' + options.codec, '--rate=' + options.rate]
-  print ' '.join(command)
+  print(' '.join(command))
   voe_proc = subprocess.Popen(command)
 
   # If recording starts before there is data available, pacat sometimes
@@ -87,12 +87,12 @@ def main(argv):
       '--channels=' + options.channels, '--raw']
   command = (['pacat', '-p', '-d', options.play_sink] + format_args +
       [options.input])
-  print ' '.join(command)
+  print(' '.join(command))
   play_proc = subprocess.Popen(command)
 
   command = (['pacat', '-r', '-d', options.rec_sink + '.monitor'] +
       format_args + [options.output])
-  print ' '.join(command)
+  print(' '.join(command))
   record_proc = subprocess.Popen(command)
 
   retcode = play_proc.wait()
@@ -104,14 +104,14 @@ def main(argv):
 
   # Restore the initial default capture device.
   command = ['pacmd', 'set-default-source', default_source]
-  print ' '.join(command)
+  print(' '.join(command))
   retcode = subprocess.call(command, stdout=subprocess.PIPE)
   if retcode != 0:
     return retcode
 
   if options.compare and options.regexp:
     command = shlex.split(options.compare) + [options.input, options.output]
-    print ' '.join(command)
+    print(' '.join(command))
     proc = subprocess.Popen(command, stdout=subprocess.PIPE)
     output = proc.communicate()[0]
     if proc.returncode != 0:

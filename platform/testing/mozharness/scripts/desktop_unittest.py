@@ -451,7 +451,7 @@ class DesktopUnittest(TestingMixin, MercurialScript, BlobUploadMixin, MozbaseMix
                 # suites gets a dict of everything from all_suites where a key
                 # is also in specified_suites
                 suites = dict((key, all_suites.get(key)) for key in
-                              specified_suites if key in all_suites.keys())
+                              specified_suites if key in list(all_suites.keys()))
         else:
             if c.get('run_all_suites'):  # needed if you dont specify any suites
                 suites = all_suites
@@ -536,7 +536,7 @@ class DesktopUnittest(TestingMixin, MercurialScript, BlobUploadMixin, MozbaseMix
         extract_dirs = None
         if c['specific_tests_zip_dirs']:
             extract_dirs = list(c['minimum_tests_zip_dirs'])
-            for category in c['specific_tests_zip_dirs'].keys():
+            for category in list(c['specific_tests_zip_dirs'].keys()):
                 if c['run_all_suites'] or self._query_specified_suites(category) \
                         or 'run-tests' not in self.actions:
                     extract_dirs.extend(c['specific_tests_zip_dirs'][category])

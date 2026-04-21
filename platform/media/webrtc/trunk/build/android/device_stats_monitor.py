@@ -34,10 +34,10 @@ def main(argv):
   monitor = device_stats_monitor.DeviceStatsMonitor(
       android_commands.AndroidCommands(), options.hz, options.build_type)
   monitor.Start()
-  print 'Waiting for %d seconds while profiling.' % options.duration
+  print('Waiting for %d seconds while profiling.' % options.duration)
   time.sleep(options.duration)
   url = monitor.StopAndCollect(options.outfile)
-  print 'View results in browser at %s' % url
+  print('View results in browser at %s' % url)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

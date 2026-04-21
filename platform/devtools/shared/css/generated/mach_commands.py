@@ -97,4 +97,4 @@ class MachCommands(MachCommandBase):
         with open(destination_path, 'wb') as destination:
             destination.write(preamble + contents)
 
-        print('The database was successfully generated at ' + destination_path)
+        print(('The database was successfully generated at ' + destination_path))

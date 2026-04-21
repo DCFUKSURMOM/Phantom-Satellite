@@ -26,14 +26,14 @@ class _ListTests(_StopAction):
         print('================\n')
         test_class_names = [
             (test_class.name(), test_class.description())
-            for test_class in test.test_dict().itervalues()
+            for test_class in test.test_dict().values()
         ]
         test_class_names.sort()
         for name, description in test_class_names:
             print(name)
-            print('-'*len(name))
+            print(('-'*len(name)))
             print(description)
-            print  # Appends a single blank line to the end
+            print()  # Appends a single blank line to the end
         parser.exit()
 
 
@@ -45,8 +45,8 @@ class _ListSuite(_StopAction):
         max_suite_name = max([len(s) for s in conf])
         pattern = " %%-%ds (%%s)" % max_suite_name
         for name in conf:
-            print(pattern % (name, ':'.join(conf[name]['tests'])))
-        print
+            print((pattern % (name, ':'.join(conf[name]['tests']))))
+        print()
         parser.exit()
 
 

@@ -10,8 +10,8 @@ import sys
 
 import psutil
 
-from distutils.util import strtobool
-from distutils.version import LooseVersion
+from mozbuild.util import strtobool
+from mozbuild.version import RichVersion
 import mozpack.path as mozpath
 
 # Minimum recommended logical processors in system.
@@ -83,7 +83,7 @@ class Doctor(object):
         valid = False
         while not valid and limit > 0:
             try:
-                choice = strtobool(raw_input(prompt + '[Y/N]\n'))
+                choice = strtobool(input(prompt + '[Y/N]\n'))
                 valid = True
             except ValueError:
                 print("ERROR! Please enter a valid option!")
@@ -103,11 +103,11 @@ class Doctor(object):
             if status == 'SKIPPED':
                 continue
             self.results.append(result)
-            print('%s...\t%s\n' % (
+            print(('%s...\t%s\n' % (
                    result.get('desc', ''),
                    status
                 )
-            ).expandtabs(40)
+            ).expandtabs(40))
 
     @property
     def platform(self):
@@ -212,7 +212,7 @@ class Doctor(object):
                         fsutil_output = subprocess.check_output(command)
                         status = 'GOOD, FIXED'
                         desc = 'lastaccess disabled systemwide'
-                    except subprocess.CalledProcessError, e:
+                    except subprocess.CalledProcessError as e:
                         desc = 'lastaccess enabled systemwide'
                         if e.output.find('denied') != -1:
                             status = 'BAD, FIX DENIED'
@@ -279,7 +279,7 @@ class Doctor(object):
                 version = fh.readline()
             if not version:
                 raise ValueError()
-            if LooseVersion(version) < LooseVersion(LATEST_MOZILLABUILD_VERSION):
+            if RichVersion(version) < RichVersion(LATEST_MOZILLABUILD_VERSION):
                 status = 'BAD'
                 desc = 'MozillaBuild %s in use, <%s' % (
                     version, LATEST_MOZILLABUILD_VERSION

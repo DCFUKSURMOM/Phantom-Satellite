@@ -43,7 +43,7 @@ class SETA(object):
                              kwargs={'timeout': 5, 'headers': headers})
             task_list = json.loads(response.content).get('jobtypes', '')
             if len(task_list) > 0:
-                low_value_tasks = task_list.values()[0]
+                low_value_tasks = list(task_list.values())[0]
 
             # Bug 1315145, disable SETA for tier-1 platforms until backfill is implemented.
             low_value_tasks = [x for x in low_value_tasks if x.find('debug') == -1]

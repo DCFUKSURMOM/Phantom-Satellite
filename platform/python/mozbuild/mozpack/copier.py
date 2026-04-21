@@ -109,7 +109,7 @@ class FileRegistry(object):
         '''
         Return all paths stored in the container, in the order they were added.
         '''
-        return self._files.keys()
+        return list(self._files.keys())
 
     def __len__(self):
         '''
@@ -142,7 +142,7 @@ class FileRegistry(object):
             for path, file in registry:
                 (...)
         '''
-        return self._files.iteritems()
+        return iter(self._files.items())
 
     def required_directories(self):
         '''
@@ -151,7 +151,7 @@ class FileRegistry(object):
         unspecified (virtual) root directory (and do not include said root
         directory).
         '''
-        return set(k for k, v in self._required_directories.items() if v > 0)
+        return set(k for k, v in list(self._required_directories.items()) if v > 0)
 
 
 class FileRegistrySubtree(object):
@@ -263,7 +263,7 @@ class FileCopier(FileRegistry):
 
         Returns a FileCopyResult that details what changed.
         '''
-        assert isinstance(destination, basestring)
+        assert isinstance(destination, str)
         assert not os.path.exists(destination) or os.path.isdir(destination)
 
         result = FileCopyResult()
@@ -531,7 +531,7 @@ class Jarrer(FileRegistry, BaseFile):
             def exists(self):
                 return self.deflater is not None
 
-        if isinstance(dest, basestring):
+        if isinstance(dest,str):
             dest = Dest(dest)
         assert isinstance(dest, Dest)
 

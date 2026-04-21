@@ -5,7 +5,7 @@
 from __future__ import absolute_import
 
 import re
-from distutils.version import LooseVersion
+from mozbuild.version import RichVersion
 from mozpack.errors import errors
 from collections import OrderedDict
 
@@ -149,14 +149,14 @@ class VersionFlag(object):
         assert(definition.startswith(self.name))
         value = definition[len(self.name):]
         if value.startswith('='):
-            self.values.append(('==', LooseVersion(value[1:])))
+            self.values.append(('==', RichVersion(value[1:])))
         elif len(value) > 1 and value[0] in ['<', '>']:
             if value[1] == '=':
                 if len(value) < 3:
                     return errors.fatal('Malformed flag: %s' % definition)
-                self.values.append((value[0:2], LooseVersion(value[2:])))
+                self.values.append((value[0:2], RichVersion(value[2:])))
             else:
-                self.values.append((value[0], LooseVersion(value[1:])))
+                self.values.append((value[0], RichVersion(value[1:])))
         else:
             return errors.fatal('Malformed flag: %s' % definition)
 
@@ -177,7 +177,7 @@ class VersionFlag(object):
             flag.matches('1.0') returns True
             flag.matches('0.6') returns False
         '''
-        value = LooseVersion(value)
+        value = RichVersion(value)
         if not self.values:
             return True
         for comparison, val in self.values:
@@ -250,7 +250,7 @@ class Flags(OrderedDict):
             flags.match(application='foo', appversion='3.5') returns True
             flags.match(application='foo', appversion='3.0') returns False
         '''
-        for name, value in filter.iteritems():
+        for name, value in filter.items():
             if not name in self:
                 continue
             if not self[name].matches(value):

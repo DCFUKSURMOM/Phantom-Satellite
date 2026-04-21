@@ -1,6 +1,6 @@
 import logging
 
-from structuredlog import StructuredLogger, log_levels
+from .structuredlog import StructuredLogger, log_levels
 
 
 class UnstructuredHandler(logging.Handler):

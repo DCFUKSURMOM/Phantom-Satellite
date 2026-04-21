@@ -49,7 +49,7 @@ def format_exception_only(etype, value):
         if badline is not None:
             if isinstance(badline, bytes):  # python 2 only
                 badline = badline.decode('utf-8', 'replace')
-            lines.append(u'    %s\n' % badline.strip())
+            lines.append('    %s\n' % badline.strip())
             if offset is not None:
                 caretspace = badline.rstrip('\n')[:offset].lstrip()
                 # non-space whitespace (likes tabs) must be kept for alignment
@@ -72,7 +72,7 @@ def _format_final_exc_line(etype, value):
 
 def _some_str(value):
     try:
-        return unicode(value)
+        return str(value)
     except Exception:
         try:
             return str(value)

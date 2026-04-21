@@ -8,7 +8,7 @@ class JsTests(unittest.TestCase):
 
     def assertEqual(self, thing1, thing2):
         if thing1 != thing2:
-            print(repr(thing1), repr(thing2))
+            print((repr(thing1), repr(thing2)))
             raise AssertionError
         return True
     
@@ -244,7 +244,7 @@ var  foo    =  "hey";
     
     def testInputStream(self):
         try:
-            from StringIO import StringIO
+            from io import StringIO
         except ImportError:
             from io import StringIO
             
@@ -260,8 +260,8 @@ var  foo    =  "hey";
         assert output == "function foo(''){}"
     
     def testUnicode(self):
-        instr = u'\u4000 //foo'
-        expected = u'\u4000'
+        instr = '\u4000 //foo'
+        expected = '\u4000'
         output = jsmin.jsmin(instr)
         self.assertEqual(output, expected)
 

@@ -6,6 +6,6 @@ from .cli import *
 from .errors import *
 from .runners import *
 
-import base
-import devices
-import utils
+from . import base
+from . import devices
+from . import utils

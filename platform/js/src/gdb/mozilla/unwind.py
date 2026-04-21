@@ -7,20 +7,6 @@ import re
 import platform
 from mozilla.ExecutableAllocator import jsjitExecutableAllocatorCache, jsjitExecutableAllocator
 
-# For ease of use in Python 2, we use "long" instead of "int"
-# everywhere.
-try:
-    long
-except NameError:
-    long = int
-
-# The Python 3 |map| built-in works lazily, but in Python 2 we need
-# itertools.imap to get this.
-try:
-    from itertools import imap
-except ImportError:
-    imap = map
-
 _have_unwinder = True
 try:
     from gdb.unwinder import Unwinder
@@ -66,7 +52,7 @@ class UnwinderTypeCache(object):
         return self.d[name]
 
     def value(self, name):
-        return long(gdb.parse_and_eval('js::jit::' + name))
+        return int(gdb.parse_and_eval('js::jit::' + name))
 
     def initialize(self):
         self.d = {}
@@ -94,7 +80,7 @@ class UnwinderTypeCache(object):
         self.d['JSScript'] = gdb.lookup_type("JSScript").pointer()
         self.d['Value'] = gdb.lookup_type("JS::Value")
 
-        self.d['SOURCE_SLOT'] = long(gdb.parse_and_eval('js::ScriptSourceObject::SOURCE_SLOT'))
+        self.d['SOURCE_SLOT'] = int(gdb.parse_and_eval('js::ScriptSourceObject::SOURCE_SLOT'))
         self.d['NativeObject'] = gdb.lookup_type("js::NativeObject").pointer()
         self.d['HeapSlot'] = gdb.lookup_type("js::HeapSlot").pointer()
         self.d['ScriptSource'] = gdb.lookup_type("js::ScriptSource").pointer()
@@ -105,7 +91,7 @@ class UnwinderTypeCache(object):
         for field in t.fields():
             # Strip off "js::jit::".
             name = field.name[9:]
-            enumval = long(field.enumval)
+            enumval = int(field.enumval)
             self.d[name] = enumval
             self.frame_enum_names[enumval] = name
             class_type = gdb.lookup_type('js::jit::' + SizeOfFramePrefix[name])
@@ -134,7 +120,7 @@ def parse_proc_maps():
             if name is '' or (name.startswith('[') and name is not '[vdso]'):
                 # Skip entries not corresponding to a file.
                 continue
-            mappings.append((long(start, 16), long(end, 16)))
+            mappings.append((int(start, 16), int(end, 16)))
     return mappings
 
 # A symbol/value pair as expected from gdb frame decorators.
@@ -159,7 +145,7 @@ class JitFrameDecorator(FrameDecorator):
         self.cache = cache
 
     def _decode_jitframe(self, this_frame):
-        calleetoken = long(this_frame['calleeToken_'])
+        calleetoken = int(this_frame['calleeToken_'])
         tag = calleetoken & 3
         calleetoken = calleetoken ^ tag
         function = None
@@ -224,7 +210,7 @@ class JitFrameDecorator(FrameDecorator):
             return FrameDecorator.frame_args(self)
         # Construct and return an iterable of all the arguments.
         result = []
-        num_args = long(this_frame["numActualArgs_"])
+        num_args = int(this_frame["numActualArgs_"])
         # Sometimes we see very large values here, so truncate it to
         # bypass the damage.
         if num_args > 10:
@@ -263,7 +249,7 @@ class SpiderMonkeyFrameFilter(object):
         return JitFrameDecorator(frame, info, self.cache)
 
     def filter(self, frame_iter):
-        return imap(self.maybe_wrap_frame, frame_iter)
+        return map(self.maybe_wrap_frame, frame_iter)
 
 # A frame id class, as specified by the gdb unwinder API.
 class SpiderMonkeyFrameId(object):
@@ -306,7 +292,7 @@ class UnwinderState(object):
     # Otherwise, return None.  This is used by the frame filter to
     # display extra information about the frame.
     def get_frame(self, frame):
-        sp = long(frame.read_register(self.SP_REGISTER))
+        sp = int(frame.read_register(self.SP_REGISTER))
         if sp in self.frame_map:
             return self.frame_map[sp]
         return None
@@ -315,7 +301,7 @@ class UnwinderState(object):
     # queried by |self.get_frame|.  |sp| is the frame's stack pointer,
     # and |name| the frame's type as a string, e.g. "JitFrame_Exit".
     def add_frame(self, sp, name = None, this_frame = None):
-        self.frame_map[long(sp)] = { "name": name, "this_frame": this_frame }
+        self.frame_map[int(sp)] = { "name": name, "this_frame": this_frame }
 
     # See whether |pc| is claimed by some text mapping.  See
     # |parse_proc_maps| for details on how the decision is made.
@@ -362,12 +348,12 @@ class UnwinderState(object):
     # the size of this frame's header; and |frame_type| is an integer
     # representing the previous frame's type.
     def unpack_descriptor(self, common):
-        value = long(common['descriptor_'])
+        value = int(common['descriptor_'])
         local_size = value >> self.typecache.FRAMESIZE_SHIFT
         header_size = ((value >> self.typecache.FRAME_HEADER_SIZE_SHIFT) &
                        self.typecache.FRAME_HEADER_SIZE_MASK)
         header_size = header_size * self.typecache.void_starstar.sizeof
-        frame_type = long(value & self.typecache.FRAMETYPE_MASK)
+        frame_type = int(value & self.typecache.FRAMETYPE_MASK)
         if frame_type == self.typecache.JitFrame_Entry:
             # Trampoline-x64.cpp pushes a JitFrameLayout object, but
             # the stack pointer is actually adjusted as if a
@@ -470,7 +456,7 @@ class UnwinderState(object):
 
         # If the jit does not claim this address, bail.  GDB defers to our
         # unwinder by default, but we don't really want that kind of power.
-        if not self.is_jit_address(long(pc)):
+        if not self.is_jit_address(int(pc)):
             return None
 
         if self.next_sp is not None:

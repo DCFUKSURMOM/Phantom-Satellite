@@ -9,19 +9,19 @@ from compare_locales import util
 
 class ParseLocalesTest(unittest.TestCase):
     def test_empty(self):
-        self.assertEquals(util.parseLocales(''), [])
+        self.assertEqual(util.parseLocales(''), [])
 
     def test_all(self):
-        self.assertEquals(util.parseLocales('''af
+        self.assertEqual(util.parseLocales('''af
 de'''), ['af', 'de'])
 
     def test_shipped(self):
-        self.assertEquals(util.parseLocales('''af
+        self.assertEqual(util.parseLocales('''af
 ja win mac
 de'''), ['af', 'de', 'ja'])
 
     def test_sparse(self):
-        self.assertEquals(util.parseLocales('''
+        self.assertEqual(util.parseLocales('''
 af
 
 de

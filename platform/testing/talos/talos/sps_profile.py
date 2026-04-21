@@ -205,5 +205,5 @@ class SpsProfile(object):
         Clean up temp folders created with the instance creation.
         """
         mozfile.remove(self.option('dir'))
-        for symbol_path in self.symbol_paths.values():
+        for symbol_path in list(self.symbol_paths.values()):
             mozfile.remove(symbol_path)

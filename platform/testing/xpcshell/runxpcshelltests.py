@@ -24,7 +24,7 @@ import traceback
 
 from collections import deque, namedtuple
 from distutils import dir_util
-from distutils.version import LooseVersion
+from mozbuild.version import RichVersion
 from multiprocessing import cpu_count
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE, STDOUT
@@ -81,7 +81,7 @@ from mozrunner.utils import get_stack_fixer_function
 # (U+0000 through U+001F; U+007F; U+0080 through U+009F),
 # except TAB (U+0009), CR (U+000D), LF (U+000A) and backslash (U+005C).
 # A raw string is deliberately not used.
-_cleanup_encoding_re = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f\\\\]')
+_cleanup_encoding_re = re.compile('[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f\\\\]')
 def _cleanup_encoding_repl(m):
     c = m.group(0)
     return '\\\\' if c == '\\' else '\\x{0:02X}'.format(ord(c))
@@ -92,8 +92,8 @@ def cleanup_encoding(s):
        UTF-8, but it may not be *correct* UTF-8.  Return a
        sanitized unicode object."""
     if not isinstance(s, basestring):
-        return unicode(s)
-    if not isinstance(s, unicode):
+        return str(s)
+    if not isinstance(s, str):
         s = s.decode('utf-8', 'replace')
     # Replace all C0 and C1 control characters with \xNN escapes.
     return _cleanup_encoding_re.sub(_cleanup_encoding_repl, s)
@@ -267,8 +267,8 @@ class XPCShellTestThread(Thread):
         self.log.info("%s | current directory: %r" % (name, testdir))
         # Show only those environment variables that are changed from
         # the ambient environment.
-        changedEnv = (set("%s=%s" % i for i in self.env.iteritems())
-                      - set("%s=%s" % i for i in os.environ.iteritems()))
+        changedEnv = (set("%s=%s" % i for i in self.env.items())
+                      - set("%s=%s" % i for i in os.environ.items()))
         self.log.info("%s | environment: %s" % (name, list(changedEnv)))
 
     def killTimeout(self, proc):
@@ -751,7 +751,7 @@ class XPCShellTestThread(Thread):
                 if self.failureManifest:
                     with open(self.failureManifest, 'a') as f:
                         f.write('[%s]\n' % self.test_object['path'])
-                        for k, v in self.test_object.items():
+                        for k, v in list(self.test_object.items()):
                             f.write('%s = %s\n' % (k, v))
 
             else:
@@ -822,8 +822,8 @@ class XPCShellTests(object):
         if os.path.exists(ini_path):
             return TestManifest([ini_path], strict=True)
         else:
-            print >> sys.stderr, ("Failed to find manifest at %s; use --manifest "
-                                  "to set path explicitly." % (ini_path,))
+            print(("Failed to find manifest at %s; use --manifest "
+                                  "to set path explicitly." % (ini_path,)), file=sys.stderr)
             sys.exit(1)
 
     def buildTestList(self, test_tags=None, test_paths=None):
@@ -997,12 +997,12 @@ class XPCShellTests(object):
                 version_str = subprocess.check_output([localPath, "--version"],
                                                       stderr=subprocess.STDOUT)
                 # nodejs prefixes its version strings with "v"
-                version = LooseVersion(version_str.lstrip('v'))
+                version = RichVersion(version_str.lstrip('v'))
                 # Use node only if node version is >=5.0.0 because
                 # node did not support ALPN until this version.
-                if version >= LooseVersion("5.0.0"):
+                if version >= RichVersion("5.0.0"):
                     nodeBin = localPath
-            except (subprocess.CalledProcessError, OSError), e:
+            except (subprocess.CalledProcessError, OSError) as e:
                 self.log.error('Could not retrieve node version: %s' % str(e))
 
         if os.getenv('MOZ_ASSUME_NODE_RUNNING', None):
@@ -1030,7 +1030,7 @@ class XPCShellTests(object):
                             searchObj = re.search( r'HTTP2 server listening on port (.*)', msg, 0)
                             if searchObj:
                               self.env["MOZHTTP2_PORT"] = searchObj.group(1)
-                    except OSError, e:
+                    except OSError as e:
                         # This occurs if the subprocess couldn't be started
                         self.log.error('Could not run %s server: %s' % (name, str(e)))
 
@@ -1043,7 +1043,7 @@ class XPCShellTests(object):
         """
           Shut down our node process, if it exists
         """
-        for name, proc in self.nodeProc.iteritems():
+        for name, proc in self.nodeProc.items():
             self.log.info('Node %s server shutting down ...' % name)
             if proc.poll() is not None:
                 self.log.info('Node server %s already dead %s' % (name, proc.poll()))
@@ -1150,7 +1150,7 @@ class XPCShellTests(object):
                 os.remove(failure_manifest)
                 manifest = rerun_manifest
             else:
-                print >> sys.stderr, "No failures were found to re-run."
+                print("No failures were found to re-run.", file=sys.stderr)
                 sys.exit(1)
 
         if testingModulesDir:
@@ -1219,8 +1219,8 @@ class XPCShellTests(object):
         # an older Python that can't handle Unicode keys in kwargs.
         # All of the keys in question should be ASCII.
         fixedInfo = {}
-        for k, v in self.mozInfo.items():
-            if isinstance(k, unicode):
+        for k, v in list(self.mozInfo.items()):
+            if isinstance(k, str):
                 k = k.encode('ascii')
             fixedInfo[k] = v
         self.mozInfo = fixedInfo
@@ -1483,12 +1483,12 @@ def main():
     log = commandline.setup_logging("XPCShell", options, {"tbpl": sys.stdout})
 
     if options.xpcshell is None:
-        print >> sys.stderr, """Must provide path to xpcshell using --xpcshell"""
+        print("""Must provide path to xpcshell using --xpcshell""", file=sys.stderr)
 
     xpcsh = XPCShellTests(log)
 
     if options.interactive and not options.testPath:
-        print >>sys.stderr, "Error: You must specify a test filename in interactive mode!"
+        print("Error: You must specify a test filename in interactive mode!", file=sys.stderr)
         sys.exit(1)
 
     if not xpcsh.runTests(**vars(options)):

@@ -65,8 +65,8 @@ def get_mac_address(ifname):
             def ord(x):
                 return x
         else:
-            import __builtin__
-            ord = __builtin__.ord
+            import builtins
+            ord = builtins.ord
         return ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]
 
 
@@ -192,7 +192,7 @@ class LinuxSpecificTestCase(unittest.TestCase):
             self.assertNotIn('guest_nice', fields)
 
     def test_net_if_addrs_ips(self):
-        for name, addrs in psutil.net_if_addrs().items():
+        for name, addrs in list(psutil.net_if_addrs().items()):
             for addr in addrs:
                 if addr.family == psutil.AF_LINK:
                     self.assertEqual(addr.address, get_mac_address(name))
@@ -211,7 +211,7 @@ class LinuxSpecificTestCase(unittest.TestCase):
             if re.search("^\d+:", line):
                 found += 1
                 name = line.split(':')[1].strip()
-                self.assertIn(name, nics.keys())
+                self.assertIn(name, list(nics.keys()))
         self.assertEqual(len(nics), found, msg="%s\n---\n%s" % (
             pprint.pformat(nics), out))
 

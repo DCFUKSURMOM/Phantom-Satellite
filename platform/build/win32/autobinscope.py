@@ -23,8 +23,8 @@ BINSCOPE_OUTPUT_LOGFILE = r".\binscope_xml_output.log"
 
 # usage
 if len(sys.argv) < 3:
-  print """usage : autobinscope.by path_to_binary path_to_symbols [log_file_path]"
-		log_file_path is optional, log will be written to .\binscope_xml_output.log by default"""
+  print("""usage : autobinscope.by path_to_binary path_to_symbols [log_file_path]"
+		log_file_path is optional, log will be written to .\binscope_xml_output.log by default""")
   sys.exit(0)
 
 binary_path = sys.argv[1]
@@ -40,7 +40,7 @@ else:
 try:
   binscope_path = os.environ['BINSCOPE']
 except KeyError:
-  print "BINSCOPE environment variable is not set, can't check DEP/ASLR etc. status."
+  print("BINSCOPE environment variable is not set, can't check DEP/ASLR etc. status.")
   sys.exit(0)
   
 try:    
@@ -51,13 +51,15 @@ try:
     "/c", "CompilerVersionCheck", "/c", "SafeSEHCheck", "/c", "SNCheck",
     "/c", "DBCheck"], stdout=subprocess.PIPE)
 
-except WindowsError, (errno, strerror): 
+except OSError as e: 
+  errno = e.errno
+  strerror = e.strerror or str(e)
   if errno != 2 and errno != 3:
-    print "Unexpected error ! \nError " + str(errno) + " : " + strerror + "\nExiting !\n"
+    print("Unexpected error ! \nError " + str(errno) + " : " + strerror + "\nExiting !\n")
     sys.exit(0)
   else:
-    print "Could not locate binscope at location : %s\n" % binscope_path
-    print "Binscope wasn't installed or the BINSCOPE env variable wasn't set correctly, skipping this check and exiting..."
+    print("Could not locate binscope at location : %s\n" % binscope_path)
+    print("Binscope wasn't installed or the BINSCOPE env variable wasn't set correctly, skipping this check and exiting...")
     sys.exit(0)
 
 proc.wait()
@@ -66,10 +68,10 @@ output = proc.communicate()[0]
 
 # is this a PASS or a FAIL ? 
 if proc.returncode != 0:
-  print "Error count: %d" % proc.returncode
-  print "TEST-UNEXPECTED-FAIL | autobinscope.py | %s is missing a needed Windows protection, such as /GS or ASLR" % binary_path
+  print("Error count: %d" % proc.returncode)
+  print("TEST-UNEXPECTED-FAIL | autobinscope.py | %s is missing a needed Windows protection, such as /GS or ASLR" % binary_path)
   logfile = open(log_file_path, "r")
   for line in logfile:
-    print(line),
+    print((line), end=' ')
 else:
-  print "TEST-PASS | autobinscope.py | %s succeeded" % binary_path
+  print("TEST-PASS | autobinscope.py | %s succeeded" % binary_path)

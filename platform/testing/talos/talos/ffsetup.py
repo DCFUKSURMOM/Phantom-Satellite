@@ -61,7 +61,7 @@ class FFSetup(object):
 
     def _init_env(self):
         self.env = dict(os.environ)
-        for k, v in self.browser_config['env'].iteritems():
+        for k, v in self.browser_config['env'].items():
             self.env[k] = str(v)
         self.env['MOZ_CRASHREPORTER_NO_REPORT'] = '1'
         # for winxp e10s logging:
@@ -79,14 +79,14 @@ class FFSetup(object):
         if self.test_config.get('preferences'):
             test_prefs = dict(
                 [(i, utils.parse_pref(j))
-                 for i, j in self.test_config['preferences'].items()]
+                 for i, j in list(self.test_config['preferences'].items())]
             )
             preferences.update(test_prefs)
         # interpolate webserver value in prefs
         webserver = self.browser_config['webserver']
         if '://' not in webserver:
             webserver = 'http://' + webserver
-        for name, value in preferences.items():
+        for name, value in list(preferences.items()):
             if type(value) is str:
                 value = utils.interpolate(value, webserver=webserver)
                 preferences[name] = value

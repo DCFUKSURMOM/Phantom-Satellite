@@ -93,7 +93,7 @@ def config_status(topobjdir='.', topsrcdir='.', defines=None,
     if 'WRITE_MOZINFO' in os.environ:
         write_mozinfo(os.path.join(topobjdir, 'mozinfo.json'), env, os.environ)
 
-    cpu_start = time.clock()
+    cpu_start = time.process_time()
     time_start = time.time()
 
     # Make appropriate backend instances, defaulting to RecursiveMakeBackend,
@@ -159,13 +159,19 @@ def config_status(topobjdir='.', topsrcdir='.', defines=None,
     for the_backend in selected_backends:
         the_backend.consume(definitions)
 
+    for b in selected_backends:
+        marker_name = 'backend.%s' % b.__class__.__name__
+        marker_path = os.path.join(topobjdir, marker_name)
+        with open(marker_path, 'wb') as fh:
+            fh.write(b'')
+
     execution_time = 0.0
     for obj in chain((reader, emitter), selected_backends):
         summary = obj.summary()
         print(summary, file=sys.stderr)
         execution_time += summary.execution_time
 
-    cpu_time = time.clock() - cpu_start
+    cpu_time = time.process_time() - cpu_start
     wall_time = time.time() - time_start
     efficiency = cpu_time / wall_time if wall_time else 100
     untracked = wall_time - execution_time

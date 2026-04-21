@@ -457,10 +457,10 @@ def HandleFiles(variables):
     for i in range(len(dirs)):
       formatters = "%s   formatter.format(better, %d);" % (formatters, i+1)
 
-  print FillForm(page_template, vars())
+  print(FillForm(page_template, vars()))
   return
 
 if len(sys.argv) < 3:
-  print HandleFiles.__doc__
+  print(HandleFiles.__doc__)
 else:
   HandleFiles(sys.argv)

@@ -31,17 +31,17 @@ class Rabbit:
                 key = '\x00' * (16 - len(key)) + key
             # if len(key) > 16 bytes only the first 16 will be considered
             k = [ord(key[i + 1]) | (ord(key[i]) << 8)
-                 for i in xrange(14, -1, -2)]
+                 for i in range(14, -1, -2)]
         else:
             # k[0] = least significant 16 bits
             # k[7] = most significant 16 bits
-            k = [(key >> i) & 0xFFFF for i in xrange(0, 128, 16)]
+            k = [(key >> i) & 0xFFFF for i in range(0, 128, 16)]
             
         # State and counter initialization
         x = [(k[(j + 5) % 8] << 16) | k[(j + 4) % 8] if j & 1 else
-             (k[(j + 1) % 8] << 16) | k[j] for j in xrange(8)]
+             (k[(j + 1) % 8] << 16) | k[j] for j in range(8)]
         c = [(k[j] << 16) | k[(j + 1) % 8] if j & 1 else
-             (k[(j + 4) % 8] << 16) | k[(j + 5) % 8] for j in xrange(8)]
+             (k[(j + 4) % 8] << 16) | k[(j + 5) % 8] for j in range(8)]
         
         self.x = x
         self.c = c
@@ -49,12 +49,12 @@ class Rabbit:
         self._buf = 0           # output buffer
         self._buf_bytes = 0     # fill level of buffer
         
-        self.next()
-        self.next()
-        self.next()
-        self.next()
+        next(self)
+        next(self)
+        next(self)
+        next(self)
 
-        for j in xrange(8):
+        for j in range(8):
             c[j] ^= x[(j + 4) % 8]
         
         self.start_x = self.x[:]    # backup initial key for IV/reset
@@ -99,13 +99,13 @@ class Rabbit:
         c[6] ^= i2
         c[7] ^= i3
 
-        self.next()
-        self.next()
-        self.next()
-        self.next()
+        next(self)
+        next(self)
+        next(self)
+        next(self)
         
 
-    def next(self):
+    def __next__(self):
         '''Proceed to the next internal state'''
         
         c = self.c
@@ -130,7 +130,7 @@ class Rabbit:
         c[7] = t % WORDSIZE
         b = t // WORDSIZE
         
-        g = [_nsf(x[j], c[j]) for j in xrange(8)]
+        g = [_nsf(x[j], c[j]) for j in range(8)]
         
         x[0] = (g[0] + rot16(g[7]) + rot16(g[6])) % WORDSIZE
         x[1] = (g[1] + rot08(g[0]) + g[7]) % WORDSIZE
@@ -165,10 +165,10 @@ class Rabbit:
         res = ""
         b = self._buf
         j = self._buf_bytes
-        next = self.next
+        next = self.__next__
         derive = self.derive
         
-        for i in xrange(n):
+        for i in range(n):
             if not j:
                 j = 16
                 next()
@@ -188,7 +188,7 @@ class Rabbit:
         res = ""
         b = self._buf
         j = self._buf_bytes
-        next = self.next
+        next = self.__next__
         derive = self.derive
 
         for c in data:

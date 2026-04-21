@@ -12,7 +12,7 @@ from marionette_driver import By, expected, Wait
 from marionette_driver.errors import TimeoutException, NoSuchElementException
 from marionette_harness import Marionette
 
-from video_puppeteer import VideoPuppeteer, VideoException
+from .video_puppeteer import VideoPuppeteer, VideoException
 from external_media_tests.utils import verbose_until
 
 
@@ -75,7 +75,7 @@ class YouTubePuppeteer(VideoPuppeteer):
         'BUFFERING': 3,
         'CUED': 5
     }
-    _yt_player_state_name = {v: k for k, v in _yt_player_state.items()}
+    _yt_player_state_name = {v: k for k, v in list(_yt_player_state.items())}
     _time_pattern = re.compile('(?P<minute>\d+):(?P<second>\d+)')
 
     def __init__(self, marionette, url, autostart=True, **kwargs):
@@ -386,11 +386,11 @@ class YouTubePuppeteer(VideoPuppeteer):
         # Get video state
         self._last_seen_video_state = (
             self._create_video_state_info(**dict(
-                zip(video_keys, values[:len(video_keys)]))))
+                list(zip(video_keys, values[:len(video_keys)])))))
         # Get player state
         self._last_seen_player_state = (
             self._create_player_state_info(**dict(
-                zip(player_keys, values[-len(player_keys):]))))
+                list(zip(player_keys, values[-len(player_keys):])))))
 
     def mse_enabled(self):
         """
@@ -489,7 +489,7 @@ class YouTubePuppeteer(VideoPuppeteer):
         for field in self._last_seen_player_state._fields:
             # For compatibility with different test environments we force ascii
             field_ascii = (
-                unicode(getattr(self._last_seen_player_state, field))
+                str(getattr(self._last_seen_player_state, field))
                         .encode('ascii', 'replace'))
             messages += [('\t{}: {}'.format(field, field_ascii))]
         messages += '}'

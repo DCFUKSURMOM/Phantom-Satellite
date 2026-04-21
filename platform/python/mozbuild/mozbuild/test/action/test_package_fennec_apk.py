@@ -41,14 +41,14 @@ class TestPackageFennecAPK(unittest.TestCase):
                          root_files=[data('root_file.txt')])
 
         # omni.ja ends up in assets/omni.ja.
-        self.assertEquals(jarrer['assets/omni.ja'].open().read().strip(), 'omni.ja')
+        self.assertEqual(jarrer['assets/omni.ja'].open().read().strip(), 'omni.ja')
 
         # Everything else is in place.
         for name in ('classes.dex',
                      'assets/asset.txt',
                      'lib/lib.txt',
                      'root_file.txt'):
-            self.assertEquals(jarrer[name].open().read().strip(), name)
+            self.assertEqual(jarrer[name].open().read().strip(), name)
 
     def test_inputs(self):
         # Language repacks take updated resources from an ap_ and pack them
@@ -57,8 +57,8 @@ class TestPackageFennecAPK(unittest.TestCase):
         # overrides the first.
         jarrer = package(inputs=[data('input2.apk'), data('input1.ap_')])
 
-        files1 = JarReader(data('input1.ap_')).entries.keys()
-        files2 = JarReader(data('input2.apk')).entries.keys()
+        files1 = list(JarReader(data('input1.ap_')).entries.keys())
+        files2 = list(JarReader(data('input2.apk')).entries.keys())
         for name in files2:
             self.assertTrue(name in files1 or
                             jarrer[name].open().read().startswith('input2/'))

@@ -22,25 +22,30 @@ import logging
 import zlib
 import errno
 import glob
-import distutils.sysconfig
+import sysconfig
 import struct
 import subprocess
 import pkgutil
 import tempfile
 import textwrap
-from distutils.util import strtobool
 from os.path import join
 
 try:
-    import ConfigParser
+    import configparser
 except ImportError:
     import configparser as ConfigParser
+
+# Thanks to distutils.strtobool being gone, this hack is needed.
+
+here = os.path.dirname(__file__)
+sys.path.append(os.path.join(here, "..", "mozbuild", "mozbuild"))
+from util import strtobool
 
 __version__ = "15.0.1"
 virtualenv_version = __version__  # legacy
 
 if sys.version_info < (2, 6):
-    print('ERROR: %s' % sys.exc_info()[1])
+    print(('ERROR: %s' % sys.exc_info()[1]))
     print('ERROR: this script requires Python 2.6 or greater.')
     sys.exit(101)
 
@@ -86,7 +91,7 @@ else:
     try:
         import winreg
     except ImportError:
-        import _winreg as winreg
+        import winreg as winreg
 
     def get_installed_pythons():
         try:
@@ -156,13 +161,27 @@ elif majver == 3:
         REQUIRED_FILES.append(platdir)
         REQUIRED_MODULES.extend([
         	'base64', '_dummy_thread', 'hashlib', 'hmac',
-        	'imp', 'importlib', 'rlcompleter'
+        	'imp', 'importlib', 'rlcompleter', 'subprocess',
+                'traceback', 'threading'
         ])
     if minver >= 4:
         REQUIRED_MODULES.extend([
             'operator',
             '_collections_abc',
             '_bootlocale',
+        ])
+    if minver >= 5:
+        REQUIRED_MODULES.extend([
+            'signal',
+            'enum',
+        ])
+    if minver >= 6:
+        REQUIRED_MODULES.extend([
+            'selectors'
+        ])
+    if minver >= 9:
+        REQUIRED_MODULES.extend([
+            'contextlib',
         ])
 
 if is_pypy:
@@ -433,7 +452,7 @@ class ConfigOptionParser(optparse.OptionParser):
     configuration files and environmental variables
     """
     def __init__(self, *args, **kwargs):
-        self.config = ConfigParser.RawConfigParser()
+        self.config = configparser.RawConfigParser()
         self.files = self.get_config_files()
         self.config.read(self.files)
         optparse.OptionParser.__init__(self, *args, **kwargs)
@@ -457,7 +476,7 @@ class ConfigOptionParser(optparse.OptionParser):
         # 2. environmental variables
         config.update(dict(self.get_environ_vars()))
         # Then set the options with those values
-        for key, val in config.items():
+        for key, val in list(config.items()):
             key = key.replace('_', '-')
             if not key.startswith('--'):
                 key = '--%s' % key  # only prefer long opts
@@ -479,7 +498,7 @@ class ConfigOptionParser(optparse.OptionParser):
                     val = option.convert_value(key, val)
                 except optparse.OptionValueError:
                     e = sys.exc_info()[1]
-                    print("An error occurred during configuration: %s" % e)
+                    print(("An error occurred during configuration: %s" % e))
                     sys.exit(3)
                 defaults[option.dest] = val
         return defaults
@@ -496,7 +515,7 @@ class ConfigOptionParser(optparse.OptionParser):
         """
         Returns a generator with all environmental vars with prefix VIRTUALENV
         """
-        for key, val in os.environ.items():
+        for key, val in list(os.environ.items()):
             if key.startswith(prefix):
                 yield (key.replace(prefix, '').lower(), val)
 
@@ -679,8 +698,8 @@ def main():
         parser.print_help()
         sys.exit(2)
     if len(args) > 1:
-        print('There must be only one argument: DEST_DIR (you gave %s)' % (
-            ' '.join(args)))
+        print(('There must be only one argument: DEST_DIR (you gave %s)' % (
+            ' '.join(args))))
         parser.print_help()
         sys.exit(2)
 
@@ -712,7 +731,7 @@ def main():
                        search_dirs=options.search_dirs,
                        download=options.download,
                        no_setuptools=options.no_setuptools,
-                       no_pip=options.no_pip,
+                       no_pip=True,
                        no_wheel=options.no_wheel,
                        symlink=options.symlink and hasattr(os, 'symlink')) # MOZ: Make sure we don't use symlink when we don't have it
     if 'after_install' in globals():
@@ -840,14 +859,14 @@ def install_wheel(project_names, py_executable, search_dirs=None,
     if search_dirs is None:
         search_dirs = file_search_dirs()
 
-    wheels = find_wheels(['setuptools', 'pip'], search_dirs)
+    wheels = find_wheels(['setuptools'], search_dirs)
     pythonpath = os.pathsep.join(wheels)
 
     # PIP_FIND_LINKS uses space as the path separator and thus cannot have paths
     # with spaces in them. Convert any of those to local file:// URL form.
     try:
-        from urlparse import urljoin
-        from urllib import pathname2url
+        from urllib.parse import urljoin
+        from urllib.request import pathname2url
     except ImportError:
         from urllib.parse import urljoin
         from urllib.request import pathname2url
@@ -863,26 +882,13 @@ def install_wheel(project_names, py_executable, search_dirs=None,
         import tempfile
         import os
 
-        import pip
+        cert_file = None
 
-        cert_data = pkgutil.get_data("pip._vendor.requests", "cacert.pem")
-        if cert_data is not None:
-            cert_file = tempfile.NamedTemporaryFile(delete=False)
-            cert_file.write(cert_data)
-            cert_file.close()
-        else:
-            cert_file = None
-
-        try:
-            args = ["install", "--ignore-installed"]
-            if cert_file is not None:
-                args += ["--cert", cert_file.name]
-            args += sys.argv[1:]
-
-            sys.exit(pip.main(args))
-        finally:
-            if cert_file is not None:
-                os.remove(cert_file.name)
+        args = ["install", "--ignore-installed"]
+        if cert_file is not None:
+            args += ["--cert", cert_file.name]
+        args += sys.argv[1:]
+        sys.exit()
     """).encode("utf8")
 
     cmd = [py_executable, '-'] + project_names
@@ -929,15 +935,12 @@ def create_environment(home_dir, site_packages=False, clear=False,
         home_dir, lib_dir, inc_dir, bin_dir,
         site_packages=site_packages, clear=clear, symlink=symlink))
 
-    install_distutils(home_dir)
+    #install_distutils(home_dir)
 
     to_install = []
 
     if not no_setuptools:
         to_install.append('setuptools')
-
-    if not no_pip:
-        to_install.append('pip')
 
     if not no_wheel:
         to_install.append('wheel')
@@ -974,12 +977,12 @@ def path_locations(home_dir):
             size = max(len(home_dir)+1, 256)
             buf = ctypes.create_unicode_buffer(size)
             try:
-                u = unicode
+                u = str
             except NameError:
                 u = str
             ret = GetShortPathName(u(home_dir), buf, size)
             if not ret:
-                print('Error: the path "%s" has a space in it' % home_dir)
+                print(('Error: the path "%s" has a space in it' % home_dir))
                 print('We could not determine the short pathname for it.')
                 print('Exiting.')
                 sys.exit(3)
@@ -1040,37 +1043,105 @@ def change_prefix(filename, dst_prefix):
     assert False, "Filename %s does not start with any of these prefixes: %s" % \
         (filename, prefixes)
 
+def find_module_info(modname):
+    for finder in sys.meta_path:
+        try:
+            loader = finder.find_module(modname)
+        except Exception:
+            continue
+
+        if loader is None:
+            continue
+
+        # get filename
+        try:
+            filename = loader.get_filename(modname)
+        except Exception:
+            continue
+
+        # detect package
+        is_pkg = False
+        try:
+            is_pkg = loader.is_package(modname)
+        except Exception:
+            pass
+
+        return filename, is_pkg
+
+    raise ImportError("Cannot find module %s" % modname)
+
 def copy_required_modules(dst_prefix, symlink):
-    import imp
+    import importlib
+    import importlib.machinery
+    from shutil import copytree
 
     for modname in REQUIRED_MODULES:
         if modname in sys.builtin_module_names:
             logger.info("Ignoring built-in bootstrap module: %s" % modname)
             continue
-        try:
-            f, filename, _ = imp.find_module(modname)
-        except ImportError:
+
+        filename = None
+        is_pkg = False
+
+        for finder in sys.meta_path:
+            try:
+                loader = finder.find_module(modname)
+            except Exception:
+                continue
+
+            if loader is None:
+                continue
+
+            # get filename (__init__.py for packages)
+            try:
+                filename = loader.get_filename(modname)
+            except Exception:
+                continue
+
+            # detect package
+            try:
+                is_pkg = loader.is_package(modname)
+            except Exception:
+                is_pkg = False
+
+            break
+
+        if filename is None:
             logger.info("Cannot import bootstrap module: %s" % modname)
-        else:
-            if f is not None:
-                f.close()
-            # special-case custom readline.so on OS X, but not for pypy:
-            if modname == 'readline' and sys.platform == 'darwin' and not (
-                    is_pypy or filename.endswith(join('lib-dynload', 'readline.so'))):
-                dst_filename = join(dst_prefix, 'lib', 'python%s' % sys.version[:3], 'readline.so')
-            elif modname == 'readline' and sys.platform == 'win32':
-                # special-case for Windows, where readline is not a
-                # standard module, though it may have been installed in
-                # site-packages by a third-party package
-                pass
-            else:
-                dst_filename = change_prefix(filename, dst_prefix)
+            continue
+
+        # special-case custom readline.so on OS X, but not for pypy:
+        if (modname == 'readline' and sys.platform == 'darwin' and
+            not (is_pypy or filename.endswith(join('lib-dynload', 'readline.so')))):
+            dst_filename = join(dst_prefix, 'lib',
+                                'python%s' % sys.version[:3],
+                                'readline.so')
+
+            # copy single file
             copyfile(filename, dst_filename, symlink)
+            continue
+
+        if modname == 'readline' and sys.platform == 'win32':
+            # special-case for Windows, where readline is not a
+            # standard module, though it may have been installed in
+            # site-packages by a third-party package
+            continue
+
+        if is_pkg:
+            # copy entire package directory
+            pkg_dir = os.path.dirname(filename)
+            dst_dir = change_prefix(pkg_dir, dst_prefix)
+            copytree(pkg_dir, dst_dir, symlink)
+        else:
+            # copy single module file
+            dst_filename = change_prefix(filename, dst_prefix)
+            copyfile(filename, dst_filename, symlink)
+
+            # also copy .py if we got a .pyc
             if filename.endswith('.pyc'):
                 pyfile = filename[:-1]
                 if os.path.exists(pyfile):
                     copyfile(pyfile, dst_filename[:-1], symlink)
-
 
 def subst_path(prefix_path, prefix, home_dir):
     prefix_path = os.path.normpath(prefix_path)
@@ -1157,10 +1228,12 @@ def install_python(home_dir, lib_dir, inc_dir, bin_dir, site_packages, clear, sy
     else:
         logger.debug('No include dir %s' % stdinc_dir)
 
-    platinc_dir = distutils.sysconfig.get_python_inc(plat_specific=1)
+    platinc_dir = sysconfig.get_path("platinclude")
     if platinc_dir != stdinc_dir:
-        platinc_dest = distutils.sysconfig.get_python_inc(
-            plat_specific=1, prefix=home_dir)
+        platinc_dest = sysconfig.get_path(
+            "platinclude",
+            vars={"base": home_dir, "platbase": home_dir}
+        )
         if platinc_dir == platinc_dest:
             # Do platinc_dest manually due to a CPython bug;
             # not http://bugs.python.org/issue3386 but a close cousin
@@ -1468,7 +1541,7 @@ def install_files(home_dir, bin_dir, prompt, files):
     if hasattr(home_dir, 'decode'):
         home_dir = home_dir.decode(sys.getfilesystemencoding())
     vname = os.path.basename(home_dir)
-    for name, content in files.items():
+    for name, content in list(files.items()):
         content = content.replace('__VIRTUAL_PROMPT__', prompt or '')
         content = content.replace('__VIRTUAL_WINPROMPT__', prompt or '(%s)' % vname)
         content = content.replace('__VIRTUAL_ENV__', home_dir)
@@ -1482,7 +1555,7 @@ def install_python_config(home_dir, bin_dir, prompt=None):
     else:
         files = {'python-config': PYTHON_CONFIG}
     install_files(home_dir, bin_dir, prompt, files)
-    for name, content in files.items():
+    for name, content in list(files.items()):
         make_exe(os.path.join(bin_dir, name))
 
 def install_distutils(home_dir):
@@ -1496,6 +1569,11 @@ def install_distutils(home_dir):
     writefile(os.path.join(distutils_path, '__init__.py'), DISTUTILS_INIT)
     writefile(os.path.join(distutils_path, 'distutils.cfg'), DISTUTILS_CFG, overwrite=False)
 
+try:
+    get_local_scheme = sysconfig.get_default_scheme
+except AttributeError:
+    get_local_scheme = sysconfig._get_default_scheme
+
 def fix_local_scheme(home_dir, symlink=True):
     """
     Platforms that use the "posix_local" install scheme (like Ubuntu with
@@ -1506,7 +1584,7 @@ def fix_local_scheme(home_dir, symlink=True):
     except ImportError:
         pass
     else:
-        if sysconfig._get_default_scheme() == 'posix_local':
+        if get_local_scheme() == 'posix_local':
             local_path = os.path.join(home_dir, 'local')
             if not os.path.exists(local_path):
                 os.mkdir(local_path)
@@ -1528,7 +1606,7 @@ def fix_lib64(lib_dir, symlink=True):
         logger.debug('PyPy detected, skipping lib64 symlinking')
         return
     # Check we have a lib64 library path
-    if not [p for p in distutils.sysconfig.get_config_vars().values()
+    if not [p for p in list(sysconfig.get_config_vars().values())
             if isinstance(p, basestring) and 'lib64' in p]:
         return
 

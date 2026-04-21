@@ -129,7 +129,7 @@ def _run_in_dir(cmd, cwd, logstream=_RUN_DEFAULT_LOGSTREAM):
 def _rmtree_OnError(rmFunction, filePath, excInfo):
     if excInfo[0] == OSError:
         # presuming because file is read-only
-        os.chmod(filePath, 0777)
+        os.chmod(filePath, 0o777)
         rmFunction(filePath)
 def _rmtree(dirname):
     import shutil
@@ -179,7 +179,7 @@ def _setup_logging():
 def _getTargets():
     """Find all targets and return a dict of targetName:targetFunc items."""
     targets = {}
-    for name, attr in sys.modules[__name__].__dict__.items():
+    for name, attr in list(sys.modules[__name__].__dict__.items()):
         if name.startswith('target_'):
             targets[ name[len('target_'):] ] = attr
     return targets
@@ -188,16 +188,16 @@ def _listTargets(targets):
     """Pretty print a list of targets."""
     width = 77
     nameWidth = 15 # min width
-    for name in targets.keys():
+    for name in list(targets.keys()):
         nameWidth = max(nameWidth, len(name))
     nameWidth += 2  # space btwn name and doc
     format = "%%-%ds%%s" % nameWidth
-    print format % ("TARGET", "DESCRIPTION")
+    print(format % ("TARGET", "DESCRIPTION"))
     for name, func in sorted(targets.items()):
         doc = _first_paragraph(func.__doc__ or "", True)
         if len(doc) > (width - nameWidth):
             doc = doc[:(width-nameWidth-3)] + "..."
-        print format % (name, doc)
+        print(format % (name, doc))
 
 
 # Recipe: first_paragraph (1.0.1) in /Users/trentm/tm/recipes/cookbook
@@ -234,7 +234,7 @@ def target_clean():
     ver = _get_project_version()
     dirs = ["dist", "build", "%s-%s" % (_project_name_, ver)]
     for d in dirs:
-        print "removing '%s'" % d
+        print("removing '%s'" % d)
         if os.path.isdir(d): _rmtree(d)
 
     patterns = ["*.pyc", "*~", "MANIFEST",
@@ -243,7 +243,7 @@ def target_clean():
                ]
     for pattern in patterns:
         for file in glob.glob(pattern):
-            print "removing '%s'" % file
+            print("removing '%s'" % file)
             os.unlink(file)
 
 
@@ -409,13 +409,13 @@ def build(targets=[]):
     log.debug("build(targets=%r)" % targets)
     available = _getTargets()
     if not targets:
-        if available.has_key('default'):
+        if 'default' in available:
             return available['default']()
         else:   
             log.warn("No default target available. Doing nothing.")
     else:
         for target in targets:
-            if available.has_key(target):
+            if target in available:
                 retval = available[target]()
                 if retval:
                     raise Error("Error running '%s' target: retval=%s"\

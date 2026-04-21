@@ -48,7 +48,7 @@ class DeviceManagerTestLoader(unittest.TestLoader):
         module = __import__(module_name)
         for name in dir(module):
             obj = getattr(module, name)
-            if (isinstance(obj, (type, types.ClassType)) and
+            if (isinstance(obj, (type, type)) and
                     issubclass(obj, unittest.TestCase)) and \
                     (not self.isTestDevice or obj.runs_on_test_device):
                 tests.append(self.loadTestsFromTestCase(obj))

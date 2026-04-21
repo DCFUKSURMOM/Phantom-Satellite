@@ -44,9 +44,9 @@ def generate(args, frames):
     for f in frames:
       y4m.write("FRAME\n")
       px = f.load()
-      for k in xrange(3):
-        for i in xrange(0, f.height, r_step[k]):
-          for j in xrange(0, f.width, c_step[k]):
+      for k in range(3):
+        for i in range(0, f.height, r_step[k]):
+          for j in range(0, f.width, c_step[k]):
             yuv = px[j, i]
             y4m.write(chr(yuv[k]))
 
@@ -66,16 +66,16 @@ if __name__ == "__main__":
       else:
         frames.append((idx, img))
   if len(frames) == 0:
-    print("No frames in directory: " + args.frame_path)
+    print(("No frames in directory: " + args.frame_path))
     sys.exit()
   print("----------------------Y4M Info----------------------")
-  print("width:  %d" % frames[0][1].width)
-  print("height: %d" % frames[0][1].height)
-  print("#frame: %d" % len(frames))
-  print("frame rate: %s" % args.frame_rate)
-  print("interlacing: %s" % args.interlacing)
-  print("pixel ratio: %s" % args.pix_ratio)
-  print("color space: %s" % args.color_space)
+  print(("width:  %d" % frames[0][1].width))
+  print(("height: %d" % frames[0][1].height))
+  print(("#frame: %d" % len(frames)))
+  print(("frame rate: %s" % args.frame_rate))
+  print(("interlacing: %s" % args.interlacing))
+  print(("pixel ratio: %s" % args.pix_ratio))
+  print(("color space: %s" % args.color_space))
   print("----------------------------------------------------")
 
   print("Generating ...")

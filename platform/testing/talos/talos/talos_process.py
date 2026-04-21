@@ -10,7 +10,7 @@ from threading import Event
 
 from mozlog import get_proxy_logger
 
-from utils import TalosError
+from .utils import TalosError
 
 LOG = get_proxy_logger()
 

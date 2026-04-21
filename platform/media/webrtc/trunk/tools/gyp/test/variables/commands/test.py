@@ -1,1 +1,1 @@
-print "sample\\path\\foo.cpp"
+print("sample\\path\\foo.cpp")

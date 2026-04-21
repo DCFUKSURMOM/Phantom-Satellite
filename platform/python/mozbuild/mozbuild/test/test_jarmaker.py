@@ -9,7 +9,7 @@ import os, sys, os.path, time, inspect
 from filecmp import dircmp
 from tempfile import mkdtemp
 from shutil import rmtree, copy2
-from StringIO import StringIO
+from io import StringIO
 from zipfile import ZipFile
 import mozunit
 
@@ -117,12 +117,12 @@ class _TreeDiff(dircmp):
     """Helper to report rich results on difference between two directories.
     """
     def _fillDiff(self, dc, rv, basepath="{0}"):
-        rv['right_only'] += map(lambda l: basepath.format(l), dc.right_only)
-        rv['left_only'] += map(lambda l: basepath.format(l), dc.left_only)
-        rv['diff_files'] += map(lambda l: basepath.format(l), dc.diff_files)
-        rv['funny'] += map(lambda l: basepath.format(l), dc.common_funny)
-        rv['funny'] += map(lambda l: basepath.format(l), dc.funny_files)
-        for subdir, _dc in dc.subdirs.iteritems():
+        rv['right_only'] += [basepath.format(l) for l in dc.right_only]
+        rv['left_only'] += [basepath.format(l) for l in dc.left_only]
+        rv['diff_files'] += [basepath.format(l) for l in dc.diff_files]
+        rv['funny'] += [basepath.format(l) for l in dc.common_funny]
+        rv['funny'] += [basepath.format(l) for l in dc.funny_files]
+        for subdir, _dc in dc.subdirs.items():
             self._fillDiff(_dc, rv, basepath.format(subdir + "/{0}"))
     def allResults(self, left, right):
         rv = {'right_only':[], 'left_only':[],
@@ -295,7 +295,7 @@ class TestJarMaker(unittest.TestCase):
             ('hoge', 'foo', '2'): ('qux', 'foo', '2'),
             ('hoge', 'baz'): ('qux', 'baz'),
         }
-        for dest, src in expected_symlinks.iteritems():
+        for dest, src in expected_symlinks.items():
             srcpath = os.path.join(self.srcdir, *src)
             destpath = os.path.join(self.builddir, 'chrome', 'test', 'dir',
                                     *dest)
@@ -317,7 +317,7 @@ class Test_relativesrcdir(unittest.TestCase):
     def test_en_US(self):
         jm = self.jm
         jm.makeJar(self.fake_empty_file, '/NO_OUTPUT_REQUIRED')
-        self.assertEquals(jm.localedirs,
+        self.assertEqual(jm.localedirs,
                           [
                             os.path.join(os.path.abspath('/TOPSOURCEDIR'),
                                          'browser/locales', 'en-US')
@@ -326,13 +326,13 @@ class Test_relativesrcdir(unittest.TestCase):
         jm = self.jm
         jm.l10nbase = '/L10N_BASE'
         jm.makeJar(self.fake_empty_file, '/NO_OUTPUT_REQUIRED')
-        self.assertEquals(jm.localedirs, [os.path.join('/L10N_BASE', 'browser')])
+        self.assertEqual(jm.localedirs, [os.path.join('/L10N_BASE', 'browser')])
     def test_l10n_merge(self):
         jm = self.jm
         jm.l10nbase = '/L10N_BASE'
         jm.l10nmerge = '/L10N_MERGE'
         jm.makeJar(self.fake_empty_file, '/NO_OUTPUT_REQUIRED')
-        self.assertEquals(jm.localedirs,
+        self.assertEqual(jm.localedirs,
                           [os.path.join('/L10N_MERGE', 'browser'),
                            os.path.join('/L10N_BASE', 'browser'),
                            os.path.join(os.path.abspath('/TOPSOURCEDIR'),
@@ -346,7 +346,7 @@ relativesrcdir dom/locales:
 ''')
         jarcontents.name = 'override.mn'
         jm.makeJar(jarcontents, '/NO_OUTPUT_REQUIRED')
-        self.assertEquals(jm.localedirs,
+        self.assertEqual(jm.localedirs,
                           [
                             os.path.join(os.path.abspath('/TOPSOURCEDIR'),
                                          'dom/locales', 'en-US')
@@ -360,7 +360,7 @@ relativesrcdir dom/locales:
 ''')
         jarcontents.name = 'override.mn'
         jm.makeJar(jarcontents, '/NO_OUTPUT_REQUIRED')
-        self.assertEquals(jm.localedirs, [os.path.join('/L10N_BASE', 'dom')])
+        self.assertEqual(jm.localedirs, [os.path.join('/L10N_BASE', 'dom')])
 
 
 if __name__ == '__main__':

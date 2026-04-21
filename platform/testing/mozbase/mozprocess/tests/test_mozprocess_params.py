@@ -13,7 +13,7 @@ class ParamTests(unittest.TestCase):
     def test_process_outputline_handler(self):
         """Parameter processOutputLine is accepted with a single function"""
         def output(line):
-            print("output " + str(line))
+            print(("output " + str(line)))
         err = None
         try:
             processhandler.ProcessHandler(['ls', '-l'], processOutputLine=output)
@@ -24,7 +24,7 @@ class ParamTests(unittest.TestCase):
     def test_process_outputline_handler_list(self):
         """Parameter processOutputLine is accepted with a list of functions"""
         def output(line):
-            print("output " + str(line))
+            print(("output " + str(line)))
         err = None
         try:
             processhandler.ProcessHandler(['ls', '-l'], processOutputLine=[output])

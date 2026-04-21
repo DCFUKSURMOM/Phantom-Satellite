@@ -55,7 +55,7 @@ class Integer(base.AbstractSimpleAsn1Item):
 
     def __int__(self): return int(self._value)
     if sys.version_info[0] <= 2:
-        def __long__(self): return long(self._value)
+        def __long__(self): return int(self._value)
     def __float__(self): return float(self._value)    
     def __abs__(self): return abs(self._value)
     def __index__(self): return int(self._value)
@@ -428,7 +428,7 @@ class Null(OctetString):
     subtypeSpec = OctetString.subtypeSpec+constraint.SingleValueConstraint(''.encode())
     
 if sys.version_info[0] <= 2:
-    intTypes = (int, long)
+    intTypes = (int, int)
 else:
     intTypes = int
 
@@ -594,7 +594,7 @@ class Real(base.AbstractSimpleAsn1Item):
 
     def __int__(self): return int(float(self))
     if sys.version_info[0] <= 2:
-        def __long__(self): return long(float(self))
+        def __long__(self): return int(float(self))
     def __float__(self):
         if self._value in self._inf:
             return self._value

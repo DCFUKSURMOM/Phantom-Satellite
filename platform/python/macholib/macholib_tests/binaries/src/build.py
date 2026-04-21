@@ -14,7 +14,7 @@ class Builder (object):
                 getattr(self, nm)()
 
     def build_executable(self):
-        print "Building plain executable"
+        print("Building plain executable")
         pass
 
 

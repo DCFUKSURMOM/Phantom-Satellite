@@ -14,7 +14,7 @@ for x in HBHEADERS:
 	with open (x, 'r', encoding='utf-8') as f: content = f.read ()
 	for s in re.findall (r'\n.+\nhb_.+\n', content):
 		if not s.startswith ('\nHB_EXTERN '):
-			print ('failure on:', s)
+			print(('failure on:', s))
 			stat = 1
 
 sys.exit (stat)

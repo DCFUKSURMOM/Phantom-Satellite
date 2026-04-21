@@ -8,13 +8,16 @@
 
 import gyp.easy_xml as easy_xml
 import unittest
-import StringIO
+try:
+  from StringIO import StringIO
+except ImportError:
+  from io import StringIO
 
 
 class TestSequenceFunctions(unittest.TestCase):
 
   def setUp(self):
-    self.stderr = StringIO.StringIO()
+    self.stderr = StringIO()
 
   def test_EasyXml_simple(self):
     self.assertEqual(
@@ -78,6 +81,7 @@ class TestSequenceFunctions(unittest.TestCase):
                        '\'Debug|Win32\'" Label="Configuration">'
           '<ConfigurationType>Application</ConfigurationType>'
           '<CharacterSet>Unicode</CharacterSet>'
+          '<SpectreMitigation>SpectreLoadCF</SpectreMitigation>'
         '</PropertyGroup>'
       '</Project>')
 
@@ -93,7 +97,8 @@ class TestSequenceFunctions(unittest.TestCase):
             {'Condition': "'$(Configuration)|$(Platform)'=='Debug|Win32'",
              'Label': 'Configuration'},
             ['ConfigurationType', 'Application'],
-            ['CharacterSet', 'Unicode']
+            ['CharacterSet', 'Unicode'],
+            ['SpectreMitigation', 'SpectreLoadCF']
           ]
         ])
     self.assertEqual(xml, target)

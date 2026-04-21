@@ -131,7 +131,7 @@ class MarionetteHarnessTests(VirtualenvMixin, BuildbotMixin, BaseScript):
         self.info('Calling pytest.main with the following arguments: %s' % command)
         status = self._get_pytest_status(pytest.main(command))
         self.read_from_file(logs['tbpl'])
-        for log in logs.values():
+        for log in list(logs.values()):
             self.copy_to_upload_dir(log, dest='logs/')
         self.buildbot_status(status)
 

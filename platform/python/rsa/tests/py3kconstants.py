@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-unicode_string = "Euro=\u20ac ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+unicode_string = "Euro=\\u20ac ABCDEFGHIJKLMNOPQRSTUVWXYZ"

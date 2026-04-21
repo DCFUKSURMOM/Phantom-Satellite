@@ -676,7 +676,7 @@ class SystemResourceMonitor(object):
 
         o['events'] = [list(ev) for ev in self.events]
 
-        for phase, v in self.phases.items():
+        for phase, v in list(self.phases.items()):
             o['phases'].append(phase_entry(phase, v[0], v[1]))
 
         if have_psutil:

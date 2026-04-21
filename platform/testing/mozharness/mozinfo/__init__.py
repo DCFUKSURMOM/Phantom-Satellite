@@ -51,6 +51,6 @@ Module variables:
 
 """
 
-import mozinfo
-from mozinfo import *
+from . import mozinfo
+from .mozinfo import *
 __all__ = mozinfo.__all__

@@ -204,7 +204,7 @@ class ChecksumsGenerator(BaseScript, VirtualenvMixin, SigningMixin, VCSMixin, Bu
         pool.map(worker, find_checksums_files())
 
         for c in raw_checksums:
-            for f, info in parse_checksums_file(c).iteritems():
+            for f, info in parse_checksums_file(c).items():
                 for pattern in self.config["includes"]:
                     if re.search(pattern, f):
                         if f in self.checksums:

@@ -55,7 +55,7 @@ from mozharness.base.python import (
     VirtualenvMixin,
 )
 
-AUTOMATION_EXIT_CODES = EXIT_STATUS_DICT.values()
+AUTOMATION_EXIT_CODES = list(EXIT_STATUS_DICT.values())
 AUTOMATION_EXIT_CODES.sort()
 
 MISSING_CFG_KEY_MSG = "The key '%s' could not be determined \
@@ -466,7 +466,7 @@ class BuildOptionParser(object):
                      "shortname: %s \n\t-- a valid path in %s \n\t-- a "
                      "valid variant for the given platform and bits." % (
                          prospective_cfg_path,
-                         str(cls.build_variants.keys()),
+                         str(list(cls.build_variants.keys())),
                          str(cls.config_file_search_path)))
         parser.values.config_files.append(valid_variant_cfg_path)
         setattr(parser.values, option.dest, value)  # the pool
@@ -528,7 +528,7 @@ BUILD_BASE_CONFIG_OPTIONS = [
         "help": "Sets the build type and will determine appropriate"
                 " additional config to use. Either pass a config path"
                 " or use a valid shortname from: "
-                "%s" % (BuildOptionParser.build_variants.keys(),)}],
+                "%s" % (list(BuildOptionParser.build_variants.keys()),)}],
     [['--build-pool'], {
         "action": "callback",
         "callback": BuildOptionParser.set_build_pool,
@@ -676,7 +676,7 @@ platform '%(platform)s'. Updating self.config with the following from \
                     }
                 )
         if c.get("platform_overrides"):
-            if c['stage_platform'] in c['platform_overrides'].keys():
+            if c['stage_platform'] in list(c['platform_overrides'].keys()):
                 self.info(
                     pf_override_msg % {
                         'branch': c['branch'],
@@ -960,7 +960,7 @@ or run without that action (ie: --no-{action})"
         dirs = self.query_abs_dirs()
         check_test_env = {}
         if c.get('check_test_env'):
-            for env_var, env_value in c['check_test_env'].iteritems():
+            for env_var, env_value in c['check_test_env'].items():
                 check_test_env[env_var] = env_value % dirs
         return check_test_env
 
@@ -1224,8 +1224,8 @@ or run without that action (ie: --no-{action})"
         # persisted to file rather than use whats in the buildbot_properties
         # live object so we become less action dependant.
         all_current_props = dict(
-            chain(self.buildbot_config['properties'].items(),
-                  self.buildbot_properties.items())
+            chain(list(self.buildbot_config['properties'].items()),
+                  list(self.buildbot_properties.items()))
         )
         # graph_server_post.py expects a file with 'properties' key
         graph_props = dict(properties=all_current_props)
@@ -1250,7 +1250,7 @@ or run without that action (ie: --no-{action})"
                 if console_output:
                     self.info("Properties set from 'mach build'")
                     self.info(pprint.pformat(build_props))
-            for key, prop in build_props.iteritems():
+            for key, prop in build_props.items():
                 if prop != 'UNKNOWN':
                     self.set_buildbot_property(key, prop, write_to_file=True)
         else:
@@ -1341,7 +1341,7 @@ or run without that action (ie: --no-{action})"
         dirs = self.query_abs_dirs()
         auth = os.path.join(os.getcwd(), self.config['taskcluster_credentials_file'])
         credentials = {}
-        execfile(auth, credentials)
+        exec(compile(open(auth, "rb").read(), auth, 'exec'), credentials)
         self.client_id = credentials.get('taskcluster_clientId')
         self.access_token = credentials.get('taskcluster_accessToken')
 
@@ -1510,7 +1510,7 @@ or run without that action (ie: --no-{action})"
         ]
 
         # Also upload our mozharness log files
-        files.extend([os.path.join(self.log_obj.abs_log_dir, x) for x in self.log_obj.log_files.values()])
+        files.extend([os.path.join(self.log_obj.abs_log_dir, x) for x in list(self.log_obj.log_files.values())])
 
         # Also upload our buildprops.json file.
         files.extend([os.path.join(dirs['base_work_dir'], 'buildprops.json')])
@@ -2147,7 +2147,7 @@ or run without that action (ie: --no-{action})"
                            "Valid return codes %s" % (self.return_code,
                                                       AUTOMATION_EXIT_CODES))
                 self.return_code = 2
-            for status, return_code in EXIT_STATUS_DICT.iteritems():
+            for status, return_code in EXIT_STATUS_DICT.items():
                 if return_code == self.return_code:
                     self.buildbot_status(status, TBPL_STATUS_DICT[status])
         self.summary()

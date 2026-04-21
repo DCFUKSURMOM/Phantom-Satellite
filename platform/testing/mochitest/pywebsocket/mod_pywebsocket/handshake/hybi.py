@@ -112,7 +112,7 @@ class Handshaker(object):
 
         try:
             connection_tokens = parse_token_list(connection)
-        except HandshakeException, e:
+        except HandshakeException as e:
             raise HandshakeException(
                 'Failed to parse %s: %s' % (common.CONNECTION_HEADER, e))
 
@@ -182,8 +182,7 @@ class Handshaker(object):
 
             # Extra handshake handler may modify/remove processors.
             self._dispatcher.do_extra_handshake(self._request)
-            processors = filter(lambda processor: processor is not None,
-                                self._request.ws_extension_processors)
+            processors = [processor for processor in self._request.ws_extension_processors if processor is not None]
 
             # Ask each processor if there are extensions on the request which
             # cannot co-exist. When processor decided other processors cannot
@@ -194,8 +193,7 @@ class Handshaker(object):
                 if processor.is_active():
                     processor.check_consistency_with_other_processors(
                         processors)
-            processors = filter(lambda processor: processor.is_active(),
-                                processors)
+            processors = [processor for processor in processors if processor.is_active()]
 
             accepted_extensions = []
 
@@ -220,8 +218,7 @@ class Handshaker(object):
                 self._request.mux_processor = processors[mux_index]
                 self._request.mux_processor.set_extensions(
                     logical_channel_extensions)
-                processors = filter(lambda processor: processor.is_active(),
-                                    processors)
+                processors = [processor for processor in processors if processor.is_active()]
 
             stream_options = StreamOptions()
 
@@ -242,7 +239,7 @@ class Handshaker(object):
                     continue
 
                 # Inactivate all of the following compression extensions.
-                for j in xrange(index + 1, len(processors)):
+                for j in range(index + 1, len(processors)):
                     if is_compression_extension(processors[j].name()):
                         processors[j].set_active(False)
 
@@ -250,7 +247,7 @@ class Handshaker(object):
                 self._request.ws_extensions = accepted_extensions
                 self._logger.debug(
                     'Extensions accepted: %r',
-                    map(common.ExtensionParameter.name, accepted_extensions))
+                    list(map(common.ExtensionParameter.name, accepted_extensions)))
             else:
                 self._request.ws_extensions = None
 
@@ -273,7 +270,7 @@ class Handshaker(object):
                         'request any subprotocol')
 
             self._send_handshake(accept)
-        except HandshakeException, e:
+        except HandshakeException as e:
             if not e.status:
                 # Fallback to 400 bad request by default.
                 e.status = common.HTTP_STATUS_BAD_REQUEST
@@ -330,14 +327,14 @@ class Handshaker(object):
         try:
             self._request.ws_requested_extensions = common.parse_extensions(
                 extensions_header)
-        except common.ExtensionParsingException, e:
+        except common.ExtensionParsingException as e:
             raise HandshakeException(
                 'Failed to parse Sec-WebSocket-Extensions header: %r' % e)
 
         self._logger.debug(
             'Extensions requested: %r',
-            map(common.ExtensionParameter.name,
-                self._request.ws_requested_extensions))
+            list(map(common.ExtensionParameter.name,
+                self._request.ws_requested_extensions)))
 
     def _validate_key(self, key):
         if key.find(',') >= 0:
@@ -356,7 +353,7 @@ class Handshaker(object):
                 decoded_key = base64.b64decode(key)
                 if len(decoded_key) == 16:
                     key_is_valid = True
-        except TypeError, e:
+        except TypeError as e:
             pass
 
         if not key_is_valid:

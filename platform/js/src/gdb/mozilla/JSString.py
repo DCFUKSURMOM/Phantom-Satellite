@@ -7,7 +7,7 @@ from mozilla.prettyprinters import pretty_printer, ptr_pretty_printer
 try:
     chr(10000) # UPPER RIGHT PENCIL
 except ValueError as exc: # yuck, we are in Python 2.x, so chr() is 8-bit
-    chr = unichr # replace with teh unicodes
+    chr = chr # replace with teh unicodes
 
 # Forget any printers from previous loads of this module.
 mozilla.prettyprinters.clear_module_printers(__name__)
@@ -61,7 +61,7 @@ class JSStringPtr(Common):
                 yield chars[i]
 
     def to_string(self):
-        s = u''
+        s = ''
         for c in self.chars():
             s += chr(c)
         return s

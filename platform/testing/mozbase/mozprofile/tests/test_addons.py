@@ -8,7 +8,7 @@ import os
 import shutil
 import tempfile
 import unittest
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from manifestparser import ManifestParser
 import mozfile
@@ -99,7 +99,7 @@ class TestAddonsManager(unittest.TestCase):
 
         # Download from an invalid URL
         addon = server.get_url() + 'not_existent.xpi'
-        self.assertRaises(urllib2.HTTPError,
+        self.assertRaises(urllib.error.HTTPError,
                           self.am.download, addon, self.tmpdir)
         self.assertEqual(os.listdir(self.tmpdir), [])
 
@@ -122,7 +122,7 @@ class TestAddonsManager(unittest.TestCase):
             self.am.install_from_path(temp_addon)
 
         # Generate a list of addons installed in the profile
-        addons_installed = [unicode(x[:-len('.xpi')]) for x in os.listdir(os.path.join(
+        addons_installed = [str(x[:-len('.xpi')]) for x in os.listdir(os.path.join(
                             self.profile.profile, 'extensions', 'staged'))]
         self.assertEqual(addons_to_install.sort(), addons_installed.sort())
 
@@ -287,7 +287,7 @@ class TestAddonsManager(unittest.TestCase):
 
         self.am.install_from_manifest(temp_manifest)
         # Generate a list of addons installed in the profile
-        addons_installed = [unicode(x[:-len('.xpi')]) for x in os.listdir(os.path.join(
+        addons_installed = [str(x[:-len('.xpi')]) for x in os.listdir(os.path.join(
                             self.profile.profile, 'extensions', 'staged'))]
         self.assertEqual(addons_installed.sort(), addons_to_install.sort())
 
@@ -327,7 +327,7 @@ class TestAddonsManager(unittest.TestCase):
         addon_two = generate_addon('test-addon-2@mozilla.org')
 
         self.am.install_addons(addon_one)
-        installed_addons = [unicode(x[:-len('.xpi')]) for x in os.listdir(os.path.join(
+        installed_addons = [str(x[:-len('.xpi')]) for x in os.listdir(os.path.join(
                             self.profile.profile, 'extensions', 'staged'))]
 
         # Create a new profile based on an existing profile
@@ -337,7 +337,7 @@ class TestAddonsManager(unittest.TestCase):
                                                        addons=addon_two)
         duplicate_profile.addon_manager.clean()
 
-        addons_after_cleanup = [unicode(x[:-len('.xpi')]) for x in os.listdir(os.path.join(
+        addons_after_cleanup = [str(x[:-len('.xpi')]) for x in os.listdir(os.path.join(
                                 duplicate_profile.profile, 'extensions', 'staged'))]
         # New addons installed should be removed by clean_addons()
         self.assertEqual(installed_addons, addons_after_cleanup)

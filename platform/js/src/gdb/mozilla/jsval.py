@@ -178,7 +178,7 @@ class jsvalTypeCache(object):
         # the i'th magic value.
         d = gdb.types.make_enum_dict(gdb.lookup_type('JSWhyMagic'))
         self.magic_names = list(range(max(d.values()) + 1))
-        for (k,v) in d.items(): self.magic_names[v] = k
+        for (k,v) in list(d.items()): self.magic_names[v] = k
 
         # Choose an unboxing scheme for this architecture.
         self.boxer = Punbox if cache.void_ptr_t.sizeof == 8 else Nunbox

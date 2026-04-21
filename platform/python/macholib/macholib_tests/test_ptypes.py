@@ -10,11 +10,11 @@ else:
 try:
     from io import BytesIO
 except ImportError:
-    from cStringIO import StringIO as BytesIO
+    from io import StringIO as BytesIO
 import mmap
 
 try:
-    long
+    int
 except NameError:
     long = int
 
@@ -89,10 +89,10 @@ class TestPTypes (unittest.TestCase):
         self.verifyType(ptypes.p_uint16, 2, int, [1, 400, 65000])
 
         self.verifyType(ptypes.p_int32, 4, int, [1, 400, 2**24, -10, -5000, -2**24])
-        self.verifyType(ptypes.p_uint32, 4, long, [1, 400, 2*31+5, 65000])
+        self.verifyType(ptypes.p_uint32, 4, int, [1, 400, 2*31+5, 65000])
 
-        self.verifyType(ptypes.p_int64, 8, long, [1, 400, 2**43, -10, -5000, -2**43])
-        self.verifyType(ptypes.p_uint64, 8, long, [1, 400, 2*63+5, 65000])
+        self.verifyType(ptypes.p_int64, 8, int, [1, 400, 2**43, -10, -5000, -2**43])
+        self.verifyType(ptypes.p_uint64, 8, int, [1, 400, 2*63+5, 65000])
 
         self.verifyType(ptypes.p_float, 4, float, [1.0, 42.5])
         self.verifyType(ptypes.p_double, 8, float, [1.0, 42.5])
@@ -105,13 +105,13 @@ class TestPTypes (unittest.TestCase):
         self.verifyType(ptypes.p_ushort, 2, int, [1, 400, 65000])
 
         self.verifyType(ptypes.p_int, 4, int, [1, 400, 2**24, -10, -5000, -2**24])
-        self.verifyType(ptypes.p_uint, 4, long, [1, 400, 2*31+5, 65000])
+        self.verifyType(ptypes.p_uint, 4, int, [1, 400, 2*31+5, 65000])
 
         self.verifyType(ptypes.p_long, 4, int, [1, 400, 2**24, -10, -5000, -2**24])
-        self.verifyType(ptypes.p_ulong, 4, long, [1, 400, 2*31+5, 65000])
+        self.verifyType(ptypes.p_ulong, 4, int, [1, 400, 2*31+5, 65000])
 
-        self.verifyType(ptypes.p_longlong, 8, long, [1, 400, 2**43, -10, -5000, -2**43])
-        self.verifyType(ptypes.p_ulonglong, 8, long, [1, 400, 2*63+5, 65000])
+        self.verifyType(ptypes.p_longlong, 8, int, [1, 400, 2**43, -10, -5000, -2**43])
+        self.verifyType(ptypes.p_ulonglong, 8, int, [1, 400, 2*63+5, 65000])
 
 class TestPTypesPrivate (unittest.TestCase):
     # These are tests for functions that aren't part of the public

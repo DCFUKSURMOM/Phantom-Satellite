@@ -36,7 +36,7 @@ class MockConfig(object):
         }, **extra_substs)
 
         self.substs_unicode = ReadOnlyDict({k.decode('utf-8'): v.decode('utf-8',
-            'replace') for k, v in self.substs.items()})
+            'replace') for k, v in list(self.substs.items())})
 
         self.defines = self.substs
 

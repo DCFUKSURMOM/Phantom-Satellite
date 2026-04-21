@@ -57,18 +57,18 @@ class TestProfilePrint(unittest.TestCase):
 
         # diff two profiles
         diff = dict(mozprofile.diff(profile1, profile2))
-        self.assertEqual(diff.keys(), ['user.js'])
+        self.assertEqual(list(diff.keys()), ['user.js'])
         lines = [line.strip() for line in diff['user.js'].splitlines()]
         self.assertTrue('+foo: bar' in lines)
 
         # diff a blank vs FirefoxProfile
         ff_profile = mozprofile.FirefoxProfile()
         diff = dict(mozprofile.diff(profile2, ff_profile))
-        self.assertEqual(diff.keys(), ['user.js'])
+        self.assertEqual(list(diff.keys()), ['user.js'])
         lines = [line.strip() for line in diff['user.js'].splitlines()]
         self.assertTrue('-foo: bar' in lines)
         ff_pref_lines = ['+%s: %s' % (key, value)
-                         for key, value in mozprofile.FirefoxProfile.preferences.items()]
+                         for key, value in list(mozprofile.FirefoxProfile.preferences.items())]
         self.assertTrue(set(ff_pref_lines).issubset(lines))
 
 if __name__ == '__main__':

@@ -3,8 +3,9 @@ A representation of makefile data structures.
 """
 
 import logging, re, os, sys
-import parserdata, parser, functions, process, util, implicit
-from cStringIO import StringIO
+from . import parserdata, parser, functions, process, util, implicit
+from io import StringIO
+from functools import reduce
 
 if sys.version_info[0] < 3:
     str_type = basestring
@@ -405,7 +406,7 @@ class Expansion(BaseExpansion, list):
         if len(a) != len(b):
             return False
 
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             e1, is_func1 = a[i]
             e2, is_func2 = b[i]
 
@@ -447,7 +448,7 @@ class Variables(object):
         self.parent = parent
 
     def readfromenvironment(self, env):
-        for k, v in env.iteritems():
+        for k, v in env.items():
             self.set(k, self.FLAVOR_RECURSIVE, self.SOURCE_ENVIRONMENT, v)
 
     def get(self, name, expand=True):
@@ -547,7 +548,7 @@ class Variables(object):
             self.set(k, flavor, source, value)
 
     def __iter__(self):
-        for k, (flavor, source, value, valueexp) in self._map.iteritems():
+        for k, (flavor, source, value, valueexp) in self._map.items():
             yield k, flavor, source, value
 
     def __contains__(self, item):
@@ -864,7 +865,7 @@ class RemakeRuleContext(object):
         assert error in (True, False)
 
         if error:
-            print "<%s>: Found error" % self.target.target
+            print("<%s>: Found error" % self.target.target)
             self.error = True
         if didanything:
             self.didanything = True
@@ -949,8 +950,8 @@ class RemakeRuleContext(object):
             self.target.didanything = True
             try:
                 self.commands = [c for c in self.rule.getcommands(self.target, self.makefile)]
-            except util.MakeError, e:
-                print e
+            except util.MakeError as e:
+                print(e)
                 sys.stdout.flush()
                 cb(error=True)
                 return
@@ -1283,9 +1284,9 @@ class Target(object):
 
         try:
             self.resolvedeps(makefile, targetstack, [], False)
-        except util.MakeError, e:
+        except util.MakeError as e:
             if printerror:
-                print e
+                print(e)
             self.error = True
             self.notifydone(makefile)
             return
@@ -1397,7 +1398,7 @@ class _CommandWrapper(object):
 
     def _cb(self, res):
         if res != 0 and not self.ignoreErrors:
-            print "%s: command '%s' failed, return code %i" % (self.loc, self.cline, res)
+            print("%s: command '%s' failed, return code %i" % (self.loc, self.cline, res))
             self.usercb(error=True)
         else:
             self.usercb(error=False)
@@ -1591,7 +1592,7 @@ class _RemakeContext(object):
         assert error in (True, False)
 
         if error and self.required:
-            print "Error remaking makefiles (ignored)"
+            print("Error remaking makefiles (ignored)")
 
         if len(self.toremake):
             target, self.required = self.toremake.pop(0)
@@ -1678,7 +1679,7 @@ class Makefile(object):
         self.variables.set('MAKECMDGOALS', Variables.FLAVOR_SIMPLE,
                            Variables.SOURCE_AUTOMATIC, ' '.join(targets))
 
-        for vname, val in implicit.variables.iteritems():
+        for vname, val in implicit.variables.items():
             self.variables.set(vname,
                                Variables.FLAVOR_SIMPLE,
                                Variables.SOURCE_IMPLICIT, val)
@@ -1750,11 +1751,10 @@ class Makefile(object):
         if value is None:
             self._vpath = []
         else:
-            self._vpath = filter(lambda e: e != '',
-                                 re.split('[%s\s]+' % os.pathsep,
-                                          value.resolvestr(self, self.variables, ['VPATH'])))
+            self._vpath = [e for e in re.split('[%s\s]+' % os.pathsep,
+                                          value.resolvestr(self, self.variables, ['VPATH'])) if e != '']
 
-        targets = list(self._targets.itervalues())
+        targets = list(self._targets.values())
         for t in targets:
             t.explicit = True
             for r in t.rules:
@@ -1825,7 +1825,7 @@ class Makefile(object):
 
     def getsubenvironment(self, variables):
         env = dict(self.env)
-        for vname, v in self.exportedvars.iteritems():
+        for vname, v in self.exportedvars.items():
             if v:
                 flavor, source, val = variables.get(vname)
                 if val is None:

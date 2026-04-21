@@ -17,10 +17,10 @@ def combinations(iterable, r):
     n = len(pool)
     if r > n:
         return
-    indices = range(r)
+    indices = list(range(r))
     yield tuple(pool[i] for i in indices)
     while True:
-        for i in reversed(range(r)):
+        for i in reversed(list(range(r))):
             if indices[i] != i + n - r:
                 break
         else:
@@ -41,7 +41,7 @@ def combinations_with_replacement(iterable, r):
     indices = [0] * r
     yield tuple(pool[i] for i in indices)
     while True:
-        for i in reversed(range(r)):
+        for i in reversed(list(range(r))):
             if indices[i] != n - 1:
                 break
         else:
@@ -125,7 +125,7 @@ def WebIDLTest(parser, harness):
 
     # Create a list of tuples containing the name of the type as a string and
     # the parsed IDL type.
-    types = zip(types, (a.type for a in iface.members))
+    types = list(zip(types, (a.type for a in iface.members)))
 
     validUnionTypes = chain(unionTypes(combinations(types, 2), typesAreDistinguishable),
                             unionTypes(combinations(types, 3), typesAreDistinguishable))

@@ -36,7 +36,7 @@ def attlistToIDL(attlist):
         return ''
 
     attlist = list(attlist)
-    attlist.sort(cmp=lambda a, b: cmp(a[0], b[0]))
+    attlist.sort(key=lambda a: a[0])
 
     return '[%s] ' % ','.join(["%s%s" % (name, value is not None and '(%s)' % value or '')
                               for name, value, aloc in attlist])
@@ -113,7 +113,7 @@ class Builtin(object):
 
     def nativeType(self, calltype, shared=False, const=False):
         if const:
-            print >>sys.stderr, IDLError("[const] doesn't make sense on builtin types.", self.location, warning=True)
+            print(IDLError("[const] doesn't make sense on builtin types.", self.location, warning=True), file=sys.stderr)
             const = 'const '
         elif calltype == 'in' and self.nativename.endswith('*'):
             const = 'const '
@@ -173,7 +173,7 @@ class Location(object):
 
     def pointerline(self):
         def i():
-            for i in xrange(0, self._colno):
+            for i in range(0, self._colno):
                 yield " "
             yield "^"
 
@@ -201,7 +201,7 @@ class NameMap(object):
         return self._d[key]
 
     def __iter__(self):
-        return self._d.itervalues()
+        return iter(self._d.values())
 
     def __contains__(self, key):
         return key in builtinMap or key in self._d
@@ -374,10 +374,10 @@ class Forward(object):
         # Hack alert: if an identifier is already present, move the doccomments
         # forward.
         if parent.hasName(self.name):
-            for i in xrange(0, len(parent.productions)):
+            for i in range(0, len(parent.productions)):
                 if parent.productions[i] is self:
                     break
-            for i in xrange(i + 1, len(parent.productions)):
+            for i in range(i + 1, len(parent.productions)):
                 if hasattr(parent.productions[i], 'doccomments'):
                     parent.productions[i].doccomments[0:0] = self.doccomments
                     break
@@ -422,7 +422,7 @@ class Native(object):
                 if self.modifier is not None:
                     raise IDLError("More than one ptr/ref modifier", aloc)
                 self.modifier = name
-            elif name in self.specialtypes.keys():
+            elif name in list(self.specialtypes.keys()):
                 if self.specialtype is not None:
                     raise IDLError("More than one special type", aloc)
                 self.specialtype = name
@@ -516,7 +516,7 @@ class Interface(object):
         if self.attributes.function:
             has_method = False
             for member in self.members:
-                if member.kind is 'method':
+                if member.kind == 'method':
                     if has_method:
                         raise IDLError("interface '%s' has multiple methods, but marked 'function'" % self.name, self.location)
                     else:
@@ -1003,9 +1003,9 @@ class Param(object):
 
         try:
             return self.realtype.nativeType(self.paramtype, **kwargs)
-        except IDLError, e:
+        except IDLError as e:
             raise IDLError(e.message, self.location)
-        except TypeError, e:
+        except TypeError as e:
             raise IDLError("Unexpected parameter attribute", self.location)
 
     def toIDL(self):
@@ -1053,7 +1053,7 @@ class IDLParser(object):
         'NATIVEID',
         ]
 
-    tokens.extend(keywords.values())
+    tokens.extend(list(keywords.values()))
 
     states = (
         ('nativeid', 'exclusive'),
@@ -1071,13 +1071,13 @@ class IDLParser(object):
     t_ignore = ' \t'
 
     def t_multilinecomment(self, t):
-        r'/\*(?s).*?\*/'
+        r'/\*[\s\S]*?\*/'
         t.lexer.lineno += t.value.count('\n')
         if t.value.startswith("/**"):
             self._doccomments.append(t.value)
 
     def t_singlelinecomment(self, t):
-        r'(?m)//.*?$'
+        r'//[^\n]*'
 
     def t_IID(self, t):
         return t
@@ -1089,7 +1089,7 @@ class IDLParser(object):
         return t
 
     def t_LCDATA(self, t):
-        r'(?s)%\{[ ]*C\+\+[ ]*\n(?P<cdata>.*?\n?)%\}[ ]*(C\+\+)?'
+        r'%\{[ ]*C\+\+[ ]*\n(?P<cdata>[\s\S]*?\n?)%\}[ ]*(C\+\+)?'
         t.type = 'CDATA'
         t.value = t.lexer.lexmatch.group('cdata')
         t.lexer.lineno += t.value.count('\n')
@@ -1214,7 +1214,13 @@ class IDLParser(object):
 
     def p_interface(self, p):
         """interface : attributes INTERFACE IDENTIFIER ifacebase ifacebody ';'"""
-        atts, INTERFACE, name, base, body, SEMI = p[1:]
+        atts      = p[1]
+        INTERFACE = p[2]
+        name      = p[3]
+        base      = p[4]
+        body      = p[5]
+        SEMI      = p[6]
+
         attlist = atts['attlist']
         doccomments = []
         if 'doccomments' in atts:
@@ -1461,5 +1467,5 @@ class IDLParser(object):
 if __name__ == '__main__':
     p = IDLParser()
     for f in sys.argv[1:]:
-        print "Parsing %s" % f
+        print("Parsing %s" % f)
         p.parse(open(f).read(), filename=f)

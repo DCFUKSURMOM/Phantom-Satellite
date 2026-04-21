@@ -480,9 +480,9 @@ class TestMozconfigLoader(unittest.TestCase):
 
             self.assertTrue(e.exception.message.startswith(
                 'Evaluation of your mozconfig exited with an error'))
-            self.assertEquals(e.exception.path,
+            self.assertEqual(e.exception.path,
                 mozconfig.name.replace(os.sep, '/'))
-            self.assertEquals(e.exception.output, ['hello world'])
+            self.assertEqual(e.exception.output, ['hello world'])
 
 
 if __name__ == '__main__':

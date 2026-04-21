@@ -29,7 +29,7 @@ for x in HBHEADERS:
 	with open (x, 'r', encoding='utf-8') as f: content = f.read ()
 	first = re.findall (r'#.*include.*', content)[0]
 	if first not in ['#include "hb.h"', '#include "hb-common.h"']:
-		print ('failure on %s' % x)
+		print(('failure on %s' % x))
 		stat = 1
 
 print ('Checking that source files #include a private header first (or none)')
@@ -38,14 +38,14 @@ for x in HBSOURCES:
 	includes = re.findall (r'#.*include.*', content)
 	if includes:
 		if not len (re.findall (r'".*\.hh"', includes[0])):
-			print ('failure on %s' % x)
+			print(('failure on %s' % x))
 			stat = 1
 
 print ('Checking that there is no #include <hb-*.h>')
 for x in HBHEADERS + HBSOURCES:
 	with open (x, 'r', encoding='utf-8') as f: content = f.read ()
 	if re.findall ('#.*include.*<.*hb', content):
-		print ('failure on %s' % x)
+		print(('failure on %s' % x))
 		stat = 1
 
 sys.exit (stat)

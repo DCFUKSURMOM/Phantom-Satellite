@@ -18,6 +18,7 @@ from string import Template
 from twisted.internet import reactor, protocol
 from twisted.internet.task import LoopingCall
 from twisted.internet.address import IPv4Address
+from functools import reduce
 
 MAGIC_COOKIE = 0x2112A442
 
@@ -321,7 +322,7 @@ class StunMessage(object):
         digest_buf = self.build(MESSAGE_INTEGRITY)
         # Trim off the MESSAGE-INTEGRITY attr
         digest_buf = digest_buf[:len(digest_buf) - 24]
-        password = passlib.utils.saslprep(unicode(password))
+        password = passlib.utils.saslprep(str(password))
         key_string = "{}:{}:{}".format(username, realm, password)
         md5 = hashlib.md5()
         md5.update(key_string)
@@ -367,10 +368,11 @@ class Allocation(protocol.DatagramProtocol):
         self.expiry = time.time()
         self.port = reactor.listenUDP(0, self, interface=v4_address)
 
-    def datagramReceived(self, data, (host, port)):
+    def datagramReceived(self, data, host_port):
+        host, port = host_port
         if not host in self.permissions:
-            print("Dropping packet from {}:{}, no permission on allocation {}"
-                  .format(host, port, self.transport.getHost()))
+            print(("Dropping packet from {}:{}, no permission on allocation {}"
+                  .format(host, port, self.transport.getHost())))
             return
 
         data_indication = StunMessage()
@@ -421,13 +423,13 @@ class StunHandler(object):
             if stun_message.method == SEND:
                 self.handle_send_indication(stun_message)
             else:
-                print("Dropping unknown indication method: {}"
-                      .format(stun_message.method))
+                print(("Dropping unknown indication method: {}"
+                      .format(stun_message.method)))
             return None
 
         if stun_message.msg_class != REQUEST:
-            print("Dropping STUN response, method: {}"
-                  .format(stun_message.method))
+            print(("Dropping STUN response, method: {}"
+                  .format(stun_message.method)))
             return None
 
         if stun_message.method == BINDING:
@@ -559,8 +561,8 @@ class StunHandler(object):
         try:
             allocation = allocations[self.get_allocation_tuple()]
         except KeyError:
-            print("Dropping send indication; no allocation for tuple {}"
-                  .format(self.get_allocation_tuple()))
+            print(("Dropping send indication; no allocation for tuple {}"
+                  .format(self.get_allocation_tuple())))
             return
 
         peer_address = indication.get_xor_address(XOR_PEER_ADDRESS)
@@ -578,8 +580,8 @@ class StunHandler(object):
             return
 
         if not peer_address.host in allocation.permissions:
-            print("Dropping send indication, no permission for {} on tuple {}"
-                  .format(peer_address.host, self.get_allocation_tuple()))
+            print(("Dropping send indication, no permission for {} on tuple {}"
+                  .format(peer_address.host, self.get_allocation_tuple())))
             return
 
         allocation.transport.write(data_attr.data,
@@ -594,7 +596,7 @@ class StunHandler(object):
 
     def make_error_response(self, request, code, reason=None):
         if reason:
-            print("{}: rejecting with {}".format(reason, code))
+            print(("{}: rejecting with {}".format(reason, code)))
         response = copy.deepcopy(request)
         response.attributes = []
         response.add_error_code(code, reason)
@@ -676,12 +678,12 @@ class TcpStunHandler(protocol.Protocol):
         self.stun_handler.data_received(data, self.address)
 
     def connectionLost(self, reason):
-        print("Lost connection from {}".format(self.address))
+        print(("Lost connection from {}".format(self.address)))
         # Destroy allocations that this connection made
-        for key, allocation in allocations.items():
+        for key, allocation in list(allocations.items()):
             if allocation.other_transport_handler == self:
-                print("Closing allocation due to dropped connection: {}"
-                      .format(key))
+                print(("Closing allocation due to dropped connection: {}"
+                      .format(key)))
                 del allocations[key]
                 allocation.close()
 
@@ -711,9 +713,9 @@ except:
 
 def prune_allocations():
     now = time.time()
-    for key, allocation in allocations.items():
+    for key, allocation in list(allocations.items()):
         if allocation.expiry < now:
-            print("Allocation expired: {}".format(key))
+            print(("Allocation expired: {}".format(key)))
             del allocations[key]
             allocation.close()
 
@@ -789,7 +791,7 @@ if __name__ == "__main__":
         lines = f.readlines();
         lines.pop(0); # Remove BEGIN CERTIFICATE
         lines.pop(); # Remove END CERTIFICATE
-        lines = map(string.strip, lines);
+        lines = list(map(string.strip, lines));
         certbase64 = string.join(lines, '');
 
         turns_url = ', "turns:' + hostname + '"'
@@ -810,11 +812,11 @@ if __name__ == "__main__":
 $cert_prop}]' # Hack to make it easier to override cert checks
 )
 
-    print(template.substitute(user=turn_user,
+    print((template.substitute(user=turn_user,
                               pwd=turn_pass,
                               hostname=hostname,
                               turns_url=turns_url,
-                              cert_prop=cert_prop))
+                              cert_prop=cert_prop)))
 
     reactor.run()
 

@@ -43,7 +43,7 @@ def main():
 
     def set_warning(warning, contra=''):
         if warning_supported(warning):
-            print('-W%s%s' % (contra, warning))
+            print(('-W%s%s' % (contra, warning)))
 
     if cc_is_clang:
         # clang is unable to handle glib's expansion of strcmp and similar for

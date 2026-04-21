@@ -9,7 +9,7 @@ import re
 import subprocess
 import which
 
-from distutils.version import LooseVersion
+from mozbuild.version import RichVersion
 
 def get_tool_path(tool):
     """Obtain the path of `tool`."""
@@ -45,15 +45,15 @@ class Repository(object):
 
     @property
     def tool_version(self):
-        '''Return the version of the VCS tool in use as a `LooseVersion`.'''
+        '''Return the version of the VCS tool in use as a `RichVersion`.'''
         if self._version:
             return self._version
         info = self._run('--version').strip()
-        match = re.search('version ([^\+\)]+)', info)
+        match = re.search(r'version ([^\+\)]+)', info)
         if not match:
             raise Exception('Unable to identify tool version.')
 
-        self.version = LooseVersion(match.group(1))
+        self.version = RichVersion(match.group(1))
         return self.version
 
     def get_modified_files(self):
@@ -99,7 +99,7 @@ class GitRepository(Repository):
 
     def get_modified_files(self):
         # This is a little wonky, but it's good enough for this purpose.
-        return [bits[1] for bits in map(lambda line: line.strip().split(), self._run('status', '--porcelain').splitlines()) if 'M' in bits[0]]
+        return [bits[1] for bits in [line.strip().split() for line in self._run('status', '--porcelain').splitlines()] if 'M' in bits[0]]
 
     def add_remove_files(self, path):
         self._run('add', path)

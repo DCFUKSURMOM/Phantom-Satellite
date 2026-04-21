@@ -68,7 +68,7 @@ class TaskPool(object):
     # Set self.next_pending to the next task that has not yet been executed.
     def get_next_pending(self):
         try:
-            return self.pending.next()
+            return next(self.pending)
         except StopIteration:
             return None
 
@@ -203,17 +203,17 @@ if __name__ == '__main__':
             def cmd(self):
                 return ['sh', '-c', 'echo out; sleep %d; echo err>&2' % (self.n,)]
             def onStdout(self, text):
-                print '%d stdout: %r' % (self.n, text)
+                print('%d stdout: %r' % (self.n, text))
             def onStderr(self, text):
-                print '%d stderr: %r' % (self.n, text)
+                print('%d stderr: %r' % (self.n, text))
             def onFinished(self, returncode):
-                print '%d (rc=%d)' % (self.n, returncode)
+                print('%d (rc=%d)' % (self.n, returncode))
                 sorted.append(self.n)
             def onTimeout(self):
-                print '%d timed out' % (self.n,)
+                print('%d timed out' % (self.n,))
 
         p = TaskPool([SortableTask(_) for _ in ns], job_limit=len(ns), timeout=timeout)
         p.run_all()
         return sorted
 
-    print repr(sleep_sort([1,1,2,3,5,8,13,21,34], 15))
+    print(repr(sleep_sort([1,1,2,3,5,8,13,21,34], 15)))

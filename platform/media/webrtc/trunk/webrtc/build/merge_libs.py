@@ -79,7 +79,7 @@ def main(argv):
                     ' -exec', cmd, output_lib, '{} +'])
   else:
     cmd = ' '.join([cmd + output_lib] + FindFiles(search_path, pattern))
-  print cmd
+  print(cmd)
   subprocess.check_call(cmd, shell=True)
   return 0
 

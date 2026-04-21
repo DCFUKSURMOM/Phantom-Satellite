@@ -12,7 +12,7 @@ xterm-256color exists.
 from __future__ import with_statement  # Make 2.5-compatible
 from curses import tigetstr, tparm
 from functools import partial
-from StringIO import StringIO
+from io import StringIO
 import sys
 
 from nose import SkipTest
@@ -52,8 +52,8 @@ def test_capability():
 def test_capability_without_tty():
     """Assert capability templates are '' when stream is not a tty."""
     t = TestTerminal(stream=StringIO())
-    eq_(t.save, u'')
-    eq_(t.red, u'')
+    eq_(t.save, '')
+    eq_(t.red, '')
 
 
 def test_capability_with_forced_tty():
@@ -84,11 +84,11 @@ def test_location():
     t = TestTerminal(stream=StringIO(), force_styling=True)
 
     with t.location(3, 4):
-        t.stream.write(u'hi')
+        t.stream.write('hi')
 
     eq_(t.stream.getvalue(), unicode_cap('sc') +
                              unicode_parm('cup', 4, 3) +
-                             u'hi' +
+                             'hi' +
                              unicode_cap('rc'))
 
 
@@ -111,7 +111,7 @@ def test_null_fileno():
     out = StringIO()
     out.fileno = None
     t = TestTerminal(stream=out)
-    eq_(t.save, u'')
+    eq_(t.save, '')
 
 
 def test_mnemonic_colors():
@@ -179,26 +179,26 @@ def test_formatting_functions():
     """Test crazy-ass formatting wrappers, both simple and compound."""
     t = TestTerminal()
     # By now, it should be safe to use sugared attributes. Other tests test those.
-    eq_(t.bold(u'hi'), t.bold + u'hi' + t.normal)
-    eq_(t.green('hi'), t.green + u'hi' + t.normal)  # Plain strs for Python 2.x
+    eq_(t.bold('hi'), t.bold + 'hi' + t.normal)
+    eq_(t.green('hi'), t.green + 'hi' + t.normal)  # Plain strs for Python 2.x
     # Test some non-ASCII chars, probably not necessary:
-    eq_(t.bold_green(u'boö'), t.bold + t.green + u'boö' + t.normal)
+    eq_(t.bold_green('boö'), t.bold + t.green + 'boö' + t.normal)
     eq_(t.bold_underline_green_on_red('boo'),
-        t.bold + t.underline + t.green + t.on_red + u'boo' + t.normal)
+        t.bold + t.underline + t.green + t.on_red + 'boo' + t.normal)
     # Don't spell things like this:
     eq_(t.on_bright_red_bold_bright_green_underline('meh'),
-        t.on_bright_red + t.bold + t.bright_green + t.underline + u'meh' + t.normal)
+        t.on_bright_red + t.bold + t.bright_green + t.underline + 'meh' + t.normal)
 
 
 def test_formatting_functions_without_tty():
     """Test crazy-ass formatting wrappers when there's no tty."""
     t = TestTerminal(stream=StringIO())
-    eq_(t.bold(u'hi'), u'hi')
-    eq_(t.green('hi'), u'hi')
+    eq_(t.bold('hi'), 'hi')
+    eq_(t.green('hi'), 'hi')
     # Test non-ASCII chars, no longer really necessary:
-    eq_(t.bold_green(u'boö'), u'boö')
-    eq_(t.bold_underline_green_on_red('loo'), u'loo')
-    eq_(t.on_bright_red_bold_bright_green_underline('meh'), u'meh')
+    eq_(t.bold_green('boö'), 'boö')
+    eq_(t.bold_underline_green_on_red('loo'), 'loo')
+    eq_(t.on_bright_red_bold_bright_green_underline('meh'), 'meh')
 
 
 def test_nice_formatting_errors():
@@ -206,22 +206,22 @@ def test_nice_formatting_errors():
     t = TestTerminal()
     try:
         t.bold_misspelled('hey')
-    except TypeError, e:
+    except TypeError as e:
         assert 'probably misspelled' in e.args[0]
 
     try:
-        t.bold_misspelled(u'hey')  # unicode
-    except TypeError, e:
+        t.bold_misspelled('hey')  # unicode
+    except TypeError as e:
         assert 'probably misspelled' in e.args[0]
 
     try:
         t.bold_misspelled(None)  # an arbitrary non-string
-    except TypeError, e:
+    except TypeError as e:
         assert 'probably misspelled' not in e.args[0]
 
     try:
         t.bold_misspelled('a', 'b')  # >1 string arg
-    except TypeError, e:
+    except TypeError as e:
         assert 'probably misspelled' not in e.args[0]
 
 

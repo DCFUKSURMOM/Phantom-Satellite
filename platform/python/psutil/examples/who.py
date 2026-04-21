@@ -23,11 +23,11 @@ import psutil
 def main():
     users = psutil.users()
     for user in users:
-        print("%-15s %-15s %s  (%s)" % (
+        print(("%-15s %-15s %s  (%s)" % (
             user.name,
             user.terminal or '-',
             datetime.fromtimestamp(user.started).strftime("%Y-%m-%d %H:%M"),
-            user.host))
+            user.host)))
 
 if __name__ == '__main__':
     main()

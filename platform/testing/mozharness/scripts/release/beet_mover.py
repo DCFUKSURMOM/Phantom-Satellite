@@ -364,7 +364,7 @@ class BeetMover(BaseScript, VirtualenvMixin, object):
     def mime_fix(self):
         """ Add mimetypes for custom extensions """
         mimetypes.init()
-        map(lambda (ext, mime_type,): mimetypes.add_type(mime_type, ext), MIME_MAP.items())
+        list(map(lambda ext_mime_type: mimetypes.add_type(ext_mime_type[1], ext_mime_type[0]), list(MIME_MAP.items())))
 
 if __name__ == '__main__':
     beet_mover = BeetMover(pop_aws_auth_from_env())

@@ -26,7 +26,7 @@ def WebIDLTest(parser, harness):
     enum = results[0]
     harness.check(enum.identifier.QName(), "::TestEnum", "Enum has the right QName")
     harness.check(enum.identifier.name, "TestEnum", "Enum has the right name")
-    harness.check(enum.values(), ["", "foo", "bar"], "Enum has the right values")
+    harness.check(list(enum.values()), ["", "foo", "bar"], "Enum has the right values")
 
     iface = results[1]
 

@@ -45,6 +45,6 @@ for ranges in all_ranges:
   end = ("0x%X" % ranges[1]).rjust(8)
   bit = ("%s" % ranges[2]).rjust(3)
 
-  print ("  {%s, %s, %s}, // %s" % (start, end, bit, ranges[3]))
+  print(("  {%s, %s, %s}, // %s" % (start, end, bit, ranges[3])))
 
 print ("""};""")

@@ -42,17 +42,17 @@ for soname in ['harfbuzz', 'harfbuzz-subset', 'harfbuzz-icu', 'harfbuzz-gobject'
 
 		prefix = (symprefix + os.path.basename (so)).replace ('libharfbuzz', 'hb').replace ('-', '_').split ('.')[0]
 
-		print ('Checking that %s does not expose internal symbols' % so)
+		print(('Checking that %s does not expose internal symbols' % so))
 		suspicious_symbols = [x for x in EXPORTED_SYMBOLS if not re.match (r'^%s(_|$)' % prefix, x)]
 		if suspicious_symbols:
-			print ('Ouch, internal symbols exposed:', suspicious_symbols)
+			print(('Ouch, internal symbols exposed:', suspicious_symbols))
 			stat = 1
 
 		def_path = os.path.join (builddir, soname + '.def')
 		if not os.path.exists (def_path):
-			print ('\'%s\' not found; skipping' % def_path)
+			print(('\'%s\' not found; skipping' % def_path))
 		else:
-			print ('Checking that %s has the same symbol list as %s' % (so, def_path))
+			print(('Checking that %s has the same symbol list as %s' % (so, def_path)))
 			with open (def_path, 'r', encoding='utf-8') as f: def_file = f.read ()
 			diff_result = list (difflib.context_diff (
 				def_file.splitlines (),
@@ -62,7 +62,7 @@ for soname in ['harfbuzz', 'harfbuzz-subset', 'harfbuzz-icu', 'harfbuzz-gobject'
 			))
 
 			if diff_result:
-				print ('\n'.join (diff_result))
+				print(('\n'.join (diff_result)))
 				stat = 1
 
 			tested = True

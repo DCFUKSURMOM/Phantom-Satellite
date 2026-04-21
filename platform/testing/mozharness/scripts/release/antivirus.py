@@ -130,7 +130,7 @@ class AntivirusScan(BaseScript, VirtualenvMixin):
         from boto.s3.connection import S3Connection
         from boto.exception import S3CopyError, S3ResponseError
         from redo import retry
-        from httplib import HTTPException
+        from http.client import HTTPException
 
         # suppress boto debug logging, it's too verbose with --loglevel=debug
         import logging

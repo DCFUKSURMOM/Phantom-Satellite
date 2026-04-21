@@ -133,7 +133,8 @@ option(env='PYTHON', nargs=1, help='Python interpreter')
 @imports(_from='mozbuild.configure.util', _import='LineIO')
 @imports(_from='mozbuild.virtualenv', _import='VirtualenvManager')
 @imports(_from='mozbuild.virtualenv', _import='verify_python_version')
-@imports('distutils.sysconfig')
+@imports(_from='mozpack.path', _import='normsep')
+@imports('sysconfig')
 def virtualenv_python(env_python, build_env, mozconfig, help):
     if help:
         return
@@ -165,6 +166,9 @@ def virtualenv_python(env_python, build_env, mozconfig, help):
             os.path.join(topobjdir, '_virtualenv'), out,
             os.path.join(topsrcdir, 'build', 'virtualenv_packages.txt'))
 
+    if normsep(sys.executable) == normsep(manager.python_path):
+        return normsep(manager.python_path)
+
     if python:
         # If we're not in the virtualenv, we need the which module for
         # find_program.
@@ -193,10 +197,10 @@ def virtualenv_python(env_python, build_env, mozconfig, help):
         sys.exit(subprocess.call([python] + sys.argv))
 
     # We are now in the virtualenv
-    if not distutils.sysconfig.get_python_lib():
+    if not sysconfig.get_path("purelib"):
         die('Could not determine python site packages directory')
 
-    return python
+    return normsep(python)
 
 set_config('PYTHON', virtualenv_python)
 add_old_configure_assignment('PYTHON', virtualenv_python)
@@ -212,7 +216,7 @@ def early_options():
     def early_options():
         return set(
             option.env
-            for option in __sandbox__._options.itervalues()
+            for option in __sandbox__._options.values()
             if option.env
         )
     return early_options
@@ -240,17 +244,17 @@ def mozconfig_options(mozconfig, help):
                 log.info('  %s' % arg)
                 helper.add(arg, origin='mozconfig', args=helper._args)
 
-        for key, value in mozconfig['env']['added'].iteritems():
+        for key, value in mozconfig['env']['added'].items():
             add(key, value)
             os.environ[key] = value
-        for key, (_, value) in mozconfig['env']['modified'].iteritems():
+        for key, (_, value) in mozconfig['env']['modified'].items():
             add(key, value)
             os.environ[key] = value
-        for key, value in mozconfig['vars']['added'].iteritems():
+        for key, value in mozconfig['vars']['added'].items():
             # mozconfig_loader adds _IS_SET variables that are irrelevant
             if not key.endswith('_IS_SET'):
                 add(key, value)
-        for key, (_, value) in mozconfig['vars']['modified'].iteritems():
+        for key, (_, value) in mozconfig['vars']['modified'].items():
             add(key, value)
 
 
@@ -290,6 +294,7 @@ option('--target', nargs=1,
 @imports(_from='mozbuild.configure.constants', _import='Endianness')
 @imports(_from='mozbuild.configure.constants', _import='Kernel')
 @imports(_from='mozbuild.configure.constants', _import='OS')
+@imports(_from='mozbuild.configure.constants', _import='OS_and_Kernel')
 def split_triplet(triplet):
     # The standard triplet is defined as
     #   CPU_TYPE-MANUFACTURER-OPERATING_SYSTEM
@@ -385,8 +390,8 @@ def split_triplet(triplet):
         alias=triplet,
         cpu=CPU(canonical_cpu),
         bitness=CPU_bitness[canonical_cpu],
-        kernel=Kernel(canonical_kernel),
-        os=OS(canonical_os),
+        kernel=OS_and_Kernel(canonical_kernel),
+        os=OS_and_Kernel(canonical_os),
         endianness=Endianness(endianness),
         raw_cpu=cpu,
         raw_os=os,
@@ -400,7 +405,8 @@ def split_triplet(triplet):
 def config_sub(shell, triplet):
     config_sub = os.path.join(os.path.dirname(__file__), '..',
                               'autoconf', 'config.sub')
-    return subprocess.check_output([shell, config_sub, triplet]).strip()
+    return subprocess.check_output([shell, config_sub, triplet],
+                                   universal_newlines=True).strip()
 
 
 @depends('--host', shell)
@@ -410,7 +416,8 @@ def host(value, shell):
     if not value:
         config_guess = os.path.join(os.path.dirname(__file__), '..',
                                     'autoconf', 'config.guess')
-        host = subprocess.check_output([shell, config_guess]).strip()
+        host = subprocess.check_output([shell, config_guess],
+                                       universal_newlines=True).strip()
     else:
         host = value[0]
 
@@ -761,7 +768,7 @@ def enabled_in_nightly(milestone, _):
 def all_configure_options(_):
     result = []
     previous = None
-    for option in __sandbox__._options.itervalues():
+    for option in __sandbox__._options.values():
         # __sandbox__._options contains items for both option.name and
         # option.env. But it's also an OrderedDict, meaning both are
         # consecutive.

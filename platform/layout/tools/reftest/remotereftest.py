@@ -7,7 +7,7 @@ import os
 import time
 import tempfile
 import traceback
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 import mozdevice
 import mozinfo
@@ -30,7 +30,7 @@ class RemoteReftestResolver(ReftestResolver):
         elif os.path.exists(os.path.abspath(path)):
             rv = os.path.abspath(path)
         else:
-            print >> sys.stderr, "Could not find manifest %s" % script_abs_path
+            print("Could not find manifest %s" % script_abs_path, file=sys.stderr)
             sys.exit(1)
         return os.path.normpath(rv)
 
@@ -88,7 +88,7 @@ class ReftestServer:
         self._process = self.automation.Process([xpcshell] + args, env = env)
         pid = self._process.pid
         if pid < 0:
-            print "TEST-UNEXPECTED-FAIL | remotereftests.py | Error starting server."
+            print("TEST-UNEXPECTED-FAIL | remotereftests.py | Error starting server.")
             return 2
         self.automation.log.info("INFO | remotereftests.py | Server pid: %d", pid)
 
@@ -108,14 +108,14 @@ class ReftestServer:
             time.sleep(1)
             i += 1
         else:
-            print "TEST-UNEXPECTED-FAIL | remotereftests.py | Timed out while waiting for server startup."
+            print("TEST-UNEXPECTED-FAIL | remotereftests.py | Timed out while waiting for server startup.")
             self.stop()
             return 1
 
     def stop(self):
         if hasattr(self, '_process'):
             try:
-                c = urllib2.urlopen(self.shutdownURL)
+                c = urllib.request.urlopen(self.shutdownURL)
                 c.read()
                 c.close()
 
@@ -186,7 +186,7 @@ class RemoteReftest(RefTest):
         paths = [options.xrePath, localAutomation.DIST_BIN, self.automation._product, os.path.join('..', self.automation._product)]
         options.xrePath = self.findPath(paths)
         if options.xrePath == None:
-            print "ERROR: unable to find xulrunner path for %s, please specify with --xre-path" % (os.name)
+            print("ERROR: unable to find xulrunner path for %s, please specify with --xre-path" % (os.name))
             return 1
         paths.append("bin")
         paths.append(os.path.join("..", "bin"))
@@ -199,7 +199,7 @@ class RemoteReftest(RefTest):
             paths.insert(0, options.utilityPath)
         options.utilityPath = self.findPath(paths, xpcshell)
         if options.utilityPath == None:
-            print "ERROR: unable to find utility path for %s, please specify with --utility-path" % (os.name)
+            print("ERROR: unable to find utility path for %s, please specify with --utility-path" % (os.name))
             return 1
 
         options.serverProfilePath = tempfile.mkdtemp()
@@ -244,7 +244,7 @@ class RemoteReftest(RefTest):
             self._devicemanager.pushDir(profileDir, options.remoteProfile)
             self._devicemanager.chmodDir(options.remoteProfile)
         except mozdevice.DMError:
-            print "Automation Error: Failed to copy profiledir to device"
+            print("Automation Error: Failed to copy profiledir to device")
             raise
 
         return profile
@@ -256,26 +256,26 @@ class RemoteReftest(RefTest):
             self._devicemanager.pushDir(profileDir, options.remoteProfile)
             self._devicemanager.chmodDir(options.remoteProfile)
         except mozdevice.DMError:
-            print "Automation Error: Failed to copy extra files to device"
+            print("Automation Error: Failed to copy extra files to device")
             raise
 
     def printDeviceInfo(self, printLogcat=False):
         try:
             if printLogcat:
                 logcat = self._devicemanager.getLogcat(filterOutRegexps=fennecLogcatFilters)
-                print ''.join(logcat)
-            print "Device info:"
+                print(''.join(logcat))
+            print("Device info:")
             devinfo = self._devicemanager.getInfo()
             for category in devinfo:
                 if type(devinfo[category]) is list:
-                    print "  %s:" % category
+                    print("  %s:" % category)
                     for item in devinfo[category]:
-                        print "     %s" % item
+                        print("     %s" % item)
                 else:
-                    print "  %s: %s" % (category, devinfo[category])
-            print "Test root: %s" % self._devicemanager.deviceRoot
+                    print("  %s: %s" % (category, devinfo[category]))
+            print("Test root: %s" % self._devicemanager.deviceRoot)
         except mozdevice.DMError:
-            print "WARNING: Error getting device information"
+            print("WARNING: Error getting device information")
 
     def environment(self, **kwargs):
         return self.automation.environment(**kwargs)
@@ -308,8 +308,8 @@ class RemoteReftest(RefTest):
                 self._devicemanager.fileExists(self.remoteLogFile):
             self._devicemanager.getFile(self.remoteLogFile, self.localLogName)
         else:
-            print "WARNING: Unable to retrieve log file (%s) from remote " \
-                "device" % self.remoteLogFile
+            print("WARNING: Unable to retrieve log file (%s) from remote " \
+                "device" % self.remoteLogFile)
         self._devicemanager.removeDir(self.remoteProfile)
         self._devicemanager.removeDir(self.remoteTestRoot)
         RefTest.cleanup(self, profileDir)
@@ -318,12 +318,12 @@ class RemoteReftest(RefTest):
                 os.remove(self.pidFile)
                 os.remove(self.pidFile + ".xpcshell.pid")
             except:
-                print "Warning: cleaning up pidfile '%s' was unsuccessful from the test harness" % self.pidFile
+                print("Warning: cleaning up pidfile '%s' was unsuccessful from the test harness" % self.pidFile)
 
 
 def run_test_harness(parser, options):
     if options.dm_trans == 'sut' and options.deviceIP == None:
-        print "Error: If --dm_trans = sut, you must provide a device IP to connect to via the --deviceIP option"
+        print("Error: If --dm_trans = sut, you must provide a device IP to connect to via the --deviceIP option")
         return 1
 
     dm_args = {
@@ -343,7 +343,7 @@ def run_test_harness(parser, options):
         dm = dm_cls(**dm_args)
     except mozdevice.DMError:
         traceback.print_exc()
-        print "Automation Error: exception while initializing devicemanager.  Most likely the device is not in a testable state."
+        print("Automation Error: exception while initializing devicemanager.  Most likely the device is not in a testable state.")
         return 1
 
     automation = RemoteAutomation(None)
@@ -359,7 +359,7 @@ def run_test_harness(parser, options):
     expected = options.app.split('/')[-1]
     installed = dm.shellCheckOutput(['pm', 'list', 'packages', expected])
     if expected not in installed:
-        print "%s is not installed on this device" % expected
+        print("%s is not installed on this device" % expected)
         return 1
 
     automation.setAppName(options.app)
@@ -369,7 +369,7 @@ def run_test_harness(parser, options):
     parser.validate(options, reftest)
 
     if mozinfo.info['debug']:
-        print "changing timeout for remote debug reftests from %s to 600 seconds" % options.timeout
+        print("changing timeout for remote debug reftests from %s to 600 seconds" % options.timeout)
         options.timeout = 600
 
     # Hack in a symbolic link for jsreftest
@@ -394,7 +394,7 @@ def run_test_harness(parser, options):
         dm.recordLogcat()
         retVal = reftest.runTests(options.tests, options)
     except:
-        print "Automation Error: Exception caught while running tests"
+        print("Automation Error: Exception caught while running tests")
         traceback.print_exc()
         retVal = 1
 

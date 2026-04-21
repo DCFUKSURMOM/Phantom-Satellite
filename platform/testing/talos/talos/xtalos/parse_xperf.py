@@ -6,15 +6,15 @@
 
 import os
 import sys
-import xtalos
+from . import xtalos
 import subprocess
-import etlparser
+from . import etlparser
 
 
 def stop(xperf_path, debug=False):
     xperf_cmd = [xperf_path, '-stop', '-stop', 'talos_ses']
     if debug:
-        print("executing '%s'" % subprocess.list2cmdline(xperf_cmd))
+        print(("executing '%s'" % subprocess.list2cmdline(xperf_cmd)))
     subprocess.call(xperf_cmd)
 
 
@@ -33,7 +33,7 @@ def stop_from_config(config_file=None, debug=False, **kwargs):
         kwargs = xtalos.options_from_config(kwargs, config_file)
 
     # ensure the required options are given
-    for key, msg in required.items():
+    for key, msg in list(required.items()):
         if not kwargs.get(key):
             raise xtalos.XTalosError(msg)
 

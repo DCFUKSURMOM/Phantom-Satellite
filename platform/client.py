@@ -22,7 +22,7 @@ if topsrcdir == '':
     topsrcdir = '.'
 
 def check_call_noisy(cmd, *args, **kwargs):
-    print "Executing command:", cmd
+    print("Executing command:", cmd)
     check_call(cmd, *args, **kwargs)
 
 def do_hg_pull(dir, repository, hg):
@@ -67,22 +67,22 @@ def do_cvs_export(modules, tag, cvsroot, cvs):
         cvs_module = module_tuple[1]
         fullpath = os.path.join(topsrcdir, module)
         if os.path.exists(fullpath):
-            print "Removing '%s'" % fullpath
+            print("Removing '%s'" % fullpath)
             shutil.rmtree(fullpath)
 
         (parent, leaf) = os.path.split(module)
-        print "CVS export begin: " + datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        print("CVS export begin: " + datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"))
         check_call_noisy([cvs, '-d', cvsroot,
                           'export', '-r', tag, '-d', leaf, cvs_module],
                          cwd=os.path.join(topsrcdir, parent))
-        print "CVS export end: " + datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        print("CVS export end: " + datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"))
 
 def toggle_trailing_blank_line(depname):
   """If the trailing line is empty, then we'll delete it.
   Otherwise we'll add a blank line."""
   lines = open(depname, "r").readlines()
   if not lines:
-      print >>sys.stderr, "unexpected short file"
+      print("unexpected short file", file=sys.stderr)
       return
 
   if not lines[-1].strip():
@@ -95,7 +95,7 @@ def toggle_trailing_blank_line(depname):
 def get_trailing_blank_line_state(depname):
   lines = open(depname, "r").readlines()
   if not lines:
-      print >>sys.stderr, "unexpected short file"
+      print("unexpected short file", file=sys.stderr)
       return "no blank line"
 
   if not lines[-1].strip():
@@ -104,18 +104,18 @@ def get_trailing_blank_line_state(depname):
       return "no blank line"
 
 def update_nspr_or_nss(tag, depfile, destination, hgpath):
-  print "reverting to HG version of %s to get its blank line state" % depfile
+  print("reverting to HG version of %s to get its blank line state" % depfile)
   check_call_noisy([options.hg, 'revert', depfile])
   old_state = get_trailing_blank_line_state(depfile)
-  print "old state of %s is: %s" % (depfile, old_state)
+  print("old state of %s is: %s" % (depfile, old_state))
   do_hg_replace(destination, hgpath, tag, HG_EXCLUSIONS, options.hg)
   new_state = get_trailing_blank_line_state(depfile)
-  print "new state of %s is: %s" % (depfile, new_state)
+  print("new state of %s is: %s" % (depfile, new_state))
   if old_state == new_state:
-    print "toggling blank line in: ", depfile
+    print("toggling blank line in: ", depfile)
     toggle_trailing_blank_line(depfile)
   tag_file = destination + "/TAG-INFO"
-  print >>file(tag_file, "w"), tag
+  print(tag, file=file(tag_file, "w"))
 
 o = OptionParser(usage="client.py [options] update_nspr tagname | update_nss tagname | update_libffi tagname")
 o.add_option("--skip-mozilla", dest="skip_mozilla",
@@ -139,7 +139,7 @@ except IndexError:
     sys.exit(2)
 
 if action in ('checkout', 'co'):
-    print >>sys.stderr, "Warning: client.py checkout is obsolete."
+    print("Warning: client.py checkout is obsolete.", file=sys.stderr)
     pass
 elif action in ('update_nspr'):
     tag, = args[1:]

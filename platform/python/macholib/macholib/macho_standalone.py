@@ -9,8 +9,8 @@ from macholib.util import strip_files
 def standaloneApp(path):
     if not (os.path.isdir(path) and os.path.exists(
             os.path.join(path, 'Contents'))):
-        print('%s: %s does not look like an app bundle'
-            % (sys.argv[0], path))
+        print(('%s: %s does not look like an app bundle'
+            % (sys.argv[0], path)))
         sys.exit(1)
     files = MachOStandalone(path).run()
     strip_files(files)

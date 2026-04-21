@@ -44,7 +44,7 @@ def convertOffset(i):
     else:
         return 1024
 
-print """//
+print("""//
 // Copyright (c) 2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -54,27 +54,27 @@ print """//
 
 namespace gl
 {
-"""
+""")
 
-print "const static unsigned g_mantissa[2048] = {"
+print("const static unsigned g_mantissa[2048] = {")
 for i in range(0, 2048):
-    print "    %#010x," % convertMantissa(i)
-print "};\n"
+    print("    %#010x," % convertMantissa(i))
+print("};\n")
 
-print "const static unsigned g_exponent[64] = {"
+print("const static unsigned g_exponent[64] = {")
 for i in range(0, 64):
-    print "    %#010x," % convertExponent(i)
-print "};\n"
+    print("    %#010x," % convertExponent(i))
+print("};\n")
 
-print "const static unsigned g_offset[64] = {"
+print("const static unsigned g_offset[64] = {")
 for i in range(0, 64):
-    print "    %#010x," % convertOffset(i)
-print "};\n"
+    print("    %#010x," % convertOffset(i))
+print("};\n")
 
-print """float float16ToFloat32(unsigned short h)
+print("""float float16ToFloat32(unsigned short h)
 {
     unsigned i32 = g_mantissa[g_offset[h >> 10] + (h & 0x3ff)] + g_exponent[h >> 10];
     return bitCast<float>(i32);
 }
 }
-"""
+""")

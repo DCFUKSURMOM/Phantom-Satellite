@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     bridgeFactory = ProcessSocketBridgeFactory()
     reactor.listenTCP(int(args.port), txws.WebSocketFactory(bridgeFactory))
-    print("websocket/process bridge listening on port %s" % args.port)
+    print(("websocket/process bridge listening on port %s" % args.port))
     reactor.run()
 
 

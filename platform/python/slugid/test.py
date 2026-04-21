@@ -154,7 +154,7 @@ def spreadTest(generator, expected):
     actual = []
     for j in range(0, len(k)):
         actual.append('')
-        for a in k[j].keys():
+        for a in list(k[j].keys()):
             if k[j][a] > 0:
                 actual[j] += a
         # sort for easy comparison

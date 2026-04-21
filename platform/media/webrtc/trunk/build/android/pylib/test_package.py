@@ -7,10 +7,10 @@ import logging
 import re
 import os
 
-import constants
-from perf_tests_helper import PrintPerfResult
+from . import constants
+from .perf_tests_helper import PrintPerfResult
 from pylib import pexpect
-from test_result import BaseTestResult, TestResults
+from .test_result import BaseTestResult, TestResults
 
 
 # TODO(bulach): TestPackage, TestPackageExecutable and

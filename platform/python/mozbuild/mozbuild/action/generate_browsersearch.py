@@ -97,7 +97,7 @@ def main(args):
     regions = properties.get_dict('browser.search.defaultenginename')
 
     browsersearch['regions'] = {}
-    for region in regions.keys():
+    for region in list(regions.keys()):
         region_default = regions[region]
         region_engines = properties.get_list('browser.search.order.{region}'.format(region=region))
 

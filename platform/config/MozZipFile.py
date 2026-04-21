@@ -46,7 +46,7 @@ class ZipFile(zipfile.ZipFile):
                               date_time=time.localtime(time.time()))
       zinfo.compress_type = self.compression
       # Add some standard UNIX file access permissions (-rw-r--r--).
-      zinfo.external_attr = (0x81a4 & 0xFFFF) << 16L
+      zinfo.external_attr = (0x81a4 & 0xFFFF) << 16
     else:
       zinfo = zinfo_or_arcname
 
@@ -58,7 +58,7 @@ class ZipFile(zipfile.ZipFile):
     # as the old, reuse the existing entry.
 
     doSeek = False # store if we need to seek to the eof after overwriting
-    if self.NameToInfo.has_key(zinfo.filename):
+    if zinfo.filename in self.NameToInfo:
       # Find the last ZipInfo with our name.
       # Last, because that's catching multiple overwrites
       i = len(self.filelist)
@@ -109,14 +109,14 @@ class ZipFile(zipfile.ZipFile):
       # adjust file mode if we originally just wrote, now we rewrite
       self.fp.close()
       self.fp = open(self.filename, 'r+b')
-    all = map(lambda zi: (zi, True), self.filelist) + \
-        map(lambda zi: (zi, False), self._remove)
+    all = [(zi, True) for zi in self.filelist] + \
+        [(zi, False) for zi in self._remove]
     all.sort(lambda l, r: cmp(l[0].header_offset, r[0].header_offset))
     # empty _remove for multiple closes
     self._remove = []
 
     lengths = [all[i+1][0].header_offset - all[i][0].header_offset
-               for i in xrange(len(all)-1)]
+               for i in range(len(all)-1)]
     lengths.append(self.end - all[-1][0].header_offset)
     to_pos = 0
     for (zi, keep), length in zip(all, lengths):

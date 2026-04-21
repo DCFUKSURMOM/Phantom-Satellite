@@ -15,13 +15,13 @@ class BinaryTest(unittest2.TestCase):
     def test_enc_dec(self):
 
         message = struct.pack('>IIII', 0, 0, 0, 1)
-        print("\tMessage:   %r" % message)
+        print(("\tMessage:   %r" % message))
 
         encrypted = pkcs1.encrypt(message, self.pub)
-        print("\tEncrypted: %r" % encrypted)
+        print(("\tEncrypted: %r" % encrypted))
 
         decrypted = pkcs1.decrypt(encrypted, self.priv)
-        print("\tDecrypted: %r" % decrypted)
+        print(("\tDecrypted: %r" % decrypted))
 
         self.assertEqual(message, decrypted)
 
@@ -59,10 +59,10 @@ class SignatureTest(unittest2.TestCase):
         '''Test happy flow of sign and verify'''
         
         message = b('je moeder')
-        print("\tMessage:   %r" % message)
+        print(("\tMessage:   %r" % message))
 
         signature = pkcs1.sign(message, self.priv, 'SHA-256')
-        print("\tSignature: %r" % signature)
+        print(("\tSignature: %r" % signature))
 
         self.assertTrue(pkcs1.verify(message, signature, self.pub))
 

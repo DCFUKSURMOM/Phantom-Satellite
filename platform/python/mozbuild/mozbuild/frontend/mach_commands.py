@@ -105,13 +105,13 @@ class MozbuildFileCommands(MachCommandBase):
         """
         components = defaultdict(set)
         try:
-            for p, m in self._get_files_info(paths, rev=rev).items():
+            for p, m in list(self._get_files_info(paths, rev=rev).items()):
                 components[m.get('BUG_COMPONENT')].add(p)
         except InvalidPathException as e:
-            print(e.message)
+            print(str(e))
             return 1
 
-        for component, files in sorted(components.items(), key=lambda x: (x is None, x)):
+        for component, files in sorted(list(components.items()), key=lambda x: (x is None, x)):
             print('%s :: %s' % (component.product, component.component) if component else 'UNKNOWN')
             for f in sorted(files):
                 print('  %s' % f)
@@ -128,7 +128,7 @@ class MozbuildFileCommands(MachCommandBase):
                 if 'BUG_COMPONENT' not in m:
                     print(p)
         except InvalidPathException as e:
-            print(e.message)
+            print(str(e))
             return 1
 
     @SubCommand('file-info', 'dep-tests',
@@ -139,7 +139,7 @@ class MozbuildFileCommands(MachCommandBase):
                      help='Paths whose data to query')
     def file_info_test_deps(self, paths, rev=None):
         try:
-            for p, m in self._get_files_info(paths, rev=rev).items():
+            for p, m in list(self._get_files_info(paths, rev=rev).items()):
                 print('%s:' % mozpath.relpath(p, self.topsrcdir))
                 if m.test_files:
                     print('\tTest file patterns:')
@@ -155,7 +155,7 @@ class MozbuildFileCommands(MachCommandBase):
                         print('\t\t%s' % p)
 
         except InvalidPathException as e:
-            print(e.message)
+            print(str(e))
             return 1
 
 

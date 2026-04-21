@@ -40,9 +40,9 @@ if __name__ == '__main__':
                                                     0, # no inherit
                                                     int(pid))
         if handle:
-            print "Process %s:" % pid
+            print("Process %s:" % pid)
             vsize, peak_vsize = get_vmsize(handle)
-            print "peak vsize: %d" % peak_vsize
+            print("peak vsize: %d" % peak_vsize)
             ctypes.windll.kernel32.CloseHandle(handle)
         else:
-            print "Couldn't open process %s" % pid
+            print("Couldn't open process %s" % pid)

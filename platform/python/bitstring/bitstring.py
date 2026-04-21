@@ -668,10 +668,10 @@ def expand_brackets(s):
 
 
 # This converts a single octal digit to 3 bits.
-OCT_TO_BITS = ['{0:03b}'.format(i) for i in xrange(8)]
+OCT_TO_BITS = ['{0:03b}'.format(i) for i in range(8)]
 
 # A dictionary of number of 1 bits contained in binary representation of any byte
-BIT_COUNT = dict(zip(xrange(256), [bin(i).count('1') for i in xrange(256)]))
+BIT_COUNT = dict(list(zip(range(256), [bin(i).count('1') for i in range(256)])))
 
 
 class Bits(object):
@@ -1185,7 +1185,7 @@ class Bits(object):
         return h % 1442968193
 
     # This is only used in Python 2.x...
-    def __nonzero__(self):
+    def __bool__(self):
         """Return True if any bits are set to 1, otherwise return False."""
         return self.any(True)
 
@@ -1499,7 +1499,7 @@ class Bits(object):
                 val <<= 8 * chunksize
                 val += struct.unpack('<L', bytes(self._datastore.getbyteslice(endbyte + 1 - chunksize, endbyte + 1)))[0]
                 endbyte -= chunksize
-            for b in xrange(endbyte, startbyte - 1, -1):
+            for b in range(endbyte, startbyte - 1, -1):
                 val <<= 8
                 val += self._datastore.getbyte(b)
         else:
@@ -1832,7 +1832,7 @@ class Bits(object):
                            if len(binstring) < boundary else binstring
         try:
             bytelist = [int(padded_binstring[x:x + 8], 2)
-                        for x in xrange(0, len(padded_binstring), 8)]
+                        for x in range(0, len(padded_binstring), 8)]
         except ValueError:
             raise CreationError("Invalid character in bin initialiser {0}.", binstring)
         self._setbytes_unsafe(bytearray(bytelist), length, 0)
@@ -1905,7 +1905,7 @@ class Bits(object):
                 data = bytearray.fromhex(hexstring)
             except TypeError:
                 # Python 2.6 needs a unicode string (a bug). 2.7 and 3.x work fine.
-                data = bytearray.fromhex(unicode(hexstring))
+                data = bytearray.fromhex(str(hexstring))
         except ValueError:
             raise CreationError("Invalid symbol in hex initialiser.")
         self._setbytes_unsafe(data, length * 4, 0)
@@ -2169,7 +2169,7 @@ class Bits(object):
         """Invert every bit."""
         set = self._datastore.setbyte
         get = self._datastore.getbyte
-        for p in xrange(self._datastore.byteoffset, self._datastore.byteoffset + self._datastore.bytelength):
+        for p in range(self._datastore.byteoffset, self._datastore.byteoffset + self._datastore.bytelength):
             set(p, 256 + ~get(p))
 
     def _ilshift(self, n):
@@ -2212,7 +2212,7 @@ class Bits(object):
                 self._datastore = offsetcopy(self._datastore, bs_bitoffset)
         a = self._datastore.rawbytes
         b = bs._datastore.rawbytes
-        for i in xrange(len(a)):
+        for i in range(len(a)):
             a[i] = f(a[i + self_byteoffset], b[i + bs_byteoffset])
         return self
 
@@ -2720,7 +2720,7 @@ class Bits(object):
         value = bool(value)
         length = self.len
         if pos is None:
-            pos = xrange(self.len)
+            pos = range(self.len)
         for p in pos:
             if p < 0:
                 p += length
@@ -2742,7 +2742,7 @@ class Bits(object):
         value = bool(value)
         length = self.len
         if pos is None:
-            pos = xrange(self.len)
+            pos = range(self.len)
         for p in pos:
             if p < 0:
                 p += length
@@ -2766,7 +2766,7 @@ class Bits(object):
             return 0
         # count the number of 1s (from which it's easy to work out the 0s).
         # Don't count the final byte yet.
-        count = sum(BIT_COUNT[self._datastore.getbyte(i)] for i in xrange(self._datastore.bytelength - 1))
+        count = sum(BIT_COUNT[self._datastore.getbyte(i)] for i in range(self._datastore.bytelength - 1))
         # adjust for bits at start that aren't part of the bitstring
         if self._offset:
             count -= BIT_COUNT[self._datastore.getbyte(0) >> (8 - self._offset)]
@@ -3458,7 +3458,7 @@ class BitArray(Bits):
         """
         f = self._set if value else self._unset
         if pos is None:
-            pos = xrange(self.len)
+            pos = range(self.len)
         try:
             length = self.len
             for p in pos:
@@ -3593,7 +3593,7 @@ class BitArray(Bits):
         else:
             # Just try one (set of) byteswap(s).
             finalbit = start + totalbitsize
-        for patternend in xrange(start + totalbitsize, finalbit + 1, totalbitsize):
+        for patternend in range(start + totalbitsize, finalbit + 1, totalbitsize):
             bytestart = patternend - totalbitsize
             for bytesize in bytesizes:
                 byteend = bytestart + bytesize * 8

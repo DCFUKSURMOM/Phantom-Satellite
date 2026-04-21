@@ -10,6 +10,7 @@ import re
 import sys
 import subprocess
 import traceback
+import locale
 
 from collections import defaultdict
 from mozpack import path as mozpath
@@ -60,7 +61,7 @@ class MozconfigLoadException(Exception):
 class MozconfigLoader(object):
     """Handles loading and parsing of mozconfig files."""
 
-    RE_MAKE_VARIABLE = re.compile('''
+    RE_MAKE_VARIABLE = re.compile(r'''
         ^\s*                    # Leading whitespace
         (?P<var>[a-zA-Z_0-9]+)  # Variable name
         \s* [?:]?= \s*          # Assignment operator surrounded by optional
@@ -311,7 +312,7 @@ class MozconfigLoader(object):
 
         # Environment variables also appear as shell variables, but that's
         # uninteresting duplication of information. Filter them out.
-        filt = lambda x, y: {k: v for k, v in x.items() if k not in y}
+        filt = lambda x, y: {k: v for k, v in list(x.items()) if k not in y}
         result['vars'] = diff_vars(
             filt(parsed['vars_before'], parsed['env_before']),
             filt(parsed['vars_after'], parsed['env_after'])
@@ -361,14 +362,15 @@ class MozconfigLoader(object):
         current = None
         current_type = None
         in_variable = None
-
+        encoding = locale.getpreferredencoding(False)
         for line in output.splitlines():
-
-            # XXX This is an ugly hack. Data may be lost from things
-            # like environment variable values.
-            # See https://bugzilla.mozilla.org/show_bug.cgi?id=831381
-            line = line.decode('mbcs' if sys.platform == 'win32' else 'utf-8',
-                               'ignore')
+            # This was revisited during the Python 3 port, and
+            # is now done cleanly and defensively enough to avoid
+            # losing data.
+            if isinstance(line, bytes):
+                line = line.decode(encoding, errors='replace')
+            elif not isinstance(line, str):
+                line = str(line)
 
             if not line:
                 continue

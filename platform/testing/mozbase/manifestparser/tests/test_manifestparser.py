@@ -9,7 +9,7 @@ import shutil
 import tempfile
 import unittest
 from manifestparser import ManifestParser
-from StringIO import StringIO
+from io import StringIO
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -307,7 +307,7 @@ yellow = submarine"""  # noqa
         parser.read(manifest)
         self.assertEqual(len(parser.tests), 0)
         self.assertTrue(manifest in parser.manifest_defaults)
-        self.assertEquals(parser.manifest_defaults[manifest]['foo'], 'bar')
+        self.assertEqual(parser.manifest_defaults[manifest]['foo'], 'bar')
 
     def test_manifest_list(self):
         """

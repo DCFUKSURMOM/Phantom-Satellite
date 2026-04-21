@@ -56,10 +56,12 @@ def generate_precomplete(root_path):
     precomplete_file = open(precomplete_file_path, "wb")
     rel_file_path_list, rel_dir_path_list = get_build_entries(root_path)
     for rel_file_path in rel_file_path_list:
-        precomplete_file.writelines("remove \""+rel_file_path+"\"\n")
+        line = "remove \""+rel_file_path+"\"\n"
+        precomplete_file.write(line.encode('utf-8'))
 
     for rel_dir_path in rel_dir_path_list:
-        precomplete_file.writelines("rmdir \""+rel_dir_path+"\"\n")
+        line = "rmdir \""+rel_dir_path+"\"\n"
+        precomplete_file.write(line.encode('utf-8'))
 
     precomplete_file.close()
 

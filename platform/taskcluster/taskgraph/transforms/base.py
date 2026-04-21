@@ -102,13 +102,13 @@ def get_keyed_by(item, field, item_name, subfield=None):
             return value
 
     assert len(value) == 1, "Invalid attribute {} in {}".format(field, item_name)
-    keyed_by = value.keys()[0]
+    keyed_by = list(value.keys())[0]
     values = value[keyed_by]
     if keyed_by.startswith('by-'):
         keyed_by = keyed_by[3:]  # extract just the keyed-by field name
         if item[keyed_by] in values:
             return values[item[keyed_by]]
-        for k in values.keys():
+        for k in list(values.keys()):
             if re.match(k, item[keyed_by]):
                 return values[k]
         if 'default' in values:

@@ -9,9 +9,9 @@ import unittest
 import subprocess
 import tempfile
 import shutil
-import urlparse
+import urllib.parse
 import zipfile
-import StringIO
+import io
 import mozcrash
 import mozhttpd
 import mozlog.unstructured as mozlog
@@ -28,14 +28,14 @@ def popen_factory(stdouts):
     class mock_popen(object):
 
         def __init__(self, args, *args_rest, **kwargs):
-            self.stdout = stdouts.next()
+            self.stdout = next(stdouts)
             self.returncode = 0
 
         def wait(self):
             return 0
 
         def communicate(self):
-            return (self.stdout.next(), "")
+            return (next(self.stdout), "")
 
     return mock_popen
 
@@ -77,7 +77,7 @@ class TestCrash(unittest.TestCase):
         """
         open(os.path.join(self.tempdir, "test.dmp"), "w").write("foo")
         self.stdouts.append(["this is some output"])
-        self.assert_(mozcrash.check_for_crashes(self.tempdir,
+        self.assertTrue(mozcrash.check_for_crashes(self.tempdir,
                                                 symbols_path='symbols_path',
                                                 stackwalk_binary=self.stackwalk,
                                                 quiet=True))
@@ -89,7 +89,7 @@ class TestCrash(unittest.TestCase):
         open(os.path.join(self.tempdir, "test.dmp"), "w").write("foo")
         self.stdouts.append(["this is some output"])
         os.environ['MINIDUMP_STACKWALK'] = self.stackwalk
-        self.assert_(mozcrash.check_for_crashes(self.tempdir,
+        self.assertTrue(mozcrash.check_for_crashes(self.tempdir,
                                                 symbols_path='symbols_path',
                                                 quiet=True))
         del os.environ['MINIDUMP_STACKWALK']
@@ -103,13 +103,13 @@ class TestCrash(unittest.TestCase):
         save_path = os.path.join(self.tempdir, "saved")
         os.mkdir(save_path)
         self.stdouts.append(["this is some output"])
-        self.assert_(mozcrash.check_for_crashes(self.tempdir,
+        self.assertTrue(mozcrash.check_for_crashes(self.tempdir,
                                                 symbols_path='symbols_path',
                                                 stackwalk_binary=self.stackwalk,
                                                 dump_save_path=save_path,
                                                 quiet=True))
-        self.assert_(os.path.isfile(os.path.join(save_path, "test.dmp")))
-        self.assert_(os.path.isfile(os.path.join(save_path, "test.extra")))
+        self.assertTrue(os.path.isfile(os.path.join(save_path, "test.dmp")))
+        self.assertTrue(os.path.isfile(os.path.join(save_path, "test.extra")))
 
     def test_save_path_not_present(self):
         """
@@ -119,13 +119,13 @@ class TestCrash(unittest.TestCase):
         open(os.path.join(self.tempdir, "test.extra"), "w").write("bar")
         save_path = os.path.join(self.tempdir, "saved")
         self.stdouts.append(["this is some output"])
-        self.assert_(mozcrash.check_for_crashes(self.tempdir,
+        self.assertTrue(mozcrash.check_for_crashes(self.tempdir,
                                                 symbols_path='symbols_path',
                                                 stackwalk_binary=self.stackwalk,
                                                 dump_save_path=save_path,
                                                 quiet=True))
-        self.assert_(os.path.isfile(os.path.join(save_path, "test.dmp")))
-        self.assert_(os.path.isfile(os.path.join(save_path, "test.extra")))
+        self.assertTrue(os.path.isfile(os.path.join(save_path, "test.dmp")))
+        self.assertTrue(os.path.isfile(os.path.join(save_path, "test.extra")))
 
     def test_save_path_isfile(self):
         """
@@ -137,13 +137,13 @@ class TestCrash(unittest.TestCase):
         save_path = os.path.join(self.tempdir, "saved")
         open(save_path, "w").write("junk")
         self.stdouts.append(["this is some output"])
-        self.assert_(mozcrash.check_for_crashes(self.tempdir,
+        self.assertTrue(mozcrash.check_for_crashes(self.tempdir,
                                                 symbols_path='symbols_path',
                                                 stackwalk_binary=self.stackwalk,
                                                 dump_save_path=save_path,
                                                 quiet=True))
-        self.assert_(os.path.isfile(os.path.join(save_path, "test.dmp")))
-        self.assert_(os.path.isfile(os.path.join(save_path, "test.extra")))
+        self.assertTrue(os.path.isfile(os.path.join(save_path, "test.dmp")))
+        self.assertTrue(os.path.isfile(os.path.join(save_path, "test.extra")))
 
     def test_save_path_envvar(self):
         """
@@ -155,18 +155,18 @@ class TestCrash(unittest.TestCase):
         os.mkdir(save_path)
         self.stdouts.append(["this is some output"])
         os.environ['MINIDUMP_SAVE_PATH'] = save_path
-        self.assert_(mozcrash.check_for_crashes(self.tempdir,
+        self.assertTrue(mozcrash.check_for_crashes(self.tempdir,
                                                 symbols_path='symbols_path',
                                                 stackwalk_binary=self.stackwalk,
                                                 quiet=True))
         del os.environ['MINIDUMP_SAVE_PATH']
-        self.assert_(os.path.isfile(os.path.join(save_path, "test.dmp")))
-        self.assert_(os.path.isfile(os.path.join(save_path, "test.extra")))
+        self.assertTrue(os.path.isfile(os.path.join(save_path, "test.dmp")))
+        self.assertTrue(os.path.isfile(os.path.join(save_path, "test.extra")))
 
     def test_symbol_path_not_present(self):
         open(os.path.join(self.tempdir, "test.dmp"), "w").write("foo")
         self.stdouts.append(["this is some output"])
-        self.assert_(mozcrash.check_for_crashes(self.tempdir,
+        self.assertTrue(mozcrash.check_for_crashes(self.tempdir,
                                                 symbols_path=None,
                                                 stackwalk_binary=self.stackwalk,
                                                 quiet=True))
@@ -179,7 +179,7 @@ class TestCrash(unittest.TestCase):
         self.stdouts.append(["this is some output"])
 
         def make_zipfile():
-            data = StringIO.StringIO()
+            data = io.StringIO()
             z = zipfile.ZipFile(data, 'w')
             z.writestr("symbols.txt", "abc/xyz")
             z.close()
@@ -193,9 +193,9 @@ class TestCrash(unittest.TestCase):
                                                 'path': '/symbols',
                                                 'function': get_symbols}])
         httpd.start()
-        symbol_url = urlparse.urlunsplit(('http', '%s:%d' % httpd.httpd.server_address,
+        symbol_url = urllib.parse.urlunsplit(('http', '%s:%d' % httpd.httpd.server_address,
                                           '/symbols', '', ''))
-        self.assert_(mozcrash.check_for_crashes(self.tempdir,
+        self.assertTrue(mozcrash.check_for_crashes(self.tempdir,
                                                 symbol_url,
                                                 stackwalk_binary=self.stackwalk,
                                                 quiet=True))
@@ -217,7 +217,7 @@ class TestJavaException(unittest.TestCase):
         """
         Test for an exception which should be caught
         """
-        self.assert_(mozcrash.check_for_java_exception(self.test_log, quiet=True))
+        self.assertTrue(mozcrash.check_for_java_exception(self.test_log, quiet=True))
 
     def test_truncated_exception(self):
         """
@@ -226,7 +226,7 @@ class TestJavaException(unittest.TestCase):
         """
         truncated_log = list(self.test_log)
         truncated_log[0], truncated_log[1] = truncated_log[1], truncated_log[0]
-        self.assert_(mozcrash.check_for_java_exception(truncated_log, quiet=True))
+        self.assertTrue(mozcrash.check_for_java_exception(truncated_log, quiet=True))
 
     def test_unchecked_exception(self):
         """
@@ -235,7 +235,7 @@ class TestJavaException(unittest.TestCase):
         passable_log = list(self.test_log)
         passable_log[0] = "01-30 20:15:41.937 E/GeckoAppShell( 1703):" \
                           " >>> NOT-SO-BAD EXCEPTION FROM THREAD 9 (\"GeckoBackgroundThread\")"
-        self.assert_(not mozcrash.check_for_java_exception(passable_log, quiet=True))
+        self.assertTrue(not mozcrash.check_for_java_exception(passable_log, quiet=True))
 
 if __name__ == '__main__':
     unittest.main()

@@ -5,7 +5,7 @@ from pyasn1_modules import rfc2560, rfc2459, pem
 from pyasn1.type import univ
 import sys, hashlib
 try:
-    import urllib2
+    import urllib.request, urllib.error, urllib.parse
 except ImportError:
     import urllib.request as urllib2
 
@@ -98,8 +98,8 @@ def parseOcspRequest(ocspRequest):
         )
 
 if len(sys.argv) != 2:
-    print("""Usage:
-$ cat CACertificate.pem userCertificate.pem | %s <ocsp-responder-url>""" % sys.argv[0])
+    print(("""Usage:
+$ cat CACertificate.pem userCertificate.pem | %s <ocsp-responder-url>""" % sys.argv[0]))
     sys.exit(-1)
 else:
     ocspUrl = sys.argv[1]
@@ -122,12 +122,12 @@ ocspReq = mkOcspRequest(issuerCert, userCert)
 # Use HTTP POST to get response (see Appendix A of RFC 2560)
 # In case you need proxies, set the http_proxy env variable
 
-httpReq = urllib2.Request(
+httpReq = urllib.request.Request(
     ocspUrl,
     encoder.encode(ocspReq),
     { 'Content-Type': 'application/ocsp-request' }
     )
-httpRsp = urllib2.urlopen(httpReq).read()
+httpRsp = urllib.request.urlopen(httpReq).read()
 
 # Process OCSP response
     
@@ -135,9 +135,9 @@ ocspRsp, _ = decoder.decode(httpRsp, asn1Spec=rfc2560.OCSPResponse())
 
 producedAt, certId, certStatus, thisUpdate = parseOcspResponse(ocspRsp)
 
-print('Certificate ID %s is %s at %s till %s\n' % (
+print(('Certificate ID %s is %s at %s till %s\n' % (
     certId.getComponentByName('serialNumber'),
     certStatus,
     producedAt,
     thisUpdate
-    ))
+    )))

@@ -38,10 +38,10 @@ class SearchSmoothAdapt(MotionEST):
 
   def getRefLocalDiff(self, mvs):
     m, n = self.num_row, self.num_col
-    localDiff = [[] for _ in xrange(m)]
+    localDiff = [[] for _ in range(m)]
     blk_sz = self.blk_sz
-    for r in xrange(m):
-      for c in xrange(n):
+    for r in range(m):
+      for c in range(n):
         I_row = 0
         I_col = 0
         #get ssd surface
@@ -78,8 +78,8 @@ class SearchSmoothAdapt(MotionEST):
   def smooth(self, uvs, mvs):
     sm_uvs = np.zeros(uvs.shape)
     blk_sz = self.blk_sz
-    for r in xrange(self.num_row):
-      for c in xrange(self.num_col):
+    for r in range(self.num_row):
+      for c in range(self.num_col):
         nb_uv = np.array([0.0, 0.0])
         for i, j in {(r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)}:
           if 0 <= i < self.num_row and 0 <= j < self.num_col:
@@ -112,7 +112,7 @@ class SearchSmoothAdapt(MotionEST):
     mvs = self.search.mf
     #add smoothness constraint
     uvs = mvs / self.blk_sz
-    for _ in xrange(self.max_iter):
+    for _ in range(self.max_iter):
       uvs = self.smooth(uvs, mvs)
     self.mf = uvs * self.blk_sz
 
@@ -144,10 +144,10 @@ class SearchSmoothFix(MotionEST):
 
   def getRefLocalDiff(self, mvs):
     m, n = self.num_row, self.num_col
-    localDiff = [[] for _ in xrange(m)]
+    localDiff = [[] for _ in range(m)]
     blk_sz = self.blk_sz
-    for r in xrange(m):
-      for c in xrange(n):
+    for r in range(m):
+      for c in range(n):
         I_row = 0
         I_col = 0
         #get ssd surface
@@ -184,8 +184,8 @@ class SearchSmoothFix(MotionEST):
   def smooth(self, uvs, mvs):
     sm_uvs = np.zeros(uvs.shape)
     blk_sz = self.blk_sz
-    for r in xrange(self.num_row):
-      for c in xrange(self.num_col):
+    for r in range(self.num_row):
+      for c in range(self.num_col):
         nb_uv = np.array([0.0, 0.0])
         for i, j in {(r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)}:
           if 0 <= i < self.num_row and 0 <= j < self.num_col:
@@ -216,6 +216,6 @@ class SearchSmoothFix(MotionEST):
     mvs = self.search.mf
     #add smoothness constraint
     uvs = mvs / self.blk_sz
-    for _ in xrange(self.max_iter):
+    for _ in range(self.max_iter):
       uvs = self.smooth(uvs, mvs)
     self.mf = uvs * self.blk_sz

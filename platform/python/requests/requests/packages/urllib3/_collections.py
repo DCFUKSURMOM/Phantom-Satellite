@@ -179,7 +179,7 @@ class HTTPHeaderDict(MutableMapping):
 
     def __iter__(self):
         # Only provide the originally cased names
-        for vals in self._container.values():
+        for vals in list(self._container.values()):
             yield vals[0]
 
     def pop(self, key, default=__marker):
@@ -239,19 +239,19 @@ class HTTPHeaderDict(MutableMapping):
         other = args[0] if len(args) >= 1 else ()
 
         if isinstance(other, HTTPHeaderDict):
-            for key, val in other.iteritems():
+            for key, val in other.items():
                 self.add(key, val)
         elif isinstance(other, Mapping):
             for key in other:
                 self.add(key, other[key])
         elif hasattr(other, "keys"):
-            for key in other.keys():
+            for key in list(other.keys()):
                 self.add(key, other[key])
         else:
             for key, value in other:
                 self.add(key, value)
 
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             self.add(key, value)
 
     def getlist(self, key):
@@ -302,7 +302,7 @@ class HTTPHeaderDict(MutableMapping):
             yield val[0], ', '.join(val[1:])
 
     def items(self):
-        return list(self.iteritems())
+        return list(self.items())
 
     @classmethod
     def from_httplib(cls, message):  # Python 2

@@ -11,7 +11,7 @@ from mozbuild.makeutil import (
 from mozunit import main
 import os
 import unittest
-from StringIO import StringIO
+from io import StringIO
 
 
 class TestMakefile(unittest.TestCase):

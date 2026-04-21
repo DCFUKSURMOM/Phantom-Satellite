@@ -34,15 +34,15 @@ def NMSymbolicate(library, addresses):
         symbolForAddress = symbol
         break
     if symbolForAddress:
-      print symbolForAddress["funcName"]
+      print(symbolForAddress["funcName"])
     else:
-      print "??" # match addr2line
-    print ":0" # no line information from nm
+      print("??") # match addr2line
+    print(":0") # no line information from nm
 
 if len(sys.argv) > 1:
     NMSymbolicate(sys.argv[1], sys.argv[2:])
     sys.exit(0)
 
-print "Usage: nm-symbolicate.py <library> <addresses> > merged.sym"
+print("Usage: nm-symbolicate.py <library> <addresses> > merged.sym")
 
 

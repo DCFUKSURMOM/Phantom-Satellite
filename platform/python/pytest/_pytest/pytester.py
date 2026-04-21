@@ -870,8 +870,8 @@ class Testdir:
 
         """
         env = os.environ.copy()
-        env['PYTHONPATH'] = os.pathsep.join(filter(None, [
-            str(os.getcwd()), env.get('PYTHONPATH', '')]))
+        env['PYTHONPATH'] = os.pathsep.join([_f for _f in [
+            str(os.getcwd()), env.get('PYTHONPATH', '')] if _f])
         kw['env'] = env
         return subprocess.Popen(cmdargs,
                                 stdout=stdout, stderr=stderr, **kw)
@@ -920,7 +920,7 @@ class Testdir:
             for line in lines:
                 py.builtin.print_(line, file=fp)
         except UnicodeEncodeError:
-            print("couldn't print to %s because of encoding" % (fp,))
+            print(("couldn't print to %s because of encoding" % (fp,)))
 
     def _getpytestargs(self):
         # we cannot use "(sys.executable,script)"

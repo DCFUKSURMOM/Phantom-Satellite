@@ -116,12 +116,12 @@ class TemplatesTest(unittest.TestCase):
         self.mocked_open.__exit__(None, None, None)
 
     def test_invalid_path(self):
-        with self.assertRaisesRegexp(TemplatesException, 'must be a directory'):
+        with self.assertRaisesRegex(TemplatesException, 'must be a directory'):
             Templates('/zomg/not/a/dir')
 
     def test_no_templates(self):
         content = self.subject.load('simple.yml', {})
-        self.assertEquals(content, {
+        self.assertEqual(content, {
             'is_simple': True
         })
 
@@ -130,7 +130,7 @@ class TemplatesTest(unittest.TestCase):
             'woot': 'bar'
         })
 
-        self.assertEquals(content, {
+        self.assertEqual(content, {
             'content': 'content',
             'variable': 'bar'
         })
@@ -159,7 +159,7 @@ class TemplatesTest(unittest.TestCase):
         '''
         Circular reference handling.
         '''
-        with self.assertRaisesRegexp(TemplatesException, 'circular'):
+        with self.assertRaisesRegex(TemplatesException, 'circular'):
             self.subject.load('circular.yml', {})
 
     def test_deep_inheritance(self):
@@ -170,7 +170,7 @@ class TemplatesTest(unittest.TestCase):
 
     def test_inheritance_with_simple_extensions(self):
         content = self.subject.load('extend_parent.yml', {})
-        self.assertEquals(content, {
+        self.assertEqual(content, {
             'list': ['1', '2', '3', '4'],
             'obj': {
                 'from_parent': True,

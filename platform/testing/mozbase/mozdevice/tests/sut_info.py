@@ -34,7 +34,7 @@ class TestGetInfo(unittest.TestCase):
 
     def test_getInfo(self):
 
-        for directive in self.commands.keys():
+        for directive in list(self.commands.keys()):
             m = MockAgent(self, commands=[self.commands[directive]])
             d = mozdevice.DroidSUT('127.0.0.1', port=m.port, logLevel=logging.DEBUG)
 

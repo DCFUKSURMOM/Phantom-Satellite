@@ -12,10 +12,10 @@ import os
 import re
 import posixpath
 import subprocess
-import StringIO
-from devicemanager import DeviceManager, DMError, _pop_last_line
+import io
+from .devicemanager import DeviceManager, DMError, _pop_last_line
 import errno
-from distutils.version import StrictVersion
+from mozbuild.version import Version
 
 
 class DeviceManagerSUT(DeviceManager):
@@ -148,7 +148,7 @@ class DeviceManagerSUT(DeviceManager):
         writing to a file
         """
         retryLimit = retryLimit or self.retryLimit
-        outputfile = StringIO.StringIO()
+        outputfile = io.StringIO()
         self._sendCmds(cmdlist, outputfile, timeout, retryLimit=retryLimit)
         outputfile.seek(0)
         return outputfile.read()
@@ -239,7 +239,7 @@ class DeviceManagerSUT(DeviceManager):
                         # Wait up to a second for socket to become ready for reading...
                         if select.select([self._sock], [], [], select_timeout)[0]:
                             temp = self._sock.recv(1024)
-                            self._logger.debug(u"response: %s" % temp.decode('utf8', 'replace'))
+                            self._logger.debug("response: %s" % temp.decode('utf8', 'replace'))
                             timer = 0
                             if not temp:
                                 socketClosed = True
@@ -320,7 +320,7 @@ class DeviceManagerSUT(DeviceManager):
             raise DMError("Negatus does not support execcwd/execcwdsu")
 
         haveExecSu = (self.agentProductName == 'SUTAgentNegatus' or
-                      StrictVersion(self.agentVersion) >= StrictVersion('1.13'))
+                      Version(self.agentVersion) >= Version('1.13'))
 
         # Depending on agent version we send one of the following commands here:
         # * exec (run as normal user)
@@ -430,7 +430,7 @@ class DeviceManagerSUT(DeviceManager):
             return []
         data = self._runCmds([{'cmd': 'cd ' + rootdir}, {'cmd': 'ls'}])
 
-        files = filter(lambda x: x, data.splitlines())
+        files = [x for x in data.splitlines() if x]
         if len(files) == 1 and files[0] == '<empty>':
             # special case on the agent: empty directories return just the
             # string "<empty>"
@@ -832,8 +832,8 @@ class DeviceManagerSUT(DeviceManager):
             result[d] = data.split('\n')
 
         # Get rid of any 0 length members of the arrays
-        for k, v in result.iteritems():
-            result[k] = filter(lambda x: x != '', result[k])
+        for k, v in result.items():
+            result[k] = [x for x in result[k] if x != '']
 
         # Format the process output
         if 'process' in result:
@@ -920,7 +920,7 @@ class DeviceManagerSUT(DeviceManager):
         if (env is None or env == ''):
             return ''
 
-        retVal = '"%s"' % ','.join(map(lambda x: '%s=%s' % (x[0], x[1]), env.iteritems()))
+        retVal = '"%s"' % ','.join(['%s=%s' % (x[0], x[1]) for x in env.items()])
         if (retVal == '""'):
             return ''
 

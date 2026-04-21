@@ -15,7 +15,7 @@ def pinv_solution(A, mv, B):
     new_A = np.concatenate((A, mv), axis=1)
     new_A_inv = np.linalg.pinv(new_A)
     new_x = np.matmul(new_A_inv, B)
-    print("pinv solution:", new_x[0][0], new_x[1][0])
+    print(("pinv solution:", new_x[0][0], new_x[1][0]))
     return (new_x[0][0], new_x[1][0])
 
 # Model A only.
@@ -160,7 +160,7 @@ def print_solutions(file_path):
         all_zeros = not A.any()
         if all_zeros:
             continue
-        print("update type:", update[0][0])
+        print(("update type:", update[0][0]))
         x_ls = lstsq_solution(A, B)
         x_a = minimize_percentage_error_model_a(A, B)
         x_b = minimize_percentage_error_model_b(A, mv, B)
@@ -175,10 +175,10 @@ def print_solutions(file_path):
         baseline_squared_error_b = average_squared_error_model_b(A, mv, B, [1, 1])[0]
 
         print("model,\tframe_coeff,\tmv_coeff,\terror,\tbaseline_error")
-        print("Model A %_error,\t" + str(x_a) + ",\t" + str(0) + ",\t" + str(percent_error_a) + ",\t" + str(baseline_percent_error_a))
-        print("Model A sq_error,\t" + str(x_a) + ",\t" + str(0) + ",\t" + str(squared_error_a) + ",\t" + str(baseline_squared_error_a))
-        print("Model B %_error,\t" + str(x_b[0]) + ",\t" + str(x_b[1]) + ",\t" + str(percent_error_b) + ",\t" + str(baseline_percent_error_b))
-        print("Model B sq_error,\t" + str(x_b[0]) + ",\t" + str(x_b[1]) + ",\t" + str(squared_error_b) + ",\t" + str(baseline_squared_error_b))
+        print(("Model A %_error,\t" + str(x_a) + ",\t" + str(0) + ",\t" + str(percent_error_a) + ",\t" + str(baseline_percent_error_a)))
+        print(("Model A sq_error,\t" + str(x_a) + ",\t" + str(0) + ",\t" + str(squared_error_a) + ",\t" + str(baseline_squared_error_a)))
+        print(("Model B %_error,\t" + str(x_b[0]) + ",\t" + str(x_b[1]) + ",\t" + str(percent_error_b) + ",\t" + str(baseline_percent_error_b)))
+        print(("Model B sq_error,\t" + str(x_b[0]) + ",\t" + str(x_b[1]) + ",\t" + str(squared_error_b) + ",\t" + str(baseline_squared_error_b)))
         print()
 
 if __name__ == "__main__":

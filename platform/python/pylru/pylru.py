@@ -178,7 +178,7 @@ class lrucache(object):
         # adjustment ensures correctness even for the case where the 'node'
         # is the 'head' node.
         self.mtf(node)
-        self.head = node.next
+        self.head = node.__next__
 
     def __iter__(self):
 
@@ -266,11 +266,11 @@ class lrucache(object):
     # operations, if 'node' already directly precedes the 'head' node or if
     # 'node' is the 'head' node the order of the list will be unchanged.
     def mtf(self, node):
-        node.prev.next = node.next
+        node.prev.next = node.__next__
         node.next.prev = node.prev
 
         node.prev = self.head.prev
-        node.next = self.head.prev.next
+        node.next = self.head.prev.__next__
 
         node.next.prev = node
         node.prev.next = node
@@ -282,7 +282,7 @@ class lrucache(object):
         node = self.head
         for i in range(len(self.table)):
             yield node
-            node = node.next
+            node = node.__next__
 
 
 
@@ -354,16 +354,16 @@ class WriteThroughCacheManager(object):
             pass
 
     def __iter__(self):
-        return self.keys()
+        return list(self.keys())
 
     def keys(self):
-        return self.store.keys()
+        return list(self.store.keys())
 
     def values(self):
-        return self.store.values()
+        return list(self.store.values())
 
     def items(self):
-        return self.store.items()
+        return list(self.store.items())
 
 
 
@@ -454,10 +454,10 @@ class WriteBackCacheManager(object):
 
 
     def __iter__(self):
-        return self.keys()
+        return list(self.keys())
 
     def keys(self):
-        for key in self.store.keys():
+        for key in list(self.store.keys()):
             if key not in self.dirty:
                 yield key
 
@@ -466,12 +466,12 @@ class WriteBackCacheManager(object):
 
 
     def values(self):
-        for key, value in self.items():
+        for key, value in list(self.items()):
             yield value
 
 
     def items(self):
-        for key, value in self.store.items():
+        for key, value in list(self.store.items()):
             if key not in self.dirty:
                 yield (key, value)
 

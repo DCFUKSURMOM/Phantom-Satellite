@@ -116,7 +116,7 @@ class DiskSize(object):
         # depending on path format (unicode or not) and python version (2 or 3)
         # we need to call GetDiskFreeSpaceExW or GetDiskFreeSpaceExA
         called_function = ctypes.windll.kernel32.GetDiskFreeSpaceExA
-        if isinstance(path, unicode) or sys.version_info >= (3,):
+        if isinstance(path, str) or sys.version_info >= (3,):
             called_function = ctypes.windll.kernel32.GetDiskFreeSpaceExW
         # we're ready for the dll call. On error it returns 0
         if called_function(path,

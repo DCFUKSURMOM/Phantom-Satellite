@@ -86,13 +86,13 @@ for i,v in enumerate (defaults):
 	values[i][v] = values[i].get (v, 0) + 1
 combined = {}
 for i,d in enumerate (unicode_data):
-	for u,v in d.items ():
+	for u,v in list(d.items ()):
 		if not u in combined:
 			if i >= 4:
 				continue
 			combined[u] = list (defaults)
 		combined[u][i] = v
-combined = {k: v for k, v in combined.items() if v[6] not in DISABLED_SCRIPTS}
+combined = {k: v for k, v in list(combined.items()) if v[6] not in DISABLED_SCRIPTS}
 
 
 property_names = [
@@ -350,8 +350,8 @@ use_positions = {
 
 def map_to_use(data):
 	out = {}
-	items = use_mapping.items()
-	for U, (UISC, UIPC, AJT, UDI, UGC, UBlock, _) in data.items():
+	items = list(use_mapping.items())
+	for U, (UISC, UIPC, AJT, UDI, UGC, UBlock, _) in list(data.items()):
 
 		# Resolve Indic_Syllabic_Category
 
@@ -381,7 +381,7 @@ def map_to_use(data):
 
 		pos_mapping = use_positions.get(USE, None)
 		if pos_mapping:
-			values = [k for k,v in pos_mapping.items() if v and UIPC in v]
+			values = [k for k,v in list(pos_mapping.items()) if v and UIPC in v]
 			assert len(values) == 1, "%s %s %s %s %s %s %s %s" % (hex(U), UIPC, USE, UISC, UDI, UGC, AJT, values)
 			USE = USE + values[0]
 
@@ -459,7 +459,7 @@ for k,v in sorted(use_mapping.items()):
 	print ("#define %s	USE(%s)	/* %s */" % (k, k, v.__name__[3:]))
 for k,v in sorted(use_positions.items()):
 	if not v: continue
-	for suf in v.keys():
+	for suf in list(v.keys()):
 		tag = k + suf
 		print ("#define %s	USE(%s)" % (tag, tag))
 print ('#pragma GCC diagnostic pop')
@@ -467,7 +467,7 @@ print ("")
 
 
 import packTab
-data = {u:v[0] for u,v in use_data.items()}
+data = {u:v[0] for u,v in list(use_data.items())}
 
 DEFAULT = 5
 COMPACT = 9
@@ -498,7 +498,7 @@ for k in sorted(use_mapping.keys()):
 	print ("#undef %s" % k)
 for k,v in sorted(use_positions.items()):
 	if not v: continue
-	for suf in v.keys():
+	for suf in list(v.keys()):
 		tag = k + suf
 		print ("#undef %s" % tag)
 print ()

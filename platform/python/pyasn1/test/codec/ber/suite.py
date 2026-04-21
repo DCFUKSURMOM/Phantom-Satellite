@@ -1,7 +1,7 @@
 from sys import path, version_info
 from os.path import sep
 path.insert(1, path[0]+sep+'ber')
-import test_encoder, test_decoder
+from . import test_encoder, test_decoder
 from pyasn1.error import PyAsn1Error
 if version_info[0:2] < (2, 7) or \
    version_info[0:2] in ( (3, 0), (3, 1) ):

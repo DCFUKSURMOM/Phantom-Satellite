@@ -5,6 +5,10 @@
 from __future__ import absolute_import, unicode_literals
 
 import argparse
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 import collections
 import inspect
 import os
@@ -110,8 +114,8 @@ def CommandProvider(cls):
     # Tell mach driver whether to pass context argument to __init__.
     pass_context = False
 
-    if inspect.ismethod(cls.__init__):
-        spec = inspect.getargspec(cls.__init__)
+    if inspect.isfunction(cls.__init__):
+        spec = inspect.getfullargspec(cls.__init__)
 
         if len(spec.args) > 2:
             msg = 'Mach @CommandProvider class %s implemented incorrectly. ' + \
@@ -151,7 +155,7 @@ def CommandProvider(cls):
               'Conditions argument must take a list ' + \
               'of functions. Found %s instead.'
 
-        if not isinstance(command.conditions, collections.Iterable):
+        if not isinstance(command.conditions, Iterable):
             msg = msg % (command.name, type(command.conditions))
             raise MachError(msg)
 

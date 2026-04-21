@@ -48,7 +48,7 @@ class Base(unittest.TestCase):
 
     def execute(self, function, *args, **kwargs):
         def call_many_times():
-            for x in xrange(LOOPS - 1):
+            for x in range(LOOPS - 1):
                 self.call(function, *args, **kwargs)
             del x
             gc.collect()

@@ -68,13 +68,13 @@ for i, f in enumerate (files):
 defaults = ('Other', 'Not_Applicable', 'No_Block')
 combined = {}
 for i,d in enumerate (unicode_data):
-	for u,v in d.items ():
+	for u,v in list(d.items ()):
 		if i == 2 and not u in combined:
 			continue
 		if not u in combined:
 			combined[u] = list (defaults)
 		combined[u][i] = v
-combined = {k:v for k,v in combined.items() if k in ALLOWED_SINGLES or v[2] in ALLOWED_BLOCKS}
+combined = {k:v for k,v in list(combined.items()) if k in ALLOWED_SINGLES or v[2] in ALLOWED_BLOCKS}
 
 
 # Convert categories & positions types
@@ -432,18 +432,18 @@ def position_to_category(pos):
 defaults = (category_map[defaults[0]], position_map[defaults[1]], defaults[2])
 
 indic_data = {}
-for k, (cat, pos, block) in combined.items():
+for k, (cat, pos, block) in list(combined.items()):
   cat = category_map[cat]
   pos = position_map[pos]
   indic_data[k] = (cat, pos, block)
 
-for k,new_cat in category_overrides.items():
+for k,new_cat in list(category_overrides.items()):
   (cat, pos, _) = indic_data.get(k, defaults)
   indic_data[k] = (new_cat, pos, unicode_data[2][k])
 
 # We only expect position for certain types
 positioned_categories = ('CM', 'SM', 'RS', 'H', 'M', 'MPst')
-for k, (cat, pos, block) in indic_data.items():
+for k, (cat, pos, block) in list(indic_data.items()):
   if cat not in positioned_categories:
     pos = 'END'
     indic_data[k] = (cat, pos, block)
@@ -454,7 +454,7 @@ for k, (cat, pos, block) in indic_data.items():
 consonant_categories = ('C', 'CS', 'Ra','CM', 'V', 'PLACEHOLDER', 'DOTTEDCIRCLE')
 matra_categories = ('M', 'MPst')
 smvd_categories = ('SM', 'VD', 'A', 'Symbol')
-for k, (cat, pos, block) in indic_data.items():
+for k, (cat, pos, block) in list(indic_data.items()):
   if cat in consonant_categories:
     pos = 'BASE_C'
   elif cat in matra_categories:
@@ -466,13 +466,13 @@ for k, (cat, pos, block) in indic_data.items():
     pos = 'SMVD';
   indic_data[k] = (cat, pos, block)
 
-for k,new_pos in position_overrides.items():
+for k,new_pos in list(position_overrides.items()):
   (cat, pos, _) = indic_data.get(k, defaults)
   indic_data[k] = (cat, new_pos, unicode_data[2][k])
 
 
 values = [{_: 1} for _ in defaults]
-for vv in indic_data.values():
+for vv in list(indic_data.values()):
   for i,v in enumerate(vv):
     values[i][v] = values[i].get (v, 0) + 1
 
@@ -513,7 +513,7 @@ for shaper in categories:
   print ('#include "hb-ot-shaper-%s-machine.hh"' % shaper)
 print ()
 done = {}
-for shaper, shaper_cats in categories.items():
+for shaper, shaper_cats in list(categories.items()):
   print ('/* %s */' % shaper)
   for cat in shaper_cats:
     v = shaper[0].upper()
@@ -554,7 +554,7 @@ all_shorts = [{},{}]
 # Add some of the values, to make them more readable, and to avoid duplicates
 
 for i in range (2):
-	for v,s in short[i].items ():
+	for v,s in list(short[i].items ()):
 		all_shorts[i][s] = v
 
 what = ["OT", "POS"]
@@ -666,7 +666,7 @@ print ("  {")
 pages = set ([u>>page_bits for u in starts+ends+list (singles.keys ())])
 for p in sorted(pages):
 	print ("    case 0x%0Xu:" % p)
-	for u,d in singles.items ():
+	for u,d in list(singles.items ()):
 		if p != u>>page_bits: continue
 		print ("      if (unlikely (u == 0x%04Xu)) return _(%s,%s);" % (u, short[0][d[0]], short[1][d[1]]))
 	for (start,end) in zip (starts, ends):

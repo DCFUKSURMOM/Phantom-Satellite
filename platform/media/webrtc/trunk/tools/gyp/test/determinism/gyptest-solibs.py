@@ -28,7 +28,7 @@ if test.format == 'ninja':
     if base1 != contents1:
       test.fail_test()
     if base2 != contents2:
-      print base2
+      print(base2)
       test.fail_test()
 
   del os.environ["PYTHONHASHSEED"]

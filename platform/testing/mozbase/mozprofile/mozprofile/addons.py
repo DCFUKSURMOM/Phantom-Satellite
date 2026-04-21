@@ -6,7 +6,7 @@ import os
 import shutil
 import sys
 import tempfile
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import zipfile
 from xml.dom import minidom
 
@@ -104,7 +104,7 @@ class AddonManager(object):
         :param target_folder: Folder to store the XPI file in
 
         """
-        response = urllib2.urlopen(url)
+        response = urllib.request.urlopen(url)
         fd, path = tempfile.mkstemp(suffix='.xpi')
         os.write(fd, response.read())
         os.close(fd)
@@ -226,7 +226,7 @@ class AddonManager(object):
 
         .. _query-documentation: https://developer.mozilla.org/en/addons.mozilla.org_%28AMO%29_API_Developers%27_Guide/The_generic_AMO_API # noqa
         """
-        response = urllib2.urlopen(query)
+        response = urllib.request.urlopen(query)
         dom = minidom.parseString(response.read())
         for node in dom.getElementsByTagName('install')[0].childNodes:
             if node.nodeType == node.TEXT_NODE:
@@ -291,7 +291,7 @@ class AddonManager(object):
             else:
                 raise IOError('Add-on path is neither an XPI nor a directory: %s' % addon_path)
         except (IOError, KeyError) as e:
-            raise AddonFormatError(str(e)), None, sys.exc_info()[2]
+            raise AddonFormatError(str(e)).with_traceback(sys.exc_info()[2])
 
         try:
             doc = minidom.parseString(manifest)
@@ -301,18 +301,18 @@ class AddonManager(object):
             rdf = get_namespace_id(doc, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
 
             description = doc.getElementsByTagName(rdf + 'Description').item(0)
-            for entry, value in description.attributes.items():
+            for entry, value in list(description.attributes.items()):
                 # Remove the namespace prefix from the tag for comparison
                 entry = entry.replace(em, "")
-                if entry in details.keys():
+                if entry in list(details.keys()):
                     details.update({entry: value})
             for node in description.childNodes:
                 # Remove the namespace prefix from the tag for comparison
                 entry = node.nodeName.replace(em, "")
-                if entry in details.keys():
+                if entry in list(details.keys()):
                     details.update({entry: get_text(node)})
         except Exception as e:
-            raise AddonFormatError(str(e)), None, sys.exc_info()[2]
+            raise AddonFormatError(str(e)).with_traceback(sys.exc_info()[2])
 
         # turn unpack into a true/false value
         if isinstance(details['unpack'], basestring):

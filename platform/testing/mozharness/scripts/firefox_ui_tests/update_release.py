@@ -10,7 +10,7 @@ import copy
 import os
 import pprint
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 # load modules from parent dir
 sys.path.insert(1, os.path.dirname(os.path.dirname(sys.path[0])))
@@ -239,7 +239,7 @@ class ReleaseFirefoxUIUpdateTests(FirefoxUIUpdateTests):
                 # Determine from where to download the file
                 installer_url = '{server}/{fragment}'.format(
                     server=rel_info['ftp_server_from'],
-                    fragment=urllib.quote(rel_info['from'].replace('%locale%', locale))
+                    fragment=urllib.parse.quote(rel_info['from'].replace('%locale%', locale))
                 )
                 installer_path = self.download_file(
                     url=installer_url,

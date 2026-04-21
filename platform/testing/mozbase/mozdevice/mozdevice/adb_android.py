@@ -8,12 +8,12 @@ import time
 
 from abc import ABCMeta
 
-import version_codes
+from . import version_codes
 
-from adb import ADBDevice, ADBError
+from .adb import ADBDevice, ADBError
 
 
-class ADBAndroid(ADBDevice):
+class ADBAndroid(ADBDevice, metaclass=ABCMeta):
     """ADBAndroid implements :class:`ADBDevice` providing Android-specific
     functionality.
 
@@ -26,7 +26,6 @@ class ADBAndroid(ADBDevice):
        if adbdevice.process_exist("org.mozilla.fennec"):
            print "Fennec is running"
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self,
                  device=None,
@@ -339,7 +338,7 @@ class ADBAndroid(ADBDevice):
             acmd.extend(["-a", intent])
 
         if extras:
-            for (key, val) in extras.iteritems():
+            for (key, val) in extras.items():
                 if isinstance(val, int):
                     extra_type_param = "--ei"
                 elif isinstance(val, bool):
@@ -389,7 +388,7 @@ class ADBAndroid(ADBDevice):
         if moz_env:
             # moz_env is expected to be a dictionary of environment variables:
             # Fennec itself will set them when launched
-            for (env_count, (env_key, env_val)) in enumerate(moz_env.iteritems()):
+            for (env_count, (env_key, env_val)) in enumerate(moz_env.items()):
                 extras["env" + str(env_count)] = env_key + "=" + env_val
 
         # Additional command line arguments that fennec will read and use (e.g.

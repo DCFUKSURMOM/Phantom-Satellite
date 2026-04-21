@@ -32,19 +32,19 @@ class TestParseConfigFile(unittest.TestCase):
                            output='dict'):
         global_dict = {}
         local_dict = {}
-        execfile(filename, global_dict, local_dict)
+        exec(compile(open(filename, "rb").read(), filename, 'exec'), global_dict, local_dict)
         return local_dict['config']
 
     def test_json_config(self):
         c = config.BaseConfig(initial_config_file='test/test.json')
         content_dict = self._get_json_config()
-        for key in content_dict.keys():
+        for key in list(content_dict.keys()):
             self.assertEqual(content_dict[key], c._config[key])
 
     def test_python_config(self):
         c = config.BaseConfig(initial_config_file='test/test.py')
         config_dict = self._get_python_config()
-        for key in config_dict.keys():
+        for key in list(config_dict.keys()):
             self.assertEqual(config_dict[key], c._config[key])
 
     def test_illegal_config(self):
@@ -158,7 +158,7 @@ class TestReadOnlyDict(unittest.TestCase):
 
     def test_set_default(self):
         r = self.get_unlocked_ROD()
-        for key in self.control_dict.keys():
+        for key in list(self.control_dict.keys()):
             r.setdefault(key, self.control_dict[key])
         self.assertEqual(r, self.control_dict,
                          msg="can't setdefault() ReadOnlyDict when unlocked")

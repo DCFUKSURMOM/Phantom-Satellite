@@ -63,7 +63,7 @@ class ChunkBySlice(TestCase):
         self.run_all_combos(num_tests=10, disabled=[1, 2])
 
         num_tests = 67
-        disabled = list(i for i in xrange(num_tests) if i % 4 == 0)
+        disabled = list(i for i in range(num_tests) if i % 4 == 0)
         self.run_all_combos(num_tests=num_tests, disabled=disabled)
 
     def test_two_times_more_chunks_than_tests(self):
@@ -85,7 +85,7 @@ class ChunkByDir(TestCase):
                         { <dir>: <num tests> }
         """
         i = 0
-        for d, num in dirs.iteritems():
+        for d, num in dirs.items():
             for j in range(num):
                 i += 1
                 name = 'test%i' % i
@@ -113,7 +113,7 @@ class ChunkByDir(TestCase):
                     f = chunk_by_dir(this, total, depth)
                     res.append(list(f(tests, {})))
 
-                lengths = map(num_groups, res)
+                lengths = list(map(num_groups, res))
                 # the chunk with the most dirs should have at most one more
                 # dir than the chunk with the least dirs
                 self.assertLessEqual(max(lengths) - min(lengths), 1)
@@ -176,7 +176,7 @@ class ChunkByRuntime(TestCase):
                      { <dir>: <num tests> }
         """
         i = 0
-        for d, num in dirs.iteritems():
+        for d, num in dirs.items():
             for j in range(num):
                 i += 1
                 name = 'test%i' % i

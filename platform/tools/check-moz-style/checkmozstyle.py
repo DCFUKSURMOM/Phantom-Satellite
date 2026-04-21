@@ -116,7 +116,7 @@ def process_patch(patch_string, root, cwd, scm):
         cpplint.error("patch", 0, "patch/nodescription", 3,
                       "Patch does not have a description.")
 
-    for filename, diff in patch.files.iteritems():
+    for filename, diff in patch.files.items():
         file_extension = os.path.splitext(filename)[1]
 
         if file_extension in ['.cpp', '.c', '.h']:

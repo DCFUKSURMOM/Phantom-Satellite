@@ -164,7 +164,7 @@ class TPSTestRunner(object):
         f.write(msg)
         f.close()
         if printToConsole:
-            print msg
+            print(msg)
 
     def writeToResultFile(self, postdata, body=None,
                           sendTo=['crossweave@mozilla.com']):
@@ -347,7 +347,7 @@ class TPSTestRunner(object):
 
         self.log(logstr, True)
         for phase in phaselist:
-            print "\t%s: %s" % (phase.phase, phase.status)
+            print("\t%s: %s" % (phase.phase, phase.status))
 
         return resultdata
 
@@ -428,9 +428,9 @@ class TPSTestRunner(object):
             self.rlock.release()
 
         # dump out a summary of test results
-        print 'Test Summary\n'
+        print('Test Summary\n')
         for test in self.postdata.get('tests', {}):
-            print '%s | %s | %s' % (test['state'], test['name'], test['message'])
+            print('%s | %s | %s' % (test['state'], test['name'], test['message']))
 
     def run_test_group(self):
         self.results = []
@@ -476,7 +476,7 @@ class TPSTestRunner(object):
             else:
                 self.numfailed += 1
                 if self.stop_on_error:
-                    print '\nTest failed with --stop-on-error specified; not running any more tests.\n'
+                    print('\nTest failed with --stop-on-error specified; not running any more tests.\n')
                     break
 
         self.mozhttpd.stop()

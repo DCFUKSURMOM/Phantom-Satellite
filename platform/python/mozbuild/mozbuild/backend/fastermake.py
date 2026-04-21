@@ -79,7 +79,7 @@ class FasterMakeBackend(CommonBackend, PartialBackend):
                             .add_pattern_symlink(
                                 prefix,
                                 f.full_path[len(prefix):],
-                                path)
+                                mozpath.join(obj.install_target, path))
                     else:
                         self._install_manifests[obj.install_target].add_symlink(
                             f.full_path,
@@ -130,12 +130,12 @@ class FasterMakeBackend(CommonBackend, PartialBackend):
             if value is not None:
                 mk.add_statement('%s = %s' % (var, value))
 
-        install_manifests_bases = self._install_manifests.keys()
+        install_manifests_bases = list(self._install_manifests.keys())
 
         # Add information for chrome manifest generation
         manifest_targets = []
 
-        for target, entries in self._manifest_entries.iteritems():
+        for target, entries in self._manifest_entries.items():
             manifest_targets.append(target)
             install_target = mozpath.basedir(target, install_manifests_bases)
             self._install_manifests[install_target].add_content(
@@ -144,16 +144,16 @@ class FasterMakeBackend(CommonBackend, PartialBackend):
 
         # Add information for install manifests.
         mk.add_statement('INSTALL_MANIFESTS = %s'
-                         % ' '.join(self._install_manifests.keys()))
+                         % ' '.join(list(self._install_manifests.keys())))
 
         # Add dependencies we infered:
-        for target, deps in self._dependencies.iteritems():
+        for target, deps in self._dependencies.items():
             mk.create_rule([target]).add_dependencies(
                 '$(TOPOBJDIR)/%s' % d for d in deps)
 
         mk.add_statement('include $(TOPSRCDIR)/config/faster/rules.mk')
 
-        for base, install_manifest in self._install_manifests.iteritems():
+        for base, install_manifest in self._install_manifests.items():
             with self._write_file(
                     mozpath.join(self.environment.topobjdir, 'faster',
                                  'install_%s' % base.replace('/', '_'))) as fh:

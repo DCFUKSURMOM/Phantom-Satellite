@@ -12,7 +12,7 @@ Usage:
 
 import codecs
 import contextlib
-import httplib
+import http.client
 import os
 import random
 import shutil
@@ -103,8 +103,8 @@ class LighttpdServer(object):
       self.process.close()
 
       if self.fixed_port or not 'in use' in server_error:
-        print 'Client error:', client_error
-        print 'Server error:', server_error
+        print('Client error:', client_error)
+        print('Server error:', server_error)
         return False
       self.port = self._GetRandomPort()
     return True
@@ -118,10 +118,10 @@ class LighttpdServer(object):
   def _TestServerConnection(self):
     # Wait for server to start
     server_msg = ''
-    for timeout in xrange(1, 5):
+    for timeout in range(1, 5):
       client_error = None
       try:
-        with contextlib.closing(httplib.HTTPConnection(
+        with contextlib.closing(http.client.HTTPConnection(
             '127.0.0.1', self.port, timeout=timeout)) as http:
           http.set_debuglevel(timeout > 3)
           http.request('HEAD', '/')
@@ -133,7 +133,7 @@ class LighttpdServer(object):
           client_error = ('Bad response: %s %s version %s\n  ' %
                           (r.status, r.reason, r.version) +
                           '\n  '.join([': '.join(h) for h in r.getheaders()]))
-      except (httplib.HTTPException, socket.error) as client_error:
+      except (http.client.HTTPException, socket.error) as client_error:
         pass  # Probably too quick connecting: try again
       # Check for server startup error messages
       ix = self.process.expect([pexpect.TIMEOUT, pexpect.EOF, '.+'],
@@ -241,10 +241,10 @@ def main(argv):
   server = LighttpdServer(*argv[1:])
   try:
     if server.StartupHttpServer():
-      raw_input('Server running at http://127.0.0.1:%s -'
+      input('Server running at http://127.0.0.1:%s -'
                 ' press Enter to exit it.' % server.port)
     else:
-      print 'Server exit code:', server.process.exitstatus
+      print('Server exit code:', server.process.exitstatus)
   finally:
     server.ShutdownHttpServer()
 

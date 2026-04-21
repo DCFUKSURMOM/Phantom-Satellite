@@ -8,8 +8,8 @@ from pyasn1_modules import rfc5208, pem
 import sys
 
 if len(sys.argv) != 1:
-    print("""Usage:
-$ cat pkcs8key.pem | %s""" % sys.argv[0])
+    print(("""Usage:
+$ cat pkcs8key.pem | %s""" % sys.argv[0]))
     sys.exit(-1)
     
 cnt = 0
@@ -30,7 +30,7 @@ while 1:
 
     if rest: substrate = substrate[:-len(rest)]
         
-    print(key.prettyPrint())
+    print((key.prettyPrint()))
 
     assert encoder.encode(key, defMode=False) == substrate or \
            encoder.encode(key, defMode=True) == substrate, \
@@ -38,4 +38,4 @@ while 1:
         
     cnt = cnt + 1
     
-print('*** %s PKCS#8 key(s) de/serialized' % cnt)
+print(('*** %s PKCS#8 key(s) de/serialized' % cnt))

@@ -6,11 +6,6 @@ XXX: need to rewrite this based on altgraph.Dot
 
 from collections import deque
 
-try:
-    from itertools import imap
-except ImportError:
-    imap = map
-
 __all__ = ['itergraphreport']
 
 def itergraphreport(nodes, describe_edge, name='G'):
@@ -27,7 +22,7 @@ def itergraphreport(nodes, describe_edge, name='G'):
     yield 'digraph %s {\n' % (name,)
     attr = dict(rankdir='LR', concentrate='true')
     cpatt  = '%s="%s"'
-    for item in attr.iteritems():
+    for item in attr.items():
         yield '\t%s;\n' % (cpatt % item,)
 
     # find all packages (subgraphs)
@@ -37,7 +32,7 @@ def itergraphreport(nodes, describe_edge, name='G'):
     # create sets for subgraph, write out descriptions
     for (node, data, outgoing, incoming) in nodes:
         # update edges
-        for edge in imap(describe_edge, outgoing):
+        for edge in map(describe_edge, outgoing):
             edges.append(edge)
 
         # describe node
@@ -45,7 +40,7 @@ def itergraphreport(nodes, describe_edge, name='G'):
             node,
             ','.join([
                 (cpatt % item) for item in
-                nodevisitor(node, data, outgoing, incoming).iteritems()
+                nodevisitor(node, data, outgoing, incoming).items()
             ]),
         )
 
@@ -64,7 +59,7 @@ def itergraphreport(nodes, describe_edge, name='G'):
             yield edgestr % (
                 head,
                 tail,
-                ','.join([(cpatt % item) for item in attribs.iteritems()]),
+                ','.join([(cpatt % item) for item in attribs.items()]),
             )
 
     for s in do_graph(graph, '\t'):

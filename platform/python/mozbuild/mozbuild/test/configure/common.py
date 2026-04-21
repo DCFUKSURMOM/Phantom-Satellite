@@ -16,7 +16,7 @@ from mozbuild.configure import ConfigureSandbox
 from mozbuild.util import ReadOnlyNamespace
 from mozpack import path as mozpath
 
-from StringIO import StringIO
+from io import StringIO
 from which import WhichError
 
 from buildconfig import (
@@ -78,10 +78,10 @@ class ConfigureTestSandbox(ConfigureSandbox):
         self._search_path = environ.get('PATH', '').split(os.pathsep)
 
         self._subprocess_paths = {
-            mozpath.abspath(k): v for k, v in paths.iteritems() if v
+            mozpath.abspath(k): v for k, v in paths.items() if v
         }
 
-        paths = paths.keys()
+        paths = list(paths.keys())
 
         environ = dict(environ)
         if 'CONFIG_SHELL' not in environ:

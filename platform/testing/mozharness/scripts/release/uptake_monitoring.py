@@ -122,7 +122,7 @@ class UptakeMonitoring(BaseScript, VirtualenvMixin, BuildbotMixin):
         version = self.config["version"]
         dl = []
 
-        for product, info in self.config["products"].iteritems():
+        for product, info in self.config["products"].items():
             if info.get("check_uptake"):
                 product_template = info["product-name"]
                 related_product = product_template % {"version": version}
@@ -137,7 +137,7 @@ class UptakeMonitoring(BaseScript, VirtualenvMixin, BuildbotMixin):
                                                        related_product, bouncer_platform))
         # handle the partials as well
         prev_versions = self.config["partial_versions"]
-        for product, info in self.config["partials"].iteritems():
+        for product, info in self.config["partials"].items():
             if info.get("check_uptake"):
                 product_template = info["product-name"]
                 for prev_version in prev_versions:
@@ -161,7 +161,7 @@ class UptakeMonitoring(BaseScript, VirtualenvMixin, BuildbotMixin):
         credentials_file = os.path.join(os.getcwd(),
                                         self.config["credentials_file"])
         credentials = {}
-        execfile(credentials_file, credentials)
+        exec(compile(open(credentials_file, "rb").read(), credentials_file, 'exec'), credentials)
         auth = (credentials['tuxedoUsername'], credentials['tuxedoPassword'])
         self.info("Starting the loop to determine the uptake monitoring ...")
 

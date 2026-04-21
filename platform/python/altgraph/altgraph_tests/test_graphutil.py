@@ -67,7 +67,7 @@ class TestGraphUtil (unittest.TestCase):
 
         total_counts = sum(counts.values())
         P = {}
-        for degree, count in counts.items():
+        for degree, count in list(counts.items()):
             P[degree] = count * 1.0 / total_counts
 
         # XXX: use algoritm <http://stackoverflow.com/questions/3433486/how-to-do-exponential-and-logarithmic-curve-fitting-in-python-i-found-only-polyn>

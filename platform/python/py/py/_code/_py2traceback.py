@@ -70,7 +70,7 @@ def _format_final_exc_line(etype, value):
 
 def _some_str(value):
     try:
-        return unicode(value)
+        return str(value)
     except Exception:
         try:
             return str(value)

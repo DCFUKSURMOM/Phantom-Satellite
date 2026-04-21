@@ -116,8 +116,8 @@ class TreeMetadataEmitter(LoggingMixin):
         # arguments. This gross hack works around the problem until we
         # rid ourselves of 2.6.
         self.info = {}
-        for k, v in mozinfo.info.items():
-            if isinstance(k, unicode):
+        for k, v in list(mozinfo.info.items()):
+            if isinstance(k, str):
                 k = k.encode('ascii')
             self.info[k] = v
 
@@ -190,7 +190,7 @@ class TreeMetadataEmitter(LoggingMixin):
 
     def _emit_libs_derived(self, contexts):
         # First do FINAL_LIBRARY linkage.
-        for lib in (l for libs in self._libs.values() for l in libs):
+        for lib in (l for libs in list(self._libs.values()) for l in libs):
             if not isinstance(lib, StaticLibrary) or not lib.link_into:
                 continue
             if lib.link_into not in self._libs:
@@ -250,12 +250,12 @@ class TreeMetadataEmitter(LoggingMixin):
                         lib.link_into == outerlib.basename):
                     propagate_defines(lib, defines)
 
-        for lib in (l for libs in self._libs.values() for l in libs):
+        for lib in (l for libs in list(self._libs.values()) for l in libs):
             if isinstance(lib, Library):
                 propagate_defines(lib, lib.lib_defines)
             yield lib
 
-        for obj in self._binaries.values():
+        for obj in list(self._binaries.values()):
             yield obj
 
     LIBRARY_NAME_VAR = {
@@ -314,7 +314,7 @@ class TreeMetadataEmitter(LoggingMixin):
                             libs[key] = l
                         if key not in libs:
                             libs[key] = l
-                candidates = libs.values()
+                candidates = list(libs.values())
                 if force_static and not candidates:
                     if dir:
                         raise SandboxValidationError(
@@ -376,9 +376,9 @@ class TreeMetadataEmitter(LoggingMixin):
 
     def _verify_deps(self, context, crate_dir, crate_name, dependencies, description='Dependency'):
         """Verify that a crate's dependencies all specify local paths."""
-        for dep_crate_name, values in dependencies.iteritems():
+        for dep_crate_name, values in dependencies.items():
             # A simple version number.
-            if isinstance(values, (str, unicode)):
+            if isinstance(values, (str, str)):
                 raise SandboxValidationError(
                     '%s %s of crate %s does not list a path' % (description, dep_crate_name, crate_name),
                     context)
@@ -667,7 +667,7 @@ class TreeMetadataEmitter(LoggingMixin):
         assert not gen_sources['UNIFIED_SOURCES']
 
         no_pgo = context.get('NO_PGO')
-        no_pgo_sources = [f for f, flags in all_flags.iteritems()
+        no_pgo_sources = [f for f, flags in all_flags.items()
                           if flags.no_pgo]
         if no_pgo:
             if no_pgo_sources:
@@ -694,7 +694,7 @@ class TreeMetadataEmitter(LoggingMixin):
 
         # The inverse of the above, mapping suffixes to their canonical suffix.
         canonicalized_suffix_map = {}
-        for suffix, alternatives in suffix_map.iteritems():
+        for suffix, alternatives in suffix_map.items():
             alternatives.add(suffix)
             for a in alternatives:
                 canonicalized_suffix_map[a] = suffix
@@ -715,7 +715,7 @@ class TreeMetadataEmitter(LoggingMixin):
         # a directory with mixed C and C++ source, but it's not that important.
         cxx_sources = defaultdict(bool)
 
-        for variable, (klass, gen_klass, suffixes) in varmap.items():
+        for variable, (klass, gen_klass, suffixes) in list(varmap.items()):
             allowed_suffixes = set().union(*[suffix_map[s] for s in suffixes])
 
             # First ensure that we haven't been given filetypes that we don't
@@ -741,7 +741,7 @@ class TreeMetadataEmitter(LoggingMixin):
                     obj = cls(*arglist)
                     yield obj
 
-        for f, flags in all_flags.iteritems():
+        for f, flags in all_flags.items():
             if flags.flags:
                 ext = mozpath.splitext(f)[1]
                 yield PerSourceFlag(context, f, flags.flags)
@@ -885,7 +885,7 @@ class TreeMetadataEmitter(LoggingMixin):
         for obj in self._handle_linkables(context, passthru, generated_files):
             yield obj
 
-        generated_files.update(['%s%s' % (k, self.config.substs.get('BIN_SUFFIX', '')) for k in self._binaries.keys()])
+        generated_files.update(['%s%s' % (k, self.config.substs.get('BIN_SUFFIX', '')) for k in list(self._binaries.keys())])
 
         components = []
         for var, cls in (
@@ -958,6 +958,15 @@ class TreeMetadataEmitter(LoggingMixin):
                     'RESOURCES_FILES cannot be used with DIST_SUBDIR or '
                     'XPI_NAME.', context)
 
+            for base, files in all_files.walk():
+                if isinstance(all_files._children.get(base), list):
+                    new_list = []
+                    for f in files:
+                        if isinstance(f, str):
+                            f = Path(context, f)  # <-- this triggers PathMeta
+                        new_list.append(f)
+                    all_files._children[base] = new_list         
+
             yield cls(context, all_files)
 
         # Check for manifest declarations in EXTRA_{PP_,}COMPONENTS.
@@ -982,7 +991,7 @@ class TreeMetadataEmitter(LoggingMixin):
         for obj in self._process_jar_manifests(context):
             yield obj
 
-        for name, jar in context.get('JAVA_JAR_TARGETS', {}).items():
+        for name, jar in list(context.get('JAVA_JAR_TARGETS', {}).items()):
             yield ContextWrapped(context, jar)
 
         if context.get('USE_YASM') is True:
@@ -1033,7 +1042,7 @@ class TreeMetadataEmitter(LoggingMixin):
             script = mozpath.join(mozpath.dirname(mozpath.dirname(__file__)),
                                   'action', 'process_define_files.py')
             yield GeneratedFile(context, script, 'process_define_file',
-                                unicode(path),
+                                str(path),
                                 [Path(context, path + '.in')])
 
         generated_files = context.get('GENERATED_FILES')
@@ -1076,7 +1085,7 @@ class TreeMetadataEmitter(LoggingMixin):
             yield GeneratedFile(context, script, method, outputs, inputs)
 
     def _process_test_manifests(self, context):
-        for prefix, info in TEST_MANIFESTS.items():
+        for prefix, info in list(TEST_MANIFESTS.items()):
             for path, manifest in context.get('%s_MANIFESTS' % prefix, []):
                 for obj in self._process_test_manifest(context, info, path, manifest):
                     yield obj
@@ -1167,7 +1176,7 @@ class TreeMetadataEmitter(LoggingMixin):
 
                 process_support_files(test)
 
-            for path, m_defaults in mpmanifest.manifest_defaults.items():
+            for path, m_defaults in list(mpmanifest.manifest_defaults.items()):
                 process_support_files(m_defaults)
 
             # We also copy manifests into the output directory,

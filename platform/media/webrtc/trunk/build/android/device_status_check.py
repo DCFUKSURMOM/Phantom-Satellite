@@ -112,7 +112,7 @@ def CheckForMissingDevices(options, adb_online_devs):
          'adb devices: %s' % GetCmdOutput(['adb', 'devices']),
          'adb devices(GetAttachedDevices): %s' % GetAttachedDevices()])
 
-    print body
+    print(body)
 
     # Only send email if the first time a particular device goes offline
     last_missing = ReadDeviceList('.last_missing')
@@ -129,15 +129,15 @@ def CheckForMissingDevices(options, adb_online_devs):
         server.sendmail(from_address, [to_address], msg_body)
         server.quit()
       except Exception as e:
-        print 'Failed to send alert email. Error: %s' % e
+        print('Failed to send alert email. Error: %s' % e)
   else:
     new_devs = set(adb_online_devs) - set(last_devices)
     if new_devs and os.path.exists(last_devices_path):
       buildbot_report.PrintWarning()
       buildbot_report.PrintSummaryText(
           '%d new devices detected' % len(new_devs))
-      print ('New devices detected %s. And now back to your '
-             'regularly scheduled program.' % list(new_devs))
+      print(('New devices detected %s. And now back to your '
+             'regularly scheduled program.' % list(new_devs)))
   WriteDeviceList('.last_devices', (adb_online_devs + last_devices))
   WriteDeviceList('.last_missing', missing_devs)
 
@@ -156,14 +156,14 @@ def main():
   devices = GetAttachedDevices()
   types, builds, reports = [], [], []
   if devices:
-    types, builds, reports = zip(*[DeviceInfo(dev) for dev in devices])
+    types, builds, reports = list(zip(*[DeviceInfo(dev) for dev in devices]))
 
   unique_types = list(set(types))
   unique_builds = list(set(builds))
 
   buildbot_report.PrintMsg('Online devices: %d. Device types %s, builds %s'
                            % (len(devices), unique_types, unique_builds))
-  print '\n'.join(reports)
+  print('\n'.join(reports))
   CheckForMissingDevices(options, devices)
 
 if __name__ == '__main__':

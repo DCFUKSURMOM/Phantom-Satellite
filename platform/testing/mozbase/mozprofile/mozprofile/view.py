@@ -35,9 +35,9 @@ def view_profile(args=sys.argv[1:]):
     while args:
         path = args.pop(0)
         profile = mozprofile.Profile(path)
-        print profile.summary()
+        print(profile.summary())
         if args:
-            print '-' * 4
+            print('-' * 4)
 
 if __name__ == '__main__':
     view_profile()

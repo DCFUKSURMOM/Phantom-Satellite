@@ -18,7 +18,7 @@ will attempt to terminate the contained PID by sending a SIGINT and
 monitoring for the deletion of the aforementioned file.
 """
 
-import cStringIO
+import io
 import logging
 import os
 import re
@@ -106,7 +106,7 @@ def GetDeviceLogs(log_filenames, logger):
   """
   device_logs = []
 
-  for device, device_files in log_filenames.iteritems():
+  for device, device_files in log_filenames.items():
     logger.debug('%s: %s', device, str(device_files))
     device_file_lines = []
     for cur_file in device_files:
@@ -150,7 +150,7 @@ def ShutdownLogcatMonitor(base_dir, logger):
 
 
 def main(base_dir, output_file):
-  log_stringio = cStringIO.StringIO()
+  log_stringio = io.StringIO()
   logger = logging.getLogger('LogcatPrinter')
   logger.setLevel(LOG_LEVEL)
   sh = logging.StreamHandler(log_stringio)
@@ -197,6 +197,6 @@ def main(base_dir, output_file):
 
 if __name__ == '__main__':
   if len(sys.argv) == 1:
-    print 'Usage: %s <base_dir>' % sys.argv[0]
+    print('Usage: %s <base_dir>' % sys.argv[0])
     sys.exit(1)
   sys.exit(main(sys.argv[1], sys.stdout))

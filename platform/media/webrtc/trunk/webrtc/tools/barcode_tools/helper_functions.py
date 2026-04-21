@@ -52,7 +52,7 @@ def run_shell_command(cmd_list, fail_msg=None):
   output, error = process.communicate()
   if process.returncode != 0:
     if fail_msg:
-      print >> sys.stderr, fail_msg
+      print(fail_msg, file=sys.stderr)
     raise HelperError('Failed to run %s: command returned %d and printed '
                       '%s and %s' % (' '.join(cmd_list), process.returncode,
                                      output, error))

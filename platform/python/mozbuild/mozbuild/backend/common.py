@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import, unicode_literals
 
-import cPickle as pickle
+import pickle as pickle
 import itertools
 import json
 import os
@@ -195,11 +195,11 @@ class TestManager(object):
     def add_defaults(self, manifest):
         if not hasattr(manifest, 'manifest_defaults'):
             return
-        for sub_manifest, defaults in manifest.manifest_defaults.items():
+        for sub_manifest, defaults in list(manifest.manifest_defaults.items()):
             self.manifest_defaults[sub_manifest] = defaults
 
     def add_installs(self, obj, topsrcdir):
-        for src, (dest, _) in obj.installs.iteritems():
+        for src, (dest, _) in obj.installs.items():
             key = src[len(topsrcdir)+1:]
             self.installs_by_path[key].append((src, dest))
         for src, pat, dest in obj.pattern_installs:
@@ -366,16 +366,25 @@ class CommonBackend(BuildBackend):
 
         path = mozpath.join(self.environment.topobjdir, 'test-installs.pkl')
         with self._write_file(path, mode='rb') as fh:
-            pickle.dump({k: v for k, v in self._test_manager.installs_by_path.items()
+            pickle.dump({k: v for k, v in list(self._test_manager.installs_by_path.items())
                          if k in self._test_manager.deferred_installs},
                         fh,
                         protocol=2)
 
         # Write out a machine-readable file describing binaries.
         with self._write_file(mozpath.join(topobjdir, 'binaries.json')) as fh:
+            shared = sorted(
+                self._binaries.shared_libraries,
+                key=lambda s: (s.install_target, s.lib_name, s.relobjdir),
+            )
+            progs = sorted(
+                self._binaries.programs,
+                key=lambda p: (p.install_target, p.program, p.relobjdir),
+            )
+
             d = {
-                'shared_libraries': [s.to_dict() for s in self._binaries.shared_libraries],
-                'programs': [p.to_dict() for p in self._binaries.programs],
+                'shared_libraries': [s.to_dict() for s in shared],
+                'programs': [p.to_dict() for p in progs],
             }
             json.dump(d, fh, sort_keys=True, indent=4)
 
@@ -482,7 +491,7 @@ class CommonBackend(BuildBackend):
             pp.do_include(obj.path.full_path)
         except DeprecatedJarManifest as e:
             raise DeprecatedJarManifest('Parsing error while processing %s: %s'
-                                        % (obj.path.full_path, e.message))
+                                        % (obj.path.full_path, e.args[0]))
         self.backend_input_files |= pp.includes
 
         for jarinfo in pp.out:

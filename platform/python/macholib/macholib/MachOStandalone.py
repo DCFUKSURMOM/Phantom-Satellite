@@ -144,4 +144,4 @@ class MachOStandalone(object):
                     flipwritable(fn, old_mode)
 
         allfiles = [mm.locate(node.filename) for node in machfiles]
-        return set(filter(None, allfiles))
+        return set([_f for _f in allfiles if _f])

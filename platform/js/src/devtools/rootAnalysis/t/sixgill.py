@@ -21,14 +21,14 @@ class Body(dict):
 
         # Indexes
         self['Line2Points'] = defaultdict(list)
-        for point, line in self['Points'].items():
+        for point, line in list(self['Points'].items()):
             self['Line2Points'][line].append(point)
         self['SrcPoint2Edges'] = defaultdict(list)
         for edge in self['Edges']:
             src, dst = edge['Index']
             self['SrcPoint2Edges'][src].append(edge)
         self['Line2Edges'] = defaultdict(list)
-        for (src, edges) in self['SrcPoint2Edges'].items():
+        for (src, edges) in list(self['SrcPoint2Edges'].items()):
             line = self['Points'][src]
             self['Line2Edges'][line].extend(edges)
 

@@ -52,7 +52,7 @@ def write_file(filename, content):
     with open(filename, 'wb') as f:
         f.write(content.encode('UTF-8'))
 
-print("# START tests from {}".format(__file__))
+print(("# START tests from {}".format(__file__)))
 idx = 0
 for pos, ref_wm, ruby_pos, subtests in TEST_CASES:
     idx += 1
@@ -65,5 +65,5 @@ for pos, ref_wm, ruby_pos, subtests in TEST_CASES:
         test_content = TEST_TEMPLATE.format(
             wm=wm, pos=pos, index=idx, ruby_pos=ruby_pos, posval=posval)
         write_file(test_file, test_content)
-        print("== {} {}".format(test_file, ref_file))
-print("# END tests from {}".format(__file__))
+        print(("== {} {}".format(test_file, ref_file)))
+print(("# END tests from {}".format(__file__)))

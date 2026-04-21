@@ -68,11 +68,11 @@ class ActionsConfigExample(BaseScript):
             try:
                 time.sleep(interval)
             except:
-                print
+                print()
                 self.error("Impatient, are we?")
                 sys.exit(1)
             counter += interval
-        print
+        print()
         self.info("Ok, done.")
 
     def _ship1(self):
@@ -108,7 +108,7 @@ class ActionsConfigExample(BaseScript):
 """)
 
     def nap(self):
-        for var_name in self.config.keys():
+        for var_name in list(self.config.keys()):
             if var_name.startswith("random_config_key"):
                 self.info("This is going to be %s!" % self.config[var_name])
         sleep_time = self.config['long_sleep_time']

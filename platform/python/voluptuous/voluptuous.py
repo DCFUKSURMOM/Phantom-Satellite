@@ -96,14 +96,14 @@ from functools import wraps
 if sys.version_info >= (3,):
     import urllib.parse as urlparse
     long = int
-    unicode = str
+    str = str
     basestring = str
     ifilter = filter
-    iteritems = lambda d: d.items()
+    iteritems = lambda d: list(d.items())
 else:
-    from itertools import ifilter
-    import urlparse
-    iteritems = lambda d: d.iteritems()
+    
+    import urllib.parse
+    iteritems = lambda d: iter(d.items())
 
 
 __author__ = 'Alec Thomas <alec@swapoff.org>'
@@ -122,7 +122,7 @@ def raises(exc, msg=None, regex=None):
 
 
 class Undefined(object):
-    def __nonzero__(self):
+    def __bool__(self):
         return False
 
     def __repr__(self):
@@ -376,7 +376,7 @@ class Schema(object):
         type_ = type(schema)
         if type_ is type:
             type_ = schema
-        if type_ in (bool, int, long, str, unicode, float, complex, object,
+        if type_ in (bool, int, int, str, str, float, complex, object,
                      list, dict, type(None)) or callable(schema):
             return _compile_scalar(schema)
         raise SchemaError('unsupported schema data type %r' %
@@ -519,7 +519,7 @@ class Schema(object):
                     and not isinstance(data, schema.cls)):
                 raise ObjectInvalid('expected a {0!r}'.format(schema.cls), path)
             iterable = _iterate_object(data)
-            iterable = ifilter(lambda item: item[1] is not None, iterable)
+            iterable = filter(lambda item: item[1] is not None, iterable)
             out = base_validate(path, iterable, {})
             return type(data)(**out)
 
@@ -619,7 +619,7 @@ class Schema(object):
                 raise DictInvalid('expected a dictionary', path)
 
             errors = []
-            for label, group in groups_of_exclusion.items():
+            for label, group in list(groups_of_exclusion.items()):
                 exists = False
                 for exclusive in group:
                     if exclusive.schema in data:
@@ -634,7 +634,7 @@ class Schema(object):
             if errors:
                 raise MultipleInvalid(errors)
 
-            for label, group in groups_of_inclusion.items():
+            for label, group in list(groups_of_inclusion.items()):
                 included = [node.schema in data for node in group]
                 if any(included) and not all(included):
                     msg = "some but not all values in the same group of inclusion '%s'" % label
@@ -1461,7 +1461,7 @@ class Replace(object):
 
 
 def _url_validation(v):
-    parsed = urlparse.urlparse(v)
+    parsed = urllib.parse.urlparse(v)
     if not parsed.scheme or not parsed.netloc:
         raise UrlInvalid("must have a URL scheme and host")
     return parsed

@@ -7,14 +7,14 @@ import logging
 import os
 import sys
 
-from base_test_runner import BaseTestRunner
-import debug_info
-import constants
-import perf_tests_helper
-import run_tests_helper
-from test_package_apk import TestPackageApk
-from test_package_executable import TestPackageExecutable
-from test_result import TestResults
+from .base_test_runner import BaseTestRunner
+from . import debug_info
+from . import constants
+from . import perf_tests_helper
+from . import run_tests_helper
+from .test_package_apk import TestPackageApk
+from .test_package_executable import TestPackageExecutable
+from .test_result import TestResults
 
 
 class SingleTestRunner(BaseTestRunner):

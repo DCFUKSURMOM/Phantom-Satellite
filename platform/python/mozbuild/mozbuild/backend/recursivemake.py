@@ -12,7 +12,7 @@ from collections import (
     defaultdict,
     namedtuple,
 )
-from StringIO import StringIO
+from io import StringIO
 from itertools import chain
 
 from mozpack.manifests import (
@@ -68,80 +68,81 @@ from ..util import (
 )
 from ..makeutil import Makefile
 from mozbuild.shellutil import quote as shell_quote
+from functools import reduce
 
 MOZBUILD_VARIABLES = [
-    b'ASFLAGS',
-    b'CMSRCS',
-    b'CMMSRCS',
-    b'CPP_UNIT_TESTS',
-    b'DIRS',
-    b'DIST_INSTALL',
-    b'EXTRA_DSO_LDOPTS',
-    b'EXTRA_JS_MODULES',
-    b'EXTRA_PP_COMPONENTS',
-    b'EXTRA_PP_JS_MODULES',
-    b'FORCE_SHARED_LIB',
-    b'FORCE_STATIC_LIB',
-    b'FINAL_LIBRARY',
-    b'HOST_CFLAGS',
-    b'HOST_CSRCS',
-    b'HOST_CMMSRCS',
-    b'HOST_CXXFLAGS',
-    b'HOST_EXTRA_LIBS',
-    b'HOST_LIBRARY_NAME',
-    b'HOST_PROGRAM',
-    b'HOST_SIMPLE_PROGRAMS',
-    b'IS_COMPONENT',
-    b'JAR_MANIFEST',
-    b'JAVA_JAR_TARGETS',
-    b'LD_VERSION_SCRIPT',
-    b'LIBRARY_NAME',
-    b'LIBS',
-    b'MAKE_FRAMEWORK',
-    b'MODULE',
-    b'NO_DIST_INSTALL',
-    b'NO_EXPAND_LIBS',
-    b'NO_INTERFACES_MANIFEST',
-    b'NO_JS_MANIFEST',
-    b'OS_LIBS',
-    b'PARALLEL_DIRS',
-    b'PREF_JS_EXPORTS',
-    b'PROGRAM',
-    b'PYTHON_UNIT_TESTS',
-    b'RESOURCE_FILES',
-    b'SDK_HEADERS',
-    b'SDK_LIBRARY',
-    b'SHARED_LIBRARY_LIBS',
-    b'SHARED_LIBRARY_NAME',
-    b'SIMPLE_PROGRAMS',
-    b'SONAME',
-    b'STATIC_LIBRARY_NAME',
-    b'TEST_DIRS',
-    b'TOOL_DIRS',
+    'ASFLAGS',
+    'CMSRCS',
+    'CMMSRCS',
+    'CPP_UNIT_TESTS',
+    'DIRS',
+    'DIST_INSTALL',
+    'EXTRA_DSO_LDOPTS',
+    'EXTRA_JS_MODULES',
+    'EXTRA_PP_COMPONENTS',
+    'EXTRA_PP_JS_MODULES',
+    'FORCE_SHARED_LIB',
+    'FORCE_STATIC_LIB',
+    'FINAL_LIBRARY',
+    'HOST_CFLAGS',
+    'HOST_CSRCS',
+    'HOST_CMMSRCS',
+    'HOST_CXXFLAGS',
+    'HOST_EXTRA_LIBS',
+    'HOST_LIBRARY_NAME',
+    'HOST_PROGRAM',
+    'HOST_SIMPLE_PROGRAMS',
+    'IS_COMPONENT',
+    'JAR_MANIFEST',
+    'JAVA_JAR_TARGETS',
+    'LD_VERSION_SCRIPT',
+    'LIBRARY_NAME',
+    'LIBS',
+    'MAKE_FRAMEWORK',
+    'MODULE',
+    'NO_DIST_INSTALL',
+    'NO_EXPAND_LIBS',
+    'NO_INTERFACES_MANIFEST',
+    'NO_JS_MANIFEST',
+    'OS_LIBS',
+    'PARALLEL_DIRS',
+    'PREF_JS_EXPORTS',
+    'PROGRAM',
+    'PYTHON_UNIT_TESTS',
+    'RESOURCE_FILES',
+    'SDK_HEADERS',
+    'SDK_LIBRARY',
+    'SHARED_LIBRARY_LIBS',
+    'SHARED_LIBRARY_NAME',
+    'SIMPLE_PROGRAMS',
+    'SONAME',
+    'STATIC_LIBRARY_NAME',
+    'TEST_DIRS',
+    'TOOL_DIRS',
     # XXX config/Makefile.in specifies this in a make invocation
     #'USE_EXTENSION_MANIFEST',
-    b'XPCSHELL_TESTS',
-    b'XPIDL_MODULE',
+    'XPCSHELL_TESTS',
+    'XPIDL_MODULE',
 ]
 
 DEPRECATED_VARIABLES = [
-    b'EXPORT_LIBRARY',
-    b'EXTRA_LIBS',
-    b'HOST_LIBS',
-    b'LIBXUL_LIBRARY',
-    b'MOCHITEST_A11Y_FILES',
-    b'MOCHITEST_BROWSER_FILES',
-    b'MOCHITEST_BROWSER_FILES_PARTS',
-    b'MOCHITEST_CHROME_FILES',
-    b'MOCHITEST_FILES',
-    b'MOCHITEST_FILES_PARTS',
-    b'MOCHITEST_METRO_FILES',
-    b'MOCHITEST_ROBOCOP_FILES',
-    b'MODULE_OPTIMIZE_FLAGS',
-    b'MOZ_CHROME_FILE_FORMAT',
-    b'SHORT_LIBNAME',
-    b'TESTING_JS_MODULES',
-    b'TESTING_JS_MODULE_DIR',
+    'EXPORT_LIBRARY',
+    'EXTRA_LIBS',
+    'HOST_LIBS',
+    'LIBXUL_LIBRARY',
+    'MOCHITEST_A11Y_FILES',
+    'MOCHITEST_BROWSER_FILES',
+    'MOCHITEST_BROWSER_FILES_PARTS',
+    'MOCHITEST_CHROME_FILES',
+    'MOCHITEST_FILES',
+    'MOCHITEST_FILES_PARTS',
+    'MOCHITEST_METRO_FILES',
+    'MOCHITEST_ROBOCOP_FILES',
+    'MODULE_OPTIMIZE_FLAGS',
+    'MOZ_CHROME_FILE_FORMAT',
+    'SHORT_LIBNAME',
+    'TESTING_JS_MODULES',
+    'TESTING_JS_MODULE_DIR',
 ]
 
 MOZBUILD_VARIABLES_MESSAGE = 'It should only be defined in moz.build files.'
@@ -153,7 +154,7 @@ DEPRECATED_VARIABLES_MESSAGE = (
 
 
 def make_quote(s):
-    return s.replace('#', '\#').replace('$', '$$')
+    return s.replace('#', r'\#').replace('$', '$$')
 
 
 class BackendMakeFile(object):
@@ -200,9 +201,9 @@ class BackendMakeFile(object):
         self.fh.write(buf)
 
     def write_once(self, buf):
-        if isinstance(buf, unicode):
-            buf = buf.encode('utf-8')
-        if b'\n' + buf not in self.fh.getvalue():
+        if isinstance(buf, bytes):
+            buf = buf.decode('utf-8', errors='replace')
+        if '\n' + buf not in self.fh.getvalue():
             self.write(buf)
 
     # For compatibility with makeutil.Makefile
@@ -269,8 +270,8 @@ class RecursiveMakeTraversal(object):
         Helper function to call a filter from compute_dependencies and
         traverse.
         """
-        return filter(current, self._traversal.get(current,
-            self.SubDirectories()))
+        return list(filter(current, self._traversal.get(current,
+            self.SubDirectories())))
 
     def compute_dependencies(self, filter=None):
         """
@@ -596,7 +597,7 @@ class RecursiveMakeBackend(CommonBackend):
         convenience variables, and the other dependency definitions for a
         hopefully proper directory traversal.
         """
-        for tier, no_skip in self._no_skip.items():
+        for tier, no_skip in list(self._no_skip.items()):
             self.log(logging.DEBUG, 'fill_root_mk', {
                 'number': len(no_skip), 'tier': tier
                 }, 'Using {number} directories during {tier}')
@@ -642,7 +643,7 @@ class RecursiveMakeBackend(CommonBackend):
         for tier, filter in filters:
             main, all_deps = \
                 self._traversal.compute_dependencies(filter)
-            for dir, deps in all_deps.items():
+            for dir, deps in list(all_deps.items()):
                 if deps is not None or (dir in self._idl_dirs \
                                         and tier == 'export'):
                     rule = root_deps_mk.create_rule(['%s/%s' % (dir, tier)])
@@ -655,15 +656,15 @@ class RecursiveMakeBackend(CommonBackend):
                 rule.add_dependencies('%s/%s' % (d, tier) for d in main)
 
         all_compile_deps = reduce(lambda x,y: x|y,
-            self._compile_graph.values()) if self._compile_graph else set()
+            list(self._compile_graph.values())) if self._compile_graph else set()
         compile_roots = set(self._compile_graph.keys()) - all_compile_deps
 
         rule = root_deps_mk.create_rule(['recurse_compile'])
-        rule.add_dependencies(compile_roots)
+        rule.add_dependencies(sorted(compile_roots))
         for target, deps in sorted(self._compile_graph.items()):
             if deps:
                 rule = root_deps_mk.create_rule([target])
-                rule.add_dependencies(deps)
+                rule.add_dependencies(sorted(deps))
 
         root_mk = Makefile()
 
@@ -715,14 +716,14 @@ class RecursiveMakeBackend(CommonBackend):
             rule.add_dependencies(['$(CURDIR)/%: %'])
 
     def _check_blacklisted_variables(self, makefile_in, makefile_content):
-        if b'EXTERNALLY_MANAGED_MAKE_FILE' in makefile_content:
+        if 'EXTERNALLY_MANAGED_MAKE_FILE' in makefile_content:
             # Bypass the variable restrictions for externally managed makefiles.
             return
 
         for l in makefile_content.splitlines():
             l = l.strip()
             # Don't check comments
-            if l.startswith(b'#'):
+            if l.startswith('#'):
                 continue
             for x in chain(MOZBUILD_VARIABLES, DEPRECATED_VARIABLES):
                 if x not in l:
@@ -779,11 +780,11 @@ class RecursiveMakeBackend(CommonBackend):
                     # Skip every directory but those with a Makefile
                     # containing a tools target, or XPI_PKGNAME or
                     # INSTALL_EXTENSION_ID.
-                    for t in (b'XPI_PKGNAME', b'INSTALL_EXTENSION_ID',
-                            b'tools'):
+                    for t in ('XPI_PKGNAME', 'INSTALL_EXTENSION_ID',
+                            'tools'):
                         if t not in content:
                             continue
-                        if t == b'tools' and not re.search('(?:^|\s)tools.*::', content, re.M):
+                        if t == 'tools' and not re.search(r'(?:^|\s)tools.*::', content, re.M):
                             continue
                         if objdir == self.environment.topobjdir:
                             continue
@@ -794,10 +795,22 @@ class RecursiveMakeBackend(CommonBackend):
                     # moz.build-only list
                     self._check_blacklisted_variables(makefile_in, content)
 
+        # Normalize traversal ordering for deterministic backend output
+        for node, subdirs in self._traversal._traversal.items():
+            subdirs.dirs[:] = sorted(subdirs.dirs)
+            subdirs.tests[:] = sorted(subdirs.tests)
+
+        # Sort traversal keys deterministically
+        self._traversal._traversal = {
+            k: self._traversal._traversal[k]
+            for k in sorted(self._traversal._traversal)
+        }
+
+
         self._fill_root_mk()
 
         # Make the master test manifest files.
-        for flavor, t in self._test_manifests.items():
+        for flavor, t in list(self._test_manifests.items()):
             install_prefix, manifests = t
             manifest_stem = mozpath.join(install_prefix, '%s.ini' % flavor)
             self._write_master_test_manifest(mozpath.join(
@@ -903,7 +916,7 @@ class RecursiveMakeBackend(CommonBackend):
         for p in ('Makefile', 'backend.mk', '.deps/.mkdir.done'):
             build_files.add_optional_exists(p)
 
-        for idl in manager.idls.values():
+        for idl in list(manager.idls.values()):
             self._install_manifests['dist_idl'].add_symlink(idl['source'],
                 idl['basename'])
             self._install_manifests['dist_include'].add_optional_exists('%s.h'
@@ -950,7 +963,7 @@ class RecursiveMakeBackend(CommonBackend):
 
         interfaces_manifests = []
         dist_dir = mozpath.join(self.environment.topobjdir, 'dist')
-        for manifest, entries in manager.interface_manifests.items():
+        for manifest, entries in list(manager.interface_manifests.items()):
             interfaces_manifests.append(mozpath.join('$(DEPTH)', manifest))
             for xpt in sorted(entries):
                 registered_xpt_files.add(mozpath.join(
@@ -1010,7 +1023,7 @@ class RecursiveMakeBackend(CommonBackend):
         # Don't allow files to be defined multiple times unless it is allowed.
         # We currently allow duplicates for non-test files or test files if
         # the manifest is listed as a duplicate.
-        for source, (dest, is_test) in obj.installs.items():
+        for source, (dest, is_test) in list(obj.installs.items()):
             try:
                 self._install_manifests['_test_files'].add_symlink(source, dest)
             except ValueError:
@@ -1188,6 +1201,9 @@ class RecursiveMakeBackend(CommonBackend):
         manifest = path.replace('/', '_')
         install_manifest = self._install_manifests[manifest]
         reltarget = mozpath.relpath(target, path)
+        if not reltarget:
+            reltarget = '.'
+
 
         # Also emit the necessary rules to create $(DIST)/branding during
         # partial tree builds. The locale makefiles rely on this working.
@@ -1212,9 +1228,9 @@ class RecursiveMakeBackend(CommonBackend):
                                 raise Exception("Wildcards are only supported in the filename part of "
                                                 "srcdir-relative or absolute paths.")
 
-                            install_manifest.add_pattern_symlink(basepath, wild, path)
+                            install_manifest.add_pattern_symlink(basepath, wild, mozpath.join(reltarget, path))
                         else:
-                            install_manifest.add_pattern_symlink(f.srcdir, f, path)
+                            install_manifest.add_pattern_symlink(f.srcdir, f, mozpath.join(reltarget, path))
                     else:
                         install_manifest.add_symlink(f.full_path, dest)
                 else:
@@ -1291,7 +1307,7 @@ class RecursiveMakeBackend(CommonBackend):
         man_dir = mozpath.join(self.environment.topobjdir, '_build_manifests',
             dest)
 
-        for k, manifest in manifests.items():
+        for k, manifest in list(manifests.items()):
             with self._write_file(mozpath.join(man_dir, k)) as fh:
                 manifest.write(fileobj=fh)
 
@@ -1326,20 +1342,20 @@ class RecursiveMakeBackend(CommonBackend):
                 pp.context.update(extra)
             if not pp.context.get('autoconfmk', ''):
                 pp.context['autoconfmk'] = 'autoconf.mk'
-            pp.handleLine(b'# THIS FILE WAS AUTOMATICALLY GENERATED. DO NOT MODIFY BY HAND.\n');
-            pp.handleLine(b'DEPTH := @DEPTH@\n')
-            pp.handleLine(b'topobjdir := @topobjdir@\n')
-            pp.handleLine(b'topsrcdir := @top_srcdir@\n')
-            pp.handleLine(b'srcdir := @srcdir@\n')
-            pp.handleLine(b'VPATH := @srcdir@\n')
-            pp.handleLine(b'relativesrcdir := @relativesrcdir@\n')
-            pp.handleLine(b'include $(DEPTH)/config/@autoconfmk@\n')
+            pp.handleLine('# THIS FILE WAS AUTOMATICALLY GENERATED. DO NOT MODIFY BY HAND.\n');
+            pp.handleLine('DEPTH := @DEPTH@\n')
+            pp.handleLine('topobjdir := @topobjdir@\n')
+            pp.handleLine('topsrcdir := @top_srcdir@\n')
+            pp.handleLine('srcdir := @srcdir@\n')
+            pp.handleLine('VPATH := @srcdir@\n')
+            pp.handleLine('relativesrcdir := @relativesrcdir@\n')
+            pp.handleLine('include $(DEPTH)/config/@autoconfmk@\n')
             if not stub:
                 pp.do_include(obj.input_path)
             # Empty line to avoid failures when last line in Makefile.in ends
             # with a backslash.
-            pp.handleLine(b'\n')
-            pp.handleLine(b'include $(topsrcdir)/config/recurse.mk\n')
+            pp.handleLine('\n')
+            pp.handleLine('include $(topsrcdir)/config/recurse.mk\n')
         if not stub:
             # Adding the Makefile.in here has the desired side-effect
             # that if the Makefile.in disappears, this will force

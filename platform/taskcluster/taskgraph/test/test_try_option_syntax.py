@@ -40,9 +40,9 @@ tasks = {k: v for k, v in [
     unittest_task('gtest', 'linux64'),
     talos_task('dromaeojs', 'linux64'),
 ]}
-unittest_tasks = {k: v for k, v in tasks.iteritems()
+unittest_tasks = {k: v for k, v in tasks.items()
                   if 'unittest_try_name' in v.attributes}
-talos_tasks = {k: v for k, v in tasks.iteritems()
+talos_tasks = {k: v for k, v in tasks.items()
                if 'talos_try_name' in v.attributes}
 graph_with_jobs = TaskGraph(tasks, Graph(set(tasks), set()))
 
@@ -139,7 +139,7 @@ class TestTryOptionSyntax(unittest.TestCase):
         tos = TryOptionSyntax('try: -p linux,linux64', empty_graph)
         ridealongs = list(task
                           for task in itertools.chain.from_iterable(
-                                RIDEALONG_BUILDS.itervalues()
+                                iter(RIDEALONG_BUILDS.values())
                           )
                           if 'android' not in task)  # Don't include android-l10n
         self.assertEqual(sorted(tos.platforms), sorted(['linux', 'linux64'] + ridealongs))

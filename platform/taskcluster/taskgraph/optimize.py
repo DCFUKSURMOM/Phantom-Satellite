@@ -51,10 +51,10 @@ def resolve_task_references(label, task_def, taskid_for_edge_name):
         if isinstance(val, list):
             return [recurse(v) for v in val]
         elif isinstance(val, dict):
-            if val.keys() == ['task-reference']:
+            if list(val.keys()) == ['task-reference']:
                 return TASK_REFERENCE_PATTERN.sub(repl, val['task-reference'])
             else:
-                return {k: recurse(v) for k, v in val.iteritems()}
+                return {k: recurse(v) for k, v in val.items()}
         else:
             return val
     return recurse(task_def)
@@ -78,7 +78,7 @@ def annotate_task_graph(target_task_graph, params, do_not_optimize,
         named_task_dependencies = named_links_dict.get(label, {})
 
         # check whether any dependencies have been optimized away
-        dependencies = [target_task_graph.tasks[l] for l in named_task_dependencies.itervalues()]
+        dependencies = [target_task_graph.tasks[l] for l in named_task_dependencies.values()]
         for t in dependencies:
             if t.optimized and not t.task_id:
                 raise Exception(
@@ -134,9 +134,9 @@ def get_subgraph(annotated_task_graph, named_links_dict, label_to_taskid):
         task.task_id = label_to_taskid[label] = slugid()
         named_task_dependencies = {
                 name: label_to_taskid[label]
-                for name, label in named_links_dict.get(label, {}).iteritems()}
+                for name, label in named_links_dict.get(label, {}).items()}
         task.task = resolve_task_references(task.label, task.task, named_task_dependencies)
-        task.task.setdefault('dependencies', []).extend(named_task_dependencies.itervalues())
+        task.task.setdefault('dependencies', []).extend(iter(named_task_dependencies.values()))
         tasks_by_taskid[task.task_id] = task
 
     # resolve edges to taskIds

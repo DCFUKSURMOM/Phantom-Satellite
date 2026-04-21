@@ -103,7 +103,7 @@ def testcache():
         z = a.head
         for j in range(len(a.table)):
             q.append([z.key, z.value])
-            z = z.next
+            z = z.__next__
 
         assert q == b.cache[::-1]
 
@@ -112,7 +112,7 @@ def testcache():
             q2.append((x, y))
 
         assert list(a.items()) == q2
-        assert list(zip(a.keys(), a.values())) == q2
+        assert list(zip(list(a.keys()), list(a.values()))) == q2
         assert list(a.keys()) == list(a)
 
 
@@ -141,7 +141,7 @@ def wraptest():
 
     def verify(p, x):
         assert p == x.store
-        for key, value in x.cache.items():
+        for key, value in list(x.cache.items()):
             assert x.store[key] == value
 
         tmp = list(x.items())
@@ -163,14 +163,14 @@ def wraptest():
 def wraptest2():
 
     def verify(p, x):
-        for key, value in x.store.items():
+        for key, value in list(x.store.items()):
             if key not in x.dirty:
                 assert p[key] == value
 
         for key in x.dirty:
             assert x.cache.peek(key) == p[key]
 
-        for key, value in x.cache.items():
+        for key, value in list(x.cache.items()):
             if key not in x.dirty:
                 assert x.store[key] == p[key] == value
 
@@ -194,14 +194,14 @@ def wraptest2():
 def wraptest3():
 
     def verify(p, x):
-        for key, value in x.store.items():
+        for key, value in list(x.store.items()):
             if key not in x.dirty:
                 assert p[key] == value
 
         for key in x.dirty:
             assert x.cache.peek(key) == p[key]
 
-        for key, value in x.cache.items():
+        for key, value in list(x.cache.items()):
             if key not in x.dirty:
                 assert x.store[key] == p[key] == value
 

@@ -77,7 +77,7 @@ def CheckMeta(dec, ref):
     if isinstance(ref, dict):
         if not isinstance(dec, dict):
             return Failure("Malformed metadata file")
-        for k, v in ref.items():
+        for k, v in list(ref.items()):
             if k in TEST_KEYS:
                 continue
             if k not in dec:

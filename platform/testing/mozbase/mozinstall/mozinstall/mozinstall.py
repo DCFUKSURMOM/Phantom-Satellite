@@ -134,9 +134,9 @@ def install(src, dest):
                     pass
         if issubclass(cls, Exception):
             error = InstallError('Failed to install "%s (%s)"' % (src, str(exc)))
-            raise InstallError, error, trbk
+            raise InstallError(error).with_traceback(trbk)
         # any other kind of exception like KeyboardInterrupt is just re-raised.
-        raise cls, exc, trbk
+        raise cls(exc).with_traceback(trbk)
 
     finally:
         # trbk won't get GC'ed due to circular reference
@@ -201,13 +201,13 @@ def uninstall(install_folder):
     # On Windows we have to use the uninstaller. If it's not available fallback
     # to the directory removal code
     if mozinfo.isWin:
-        uninstall_folder = '%s\uninstall' % install_folder
-        log_file = '%s\uninstall.log' % uninstall_folder
+        uninstall_folder = '%s\\uninstall' % install_folder
+        log_file = '%s\\uninstall.log' % uninstall_folder
 
         if os.path.isfile(log_file):
             trbk = None
             try:
-                cmdArgs = ['%s\uninstall\helper.exe' % install_folder, '/S']
+                cmdArgs = ['%s\\uninstall\helper.exe' % install_folder, '/S']
                 result = subprocess.call(cmdArgs)
                 if result is not 0:
                     raise Exception('Execution of uninstaller failed.')
@@ -222,10 +222,10 @@ def uninstall(install_folder):
                     if time.time() > end_time:
                         raise Exception('Failure removing uninstall folder.')
 
-            except Exception, ex:
+            except Exception as ex:
                 cls, exc, trbk = sys.exc_info()
                 error = UninstallError('Failed to uninstall %s (%s)' % (install_folder, str(ex)))
-                raise UninstallError, error, trbk
+                raise UninstallError(error).with_traceback(trbk)
 
             finally:
                 # trbk won't get GC'ed due to circular reference
@@ -328,7 +328,7 @@ def install_cli(argv=sys.argv[1:]):
         install_path = install(src, options.dest)
         binary = get_binary(install_path, app_name=options.app)
 
-    print binary
+    print(binary)
 
 
 def uninstall_cli(argv=sys.argv[1:]):

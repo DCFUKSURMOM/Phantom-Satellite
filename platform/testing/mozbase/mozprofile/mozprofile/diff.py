@@ -5,7 +5,7 @@ diff two profile summaries
 """
 
 import difflib
-import profile
+from . import profile
 import optparse
 import os
 import sys
@@ -72,10 +72,10 @@ def diff_profiles(args=sys.argv[1:]):
     # display them
     while diffs:
         key, value = diffs.pop(0)
-        print '[%s]:\n' % key
-        print value
+        print('[%s]:\n' % key)
+        print(value)
         if diffs:
-            print '-' * 4
+            print('-' * 4)
 
 if __name__ == '__main__':
     diff_profiles()

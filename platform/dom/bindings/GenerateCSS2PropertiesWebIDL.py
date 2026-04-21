@@ -31,7 +31,7 @@ def generate(output, idlFilename, preprocessorHeader):
         # Unfortunately, even some of the getters here are fallible
         # (e.g. on nsComputedDOMStyle).
         extendedAttrs = ["Throws"]
-        if pref is not "":
+        if pref != "":
             extendedAttrs.append('Pref="%s"' % pref)
 
         # webkit properties get a capitalized "WebkitFoo" accessor (added here)

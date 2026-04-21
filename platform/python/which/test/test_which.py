@@ -41,7 +41,7 @@ class WhichTestCase(unittest.TestCase):
         for app in self.testapps:
             path = os.path.join(self.tmpdir, app)
             open(path, 'wb').write('\n')
-            os.chmod(path, 0755)
+            os.chmod(path, 0o755)
 
     def tearDown(self):
         testsupport.rmtree(self.tmpdir)
@@ -49,49 +49,49 @@ class WhichTestCase(unittest.TestCase):
     def test_opt_h(self):
         output, error, retval = testsupport.run(self.which+' --h')
         token = 'Usage:'
-        self.failUnless(output.find(token) != -1,
+        self.assertTrue(output.find(token) != -1,
                         "'%s' was not found in 'which -h' output: '%s' "\
                         % (token, output))
-        self.failUnless(retval == 0,
+        self.assertTrue(retval == 0,
                         "'which -h' did not return 0: retval=%d" % retval)
 
     def test_opt_help(self):
         output, error, retval = testsupport.run(self.which+' --help')
         token = 'Usage:'
-        self.failUnless(output.find(token) != -1,
+        self.assertTrue(output.find(token) != -1,
                         "'%s' was not found in 'which --help' output: '%s' "\
                         % (token, output))
-        self.failUnless(retval == 0,
+        self.assertTrue(retval == 0,
                         "'which --help' did not return 0: retval=%d" % retval)
 
     def test_opt_version(self):
         output, error, retval = testsupport.run(self.which+' --version')
         versionRe = re.compile("^which \d+\.\d+\.\d+$")
         versionMatch = versionRe.search(output.strip())
-        self.failUnless(versionMatch,
+        self.assertTrue(versionMatch,
                         "Version, '%s', from 'which --version' does not "\
                         "match pattern, '%s'."\
                         % (output.strip(), versionRe.pattern))
-        self.failUnless(retval == 0,
+        self.assertTrue(retval == 0,
                         "'which --version' did not return 0: retval=%d"\
                         % retval)
 
     def test_no_args(self):
         output, error, retval = testsupport.run(self.which)
-        self.failUnless(retval == -1,
+        self.assertTrue(retval == -1,
                         "'which' with no args should return -1: retval=%d"\
                         % retval)
 
     def test_one_failure(self):
         output, error, retval = testsupport.run(
             self.which+' whichtestapp1')
-        self.failUnless(retval == 1,
+        self.assertTrue(retval == 1,
             "One failure did not return 1: retval=%d" % retval)
 
     def test_two_failures(self):
         output, error, retval = testsupport.run(
             self.which+' whichtestapp1 whichtestapp2')
-        self.failUnless(retval == 2,
+        self.assertTrue(retval == 2,
             "Two failures did not return 2: retval=%d" % retval)
 
     def _match(self, path1, path2):
@@ -109,10 +109,10 @@ class WhichTestCase(unittest.TestCase):
         os.environ["PATH"] += os.pathsep + self.tmpdir 
         output, error, retval = testsupport.run(self.which+' -q whichtestapp1')
         expectedOutput = os.path.join(self.tmpdir, "whichtestapp1")
-        self.failUnless(self._match(output.strip(), expectedOutput),
+        self.assertTrue(self._match(output.strip(), expectedOutput),
             "Output, %r, and expected output, %r, do not match."\
             % (output.strip(), expectedOutput))
-        self.failUnless(retval == 0,
+        self.assertTrue(retval == 0,
             "'which ...' should have returned 0: retval=%d" % retval)
 
     def test_two_successes(self):
@@ -123,17 +123,17 @@ class WhichTestCase(unittest.TestCase):
         lines = output.strip().split("\n")
         for app, line in zip(apps, lines):
             expected = os.path.join(self.tmpdir, app)
-            self.failUnless(self._match(line, expected),
+            self.assertTrue(self._match(line, expected),
                 "Output, %r, and expected output, %r, do not match."\
                 % (line, expected))
-        self.failUnless(retval == 0,
+        self.assertTrue(retval == 0,
             "'which ...' should have returned 0: retval=%d" % retval)
 
     if sys.platform.startswith("win"):
         def test_PATHEXT_failure(self):
             os.environ["PATH"] += os.pathsep + self.tmpdir 
             output, error, retval = testsupport.run(self.which+' whichtestapp3')
-            self.failUnless(retval == 1,
+            self.assertTrue(retval == 1,
                 "'which ...' should have returned 1: retval=%d" % retval)
 
         def test_PATHEXT_success(self):
@@ -141,20 +141,20 @@ class WhichTestCase(unittest.TestCase):
             os.environ["PATHEXT"] += os.pathsep + '.wta'
             output, error, retval = testsupport.run(self.which+' whichtestapp3')
             expectedOutput = os.path.join(self.tmpdir, "whichtestapp3")
-            self.failUnless(self._match(output.strip(), expectedOutput),
+            self.assertTrue(self._match(output.strip(), expectedOutput),
                 "Output, %r, and expected output, %r, do not match."\
                 % (output.strip(), expectedOutput))
-            self.failUnless(retval == 0,
+            self.assertTrue(retval == 0,
                 "'which ...' should have returned 0: retval=%d" % retval)
 
         def test_exts(self):
             os.environ["PATH"] += os.pathsep + self.tmpdir 
             output, error, retval = testsupport.run(self.which+' -e .wta whichtestapp3')
             expectedOutput = os.path.join(self.tmpdir, "whichtestapp3")
-            self.failUnless(self._match(output.strip(), expectedOutput),
+            self.assertTrue(self._match(output.strip(), expectedOutput),
                 "Output, %r, and expected output, %r, do not match."\
                 % (output.strip(), expectedOutput))
-            self.failUnless(retval == 0,
+            self.assertTrue(retval == 0,
                 "'which ...' should have returned 0: retval=%d" % retval)
 
 

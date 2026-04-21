@@ -236,7 +236,7 @@ def remap(metric):
 for (m, img) in data:
     fname = "%s/%s_%s" % (output_dir, m, img)
     fig = go.Figure()
-    for method in sorted(data[(m, img)].keys(), key=pos):
+    for method in sorted(list(data[(m, img)].keys()), key=pos):
         vals = data[(m, img)][method]
         zvals = list(zip(*sorted(vals)))
         if not zvals:

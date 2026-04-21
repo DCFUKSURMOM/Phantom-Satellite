@@ -45,8 +45,8 @@ class HornSchunck(MotionEST):
     cur_I = np.zeros((self.num_row, self.num_col))
     ref_I = np.zeros((self.num_row, self.num_col))
     #use average intensity as block's intensity
-    for i in xrange(self.num_row):
-      for j in xrange(self.num_col):
+    for i in range(self.num_row):
+      for j in range(self.num_col):
         r = i * self.blk_sz
         c = j * self.blk_sz
         cur_I[i, j] = np.mean(self.cur_yuv[r:r + self.blk_sz, c:c + self.blk_sz,
@@ -64,8 +64,8 @@ class HornSchunck(MotionEST):
     Iy = np.zeros((self.num_row, self.num_col))
     It = np.zeros((self.num_row, self.num_col))
     sz = self.blk_sz
-    for i in xrange(self.num_row - 1):
-      for j in xrange(self.num_col - 1):
+    for i in range(self.num_row - 1):
+      for j in range(self.num_col - 1):
         """
                 Ix:
                 (i  ,j) <--- (i  ,j+1)
@@ -96,8 +96,8 @@ class HornSchunck(MotionEST):
         Iy[i, j] /= count
         count = 0
         #It:
-        for r in xrange(i, i + 2):
-          for c in xrange(j, j + 2):
+        for r in range(i, i + 2):
+          for c in range(j, j + 2):
             if 0 <= r < self.num_row and 0 <= c < self.num_col:
               It[i, j] += (self.ref_I[r, c] - self.cur_I[r, c])
               count += 1
@@ -118,8 +118,8 @@ class HornSchunck(MotionEST):
          |         |       |
         1/12 ---  1/6 --- 1/12
         """
-    for i in xrange(self.num_row):
-      for j in xrange(self.num_col):
+    for i in range(self.num_row):
+      for j in range(self.num_col):
         for r, c in {(-1, 0), (1, 0), (0, -1), (0, 1)}:
           if 0 <= i + r < self.num_row and 0 <= j + c < self.num_col:
             avg[i, j] += self.mf[i + r, j + c] / 6.0
@@ -151,8 +151,8 @@ class HornSchunck(MotionEST):
 
     N = 2 * self.num_row * self.num_col
     b = np.zeros((N, 1))
-    for i in xrange(self.num_row):
-      for j in xrange(self.num_col):
+    for i in range(self.num_row):
+      for j in range(self.num_col):
         """(IxIx+alpha^2)u+IxIy.v-alpha^2~u IxIy.u+(IyIy+alpha^2)v-alpha^2~v"""
         u_idx = i * 2 * self.num_col + 2 * j
         v_idx = u_idx + 1
@@ -206,7 +206,7 @@ class HornSchunck(MotionEST):
     M_inv = inv(M)
     uv = M_inv.dot(b)
 
-    for i in xrange(self.num_row):
-      for j in xrange(self.num_col):
+    for i in range(self.num_row):
+      for j in range(self.num_col):
         self.mf[i, j, 0] = uv[i * 2 * self.num_col + 2 * j + 1, 0] * self.blk_sz
         self.mf[i, j, 1] = uv[i * 2 * self.num_col + 2 * j, 0] * self.blk_sz

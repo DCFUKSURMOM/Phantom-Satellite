@@ -28,4 +28,4 @@ debugger-specific arguments:
 
 """
 
-from mozdebug import *
+from .mozdebug import *

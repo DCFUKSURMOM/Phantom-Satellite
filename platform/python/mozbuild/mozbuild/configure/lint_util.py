@@ -12,9 +12,9 @@ import inspect
 # returns an iterator.
 def disassemble_as_iter(co):
     if inspect.ismethod(co):
-        co = co.im_func
+        co = co.__func__
     if inspect.isfunction(co):
-        co = co.func_code
+        co = co.__code__
     code = co.co_code
     n = len(code)
     i = 0
@@ -30,7 +30,7 @@ def disassemble_as_iter(co):
             extended_arg = 0
             i += 2
             if op == dis.EXTENDED_ARG:
-                extended_arg = arg * 65536L
+                extended_arg = arg * 65536
                 continue
             if op in dis.hasconst:
                 yield opname, co.co_consts[arg]

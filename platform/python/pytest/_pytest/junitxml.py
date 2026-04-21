@@ -19,8 +19,8 @@ import pytest
 if sys.version_info[0] < 3:
     from codecs import open
 else:
-    unichr = chr
-    unicode = str
+    chr = chr
+    str = str
     long = int
 
 
@@ -37,11 +37,11 @@ _legal_ranges = (
     (0x20, 0x7E), (0x80, 0xD7FF), (0xE000, 0xFFFD), (0x10000, 0x10FFFF),
 )
 _legal_xml_re = [
-    unicode("%s-%s") % (unichr(low), unichr(high))
+    str("%s-%s") % (chr(low), chr(high))
     for (low, high) in _legal_ranges if low < sys.maxunicode
 ]
-_legal_xml_re = [unichr(x) for x in _legal_chars] + _legal_xml_re
-illegal_xml_re = re.compile(unicode('[^%s]') % unicode('').join(_legal_xml_re))
+_legal_xml_re = [chr(x) for x in _legal_chars] + _legal_xml_re
+illegal_xml_re = re.compile(str('[^%s]') % str('').join(_legal_xml_re))
 del _legal_chars
 del _legal_ranges
 del _legal_xml_re
@@ -53,9 +53,9 @@ def bin_xml_escape(arg):
     def repl(matchobj):
         i = ord(matchobj.group())
         if i <= 0xFF:
-            return unicode('#x%02X') % i
+            return str('#x%02X') % i
         else:
-            return unicode('#x%04X') % i
+            return str('#x%04X') % i
 
     return py.xml.raw(illegal_xml_re.sub(repl, py.xml.escape(arg)))
 
@@ -139,7 +139,7 @@ class _NodeReporter(object):
         else:
             if hasattr(report.longrepr, "reprcrash"):
                 message = report.longrepr.reprcrash.message
-            elif isinstance(report.longrepr, (unicode, str)):
+            elif isinstance(report.longrepr, (str, str)):
                 message = report.longrepr
             else:
                 message = str(report.longrepr)
@@ -179,7 +179,7 @@ class _NodeReporter(object):
         self._write_captured_output(report)
 
     def finalize(self):
-        data = self.to_xml().unicode(indent=0)
+        data = self.to_xml().str(indent=0)
         self.__dict__.clear()
         self.to_xml = lambda: py.xml.raw(data)
 
@@ -379,7 +379,7 @@ class LogXML(object):
             failures=self.stats['failure'],
             skips=self.stats['skipped'],
             tests=numtests,
-            time="%.3f" % suite_time_delta, ).unicode(indent=0))
+            time="%.3f" % suite_time_delta, ).str(indent=0))
         logfile.close()
 
     def pytest_terminal_summary(self, terminalreporter):

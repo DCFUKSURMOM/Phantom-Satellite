@@ -39,6 +39,13 @@ Kernel = EnumString.subclass(
     'WINNT',
 )
 
+# This hack is here because the old Py2 version of the build system was very
+# permissive and allowed Kernel enums to be used for OS_TARGET and OS enums to
+# be used for OS_ARCH. We have a tree full of things like OS_TARGET = Darwin,
+# which *should* be either OS_ARCH = Darwin or OS_TARGET = OSX.
+
+OS_and_Kernel = EnumString.subclass(*list(OS.POSSIBLE_VALUES + Kernel.POSSIBLE_VALUES))
+
 CPU_bitness = {
     'aarch64': 64,
     'Alpha': 64,
@@ -58,7 +65,7 @@ CPU_bitness = {
     'x86_64': 64,
 }
 
-CPU = EnumString.subclass(*CPU_bitness.keys())
+CPU = EnumString.subclass(*list(CPU_bitness.keys()))
 
 Endianness = EnumString.subclass(
     'big',

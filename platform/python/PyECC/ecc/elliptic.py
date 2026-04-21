@@ -360,9 +360,9 @@ if __name__ == "__main__":
         q = curve_q(p1[0], p1[1], p, n)
         p2 = mulp(p, q, n, p1, rsa.random.randint(1, n))
 
-        c1 = [rsa.random.randint(1, n) for i in xrange(tcount)]
-        c2 = [rsa.random.randint(1, n) for i in xrange(tcount)]
-        c = zip(c1, c2)
+        c1 = [rsa.random.randint(1, n) for i in range(tcount)]
+        c2 = [rsa.random.randint(1, n) for i in range(tcount)]
+        c = list(zip(c1, c2))
 
         t = time.time()
         for i, j in c:

@@ -6,7 +6,7 @@ import timeit
 import sys
 
 try:
-    from urllib2 import urlopen
+    from urllib.request import urlopen
 except ImportError:
     from urllib.request import urlopen
 

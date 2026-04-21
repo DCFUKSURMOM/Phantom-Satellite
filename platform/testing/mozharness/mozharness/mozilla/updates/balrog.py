@@ -20,13 +20,13 @@ class BalrogMixin(object):
         )
 
         if self.buildbot_config and "properties" in self.buildbot_config:
-            buildbot_properties = self.buildbot_config["properties"].items()
+            buildbot_properties = list(self.buildbot_config["properties"].items())
         else:
             buildbot_properties = []
 
         balrog_props = dict(properties=dict(chain(
             buildbot_properties,
-            self.buildbot_properties.items(),
+            list(self.buildbot_properties.items()),
         )))
         if self.config.get('balrog_platform'):
             balrog_props["properties"]["platform"] = self.config['balrog_platform']

@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import re
-from progressbar import NullProgressBar, ProgressBar
+from .progressbar import NullProgressBar, ProgressBar
 import pipes
 
 # subprocess.list2cmdline does not properly escape for sh-like shells
@@ -131,7 +131,7 @@ class ResultsSink:
             dev_label = self.LABELS[tup][1]
 
             if self.options.check_output:
-                if output.test.path in self.output_dict.keys():
+                if output.test.path in list(self.output_dict.keys()):
                     if self.output_dict[output.test.path] != output:
                         self.counts['FAIL'] += 1
                         self.print_automation_result(

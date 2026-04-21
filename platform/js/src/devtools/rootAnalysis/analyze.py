@@ -44,12 +44,12 @@ def print_command(command, outfile=None, env=None):
     if env:
         changed = {}
         e = os.environ
-        for key,value in env.items():
+        for key,value in list(env.items()):
             if (key not in e) or (e[key] != value):
                 changed[key] = value
         if changed:
             outputs = []
-            for key, value in changed.items():
+            for key, value in list(changed.items()):
                 if key in e and e[key] in value:
                     start = value.index(e[key])
                     end = start + len(e[key])
@@ -61,7 +61,7 @@ def print_command(command, outfile=None, env=None):
                     outputs.append("%s='%s'" % (key, value))
             output = ' '.join(outputs) + " " + output
 
-    print output
+    print(output)
 
 def generate_hazards(config, outfilename):
     jobs = []
@@ -150,7 +150,7 @@ def out_indexes(command):
 
 def run_job(name, config):
     cmdspec, outfiles = JOBS[name]
-    print("Running " + name + " to generate " + str(outfiles))
+    print(("Running " + name + " to generate " + str(outfiles)))
     if hasattr(cmdspec, '__call__'):
         cmdspec(config, outfiles)
     else:
@@ -184,11 +184,11 @@ def run_job(name, config):
         else:
             with open(stdout_filename, 'w') as output:
                 subprocess.check_call(command, stdout=output, env=env(config))
-        for (temp, final) in temp_map.items():
+        for (temp, final) in list(temp_map.items()):
             try:
                 os.rename(temp, final)
             except OSError:
-                print("Error renaming %s -> %s" % (temp, final))
+                print(("Error renaming %s -> %s" % (temp, final)))
                 raise
 
 config = { 'ANALYSIS_SCRIPTDIR': os.path.dirname(__file__) }
@@ -224,15 +224,15 @@ args = parser.parse_args()
 
 for default in defaults:
     try:
-        execfile(default, config)
+        exec(compile(open(default, "rb").read(), default, 'exec'), config)
         if args.verbose:
-            print("Loaded %s" % default)
+            print(("Loaded %s" % default))
     except:
         pass
 
 data = config.copy()
 
-for k,v in vars(args).items():
+for k,v in list(vars(args).items()):
     if v is not None:
         data[k] = v
 
@@ -272,7 +272,7 @@ if args.list:
     for step in steps:
         command, outfilename = JOBS[step]
         if outfilename:
-            print("%s -> %s" % (step, outfilename))
+            print(("%s -> %s" % (step, outfilename)))
         else:
             print(step)
     sys.exit(0)

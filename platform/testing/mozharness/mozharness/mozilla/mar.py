@@ -8,7 +8,7 @@
 
 import os
 import sys
-import ConfigParser
+import configparser
 
 # load modules from parent dir
 sys.path.insert(1, os.path.dirname(sys.path[0]))
@@ -21,7 +21,7 @@ CONFIG = {
 
 
 def query_ini_file(ini_file, section, option):
-    ini = ConfigParser.SafeConfigParser()
+    ini = configparser.SafeConfigParser()
     ini.read(ini_file)
     return ini.get(section, option)
 
@@ -67,7 +67,7 @@ class MarMixin(object):
                 self.info("downloaded %s" % full_path)
             else:
                 self.info("found %s, skipping download" % full_path)
-            self.chmod(full_path, 0755)
+            self.chmod(full_path, 0o755)
 
     def _temp_mar_base_dir(self):
         """a base dir for unpacking mars"""

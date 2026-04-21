@@ -22,7 +22,7 @@ class TestFileComparison(unittest.TestCase):
         filecomp = self.mock_FileComparison(_listdir)
         filecomp.files()
         self.assertEqual(filecomp.locales(), [])
-        self.assertEqual(filecomp._reference.keys(), ['my_app'])
+        self.assertEqual(list(filecomp._reference.keys()), ['my_app'])
         file_ = filecomp._reference['my_app']
         self.assertEqual(file_.file, 'locales/my_app.en-US.properties')
 
@@ -36,6 +36,6 @@ class TestFileComparison(unittest.TestCase):
         filecomp.files()
         self.assertEqual(filecomp.locales(),
                          ['ar', 'sr-Latn', 'sv-SE'])
-        self.assertEqual(filecomp._files['ar'].keys(), ['my_app'])
+        self.assertEqual(list(filecomp._files['ar'].keys()), ['my_app'])
         file_ = filecomp._files['ar']['my_app']
         self.assertEqual(file_.file, 'locales/my_app.ar.properties')

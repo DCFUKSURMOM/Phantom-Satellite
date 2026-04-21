@@ -18,4 +18,4 @@ if locale in searchinfo["locales"]:
 else:
   engines = searchinfo["default"]["visibleDefaultEngines"]
 
-print '\n'.join(engines)
+print('\n'.join(engines))

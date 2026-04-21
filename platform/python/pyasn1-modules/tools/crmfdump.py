@@ -6,8 +6,8 @@ from pyasn1_modules import rfc2511, pem
 import sys
 
 if len(sys.argv) != 1:
-    print("""Usage:
-$ cat crmf.pem | %s""" % sys.argv[0])
+    print(("""Usage:
+$ cat crmf.pem | %s""" % sys.argv[0]))
     sys.exit(-1)
     
 certReq = rfc2511.CertReqMessages()
@@ -18,7 +18,7 @@ if not substrate:
         
 cr, rest = decoder.decode(substrate, asn1Spec=certReq)
 
-print(cr.prettyPrint())
+print((cr.prettyPrint()))
 
 assert encoder.encode(cr, defMode=False) == substrate or \
        encoder.encode(cr, defMode=True) == substrate, \

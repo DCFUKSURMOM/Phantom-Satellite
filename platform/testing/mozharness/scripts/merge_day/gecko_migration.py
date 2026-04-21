@@ -531,7 +531,7 @@ class GeckoMigration(MercurialScript, BalrogMixin, VirtualenvMixin,
         revision = self.query_to_revision()
         # Horrible hack because our internal buildapi interface doesn't let us
         # actually do anything. Need to use the public one w/ auth.
-        username = raw_input("LDAP Username: ")
+        username = input("LDAP Username: ")
         password = getpass(prompt="LDAP Password: ")
         auth = (username, password)
         for builder in self.config["post_merge_builders"]:

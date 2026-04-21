@@ -31,7 +31,7 @@ for unused in ['RULE_INPUT_PATH', 'RULE_INPUT_ROOT', 'RULE_INPUT_NAME',
 
 def CalculateVariables(default_variables, params):
   generator_flags = params.get('generator_flags', {})
-  for key, val in generator_flags.items():
+  for key, val in list(generator_flags.items()):
     default_variables.setdefault(key, val)
   default_variables.setdefault('OS', gyp.common.GetFlavor(params))
 

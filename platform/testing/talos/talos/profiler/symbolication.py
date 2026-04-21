@@ -2,19 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import cStringIO
+import io
 import hashlib
 import json
 import os
 import platform
 import re
 import subprocess
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import zipfile
 from distutils import spawn
-from symFileManager import SymFileManager
-from symbolicationRequest import SymbolicationRequest
-from symLogging import LogMessage
+from .symFileManager import SymFileManager
+from .symbolicationRequest import SymbolicationRequest
+from .symLogging import LogMessage
 
 """
 Symbolication is broken when using type 'str' in python 2.7, so we use 'basestring'.
@@ -145,8 +145,8 @@ class ProfileSymbolicator:
         LogMessage("Retrieving symbol zip from {symbol_zip_url}...".format(
             symbol_zip_url=symbol_zip_url))
         try:
-            io = urllib2.urlopen(symbol_zip_url, None, 30)
-            with zipfile.ZipFile(cStringIO.StringIO(io.read())) as zf:
+            io = urllib.request.urlopen(symbol_zip_url, None, 30)
+            with zipfile.ZipFile(io.StringIO(io.read())) as zf:
                 self.integrate_symbol_zip(zf)
             self._create_file_if_not_exists(self._marker_file(symbol_zip_url))
         except IOError:
@@ -356,7 +356,7 @@ class ProfileSymbolicator:
                 libs_with_symbols[lib["start"]] = {
                     "library": lib, "symbols": set()}
             libs_with_symbols[lib["start"]]["symbols"].add(address)
-        return libs_with_symbols.values()
+        return list(libs_with_symbols.values())
 
     def _module_from_lib(self, lib):
         if "breakpadId" in lib:
@@ -383,7 +383,7 @@ class ProfileSymbolicator:
         if not request.isValidRequest:
             return {}
         symbolicated_stack = request.Symbolicate(0)
-        return dict(zip(all_symbols, symbolicated_stack))
+        return dict(list(zip(all_symbols, symbolicated_stack)))
 
     def _substitute_symbols_v2(self, profile_json, symbolication_table):
         for thread in profile_json["threads"]:

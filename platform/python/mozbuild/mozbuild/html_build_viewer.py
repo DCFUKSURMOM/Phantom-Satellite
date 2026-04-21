@@ -6,14 +6,14 @@
 
 from __future__ import absolute_import, unicode_literals
 
-import BaseHTTPServer
+import http.server
 import json
 import os
 
 import requests
 
 
-class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class HTTPHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         s = self.server.wrapper
         p = self.path
@@ -92,7 +92,7 @@ class BuildViewerServer(object):
         self.doc_root = doc_root
         self.json_files = {}
 
-        self.server = BaseHTTPServer.HTTPServer((address, port), HTTPHandler)
+        self.server = http.server.HTTPServer((address, port), HTTPHandler)
         self.server.wrapper = self
         self.do_shutdown = False
 

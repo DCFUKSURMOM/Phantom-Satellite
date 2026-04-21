@@ -5,7 +5,7 @@
 
 import atexit
 from concurrent.futures import _base
-import Queue as queue
+import queue as queue
 import threading
 import weakref
 import sys

@@ -14,7 +14,7 @@ import sys
 import json
 import socket
 import traceback
-import urlparse
+import urllib.parse
 
 import mozharness
 from mozharness.base.script import (
@@ -144,8 +144,8 @@ class VirtualenvMixin(object):
         python = self.query_python_path()
         self.site_packages_path = self.get_output_from_command(
             [python, '-c',
-             'from distutils.sysconfig import get_python_lib; ' +
-             'print(get_python_lib())'])
+             'from sysconfig import get_path; ' +
+             'print(get_path("purelib"))'])
         return self.site_packages_path
 
     def package_versions(self, pip_freeze_output=None, error_level=WARNING, log_output=False):
@@ -190,7 +190,7 @@ class VirtualenvMixin(object):
         """
         Return whether the package is installed
         """
-        packages = self.package_versions(error_level=error_level).keys()
+        packages = list(self.package_versions(error_level=error_level).keys())
         return package_name.lower() in [package.lower() for package in packages]
 
     def install_module(self, module=None, module_url=None, install_method=None,
@@ -255,7 +255,7 @@ class VirtualenvMixin(object):
         proxxy = Proxxy(self.config, self.log_obj)
         trusted_hosts = set()
         for link in proxxy.get_proxies_and_urls(c.get('find_links', [])):
-            parsed = urlparse.urlparse(link)
+            parsed = urllib.parse.urlparse(link)
 
             try:
                 socket.gethostbyname(parsed.hostname)
@@ -434,7 +434,7 @@ class VirtualenvMixin(object):
         """Import the virtualenv's packages into this Python interpreter."""
         bin_dir = os.path.dirname(self.query_python_path())
         activate = os.path.join(bin_dir, 'activate_this.py')
-        execfile(activate, dict(__file__=activate))
+        exec(compile(open(activate, "rb").read(), activate, 'exec'), dict(__file__=activate))
 
 
 # This is (sadly) a mixin for logging methods.
@@ -646,7 +646,7 @@ class ResourceMonitoringMixin(PerfherderResourceOptionsMixin):
 
             })
 
-            for phase in rm.phases.keys():
+            for phase in list(rm.phases.keys()):
                 phase_duration = rm.phases[phase][1] - rm.phases[phase][0]
                 subtests = [
                     {
@@ -726,7 +726,7 @@ class ResourceMonitoringMixin(PerfherderResourceOptionsMixin):
             self._tinderbox_print('Swap in / out<br/>{:,} / {:,}'.format(
                                   swap_in, swap_out))
 
-        for phase in rm.phases.keys():
+        for phase in list(rm.phases.keys()):
             start_time, end_time = rm.phases[phase]
             cpu_percent, cpu_times, io, swap = resources(phase)
             log_usage(phase, end_time - start_time, cpu_percent, cpu_times, io)

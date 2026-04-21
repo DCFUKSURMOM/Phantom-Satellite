@@ -10,8 +10,8 @@ import json
 import mozfile
 import os
 import tokenize
-from ConfigParser import SafeConfigParser as ConfigParser
-from StringIO import StringIO
+from configparser import SafeConfigParser as ConfigParser
+from io import StringIO
 
 __all__ = ('PreferencesReadError', 'Preferences')
 
@@ -35,7 +35,7 @@ class Preferences(object):
         """
         # wants a list of 2-tuples
         if isinstance(prefs, dict):
-            prefs = prefs.items()
+            prefs = list(prefs.items())
         if cast:
             prefs = [(i, self.cast(j)) for i, j in prefs]
         self._prefs += prefs
@@ -124,7 +124,7 @@ class Preferences(object):
                 raise PreferencesReadError("No section '%s' in %s" % (section, path))
             retval = parser.items(section, raw=True)
         else:
-            retval = parser.defaults().items()
+            retval = list(parser.defaults().items())
 
         # cast the preferences since .ini is just strings
         return [(i, cls.cast(j)) for i, j in retval]
@@ -142,7 +142,7 @@ class Preferences(object):
                 raise PreferencesReadError("Malformed preferences: %s" % path)
             values = [i[1] for i in prefs]
         elif isinstance(prefs, dict):
-            values = prefs.values()
+            values = list(prefs.values())
         else:
             raise PreferencesReadError("Malformed preferences: %s" % path)
         types = (bool, basestring, int)
@@ -196,7 +196,7 @@ class Preferences(object):
             try:
                 eval(line, _globals, {})
             except SyntaxError:
-                print line
+                print(line)
                 raise
 
         # de-magic the marker
@@ -217,7 +217,7 @@ class Preferences(object):
 
         if isinstance(prefs, dict):
             # order doesn't matter
-            prefs = prefs.items()
+            prefs = list(prefs.items())
 
         # serialize -> JSON
         _prefs = [(json.dumps(k), json.dumps(v))
@@ -225,7 +225,7 @@ class Preferences(object):
 
         # write the preferences
         for _pref in _prefs:
-            print >> f, pref_string % _pref
+            print(pref_string % _pref, file=f)
 
         # close the file if opened internally
         if isinstance(_file, basestring):

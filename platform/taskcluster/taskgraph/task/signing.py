@@ -33,7 +33,7 @@ class SigningTask(base.Task):
             templates = Templates(root)
             jobs = templates.load(filename, {})
 
-            for name, job in jobs.iteritems():
+            for name, job in jobs.items():
                 for artifact in job['unsigned-task']['artifacts']:
                     url = ARTIFACT_URL.format('<{}>'.format('unsigned-artifact'), artifact)
                     job['task']['payload']['unsignedArtifacts'].append({

@@ -28,19 +28,19 @@ class FilterList(unittest.TestCase):
         fl = filterlist()
 
         fl.extend([foo, bar])
-        self.assertEquals(len(fl), 2)
+        self.assertEqual(len(fl), 2)
         self.assertTrue(foo in fl)
 
         fl.append(baz)
-        self.assertEquals(fl[2], baz)
+        self.assertEqual(fl[2], baz)
 
         fl.remove(baz)
         self.assertFalse(baz in fl)
 
         item = fl.pop()
-        self.assertEquals(item, bar)
+        self.assertEqual(item, bar)
 
-        self.assertEquals(fl.index(foo), 0)
+        self.assertEqual(fl.index(foo), 0)
 
         del fl[0]
         self.assertFalse(foo in fl)
@@ -57,8 +57,8 @@ class FilterList(unittest.TestCase):
         bar = lambda x, y: x
         sub = subsuite('foo')
         fl = filterlist([foo, bar, sub])
-        self.assertEquals(len(fl), 3)
-        self.assertEquals(fl[0], foo)
+        self.assertEqual(len(fl), 3)
+        self.assertEqual(fl[0], foo)
 
         with self.assertRaises(ValueError):
             fl.append(foo)
@@ -75,7 +75,7 @@ class FilterList(unittest.TestCase):
             fl.append(tag1)
 
         fl.append(tag2)
-        self.assertEquals(len(fl), 2)
+        self.assertEqual(len(fl), 2)
 
     def test_filters_run_in_order(self):
         a = lambda x, y: x
@@ -89,7 +89,7 @@ class FilterList(unittest.TestCase):
         fl.append(c)
         fl.extend([d, e])
         fl += [f]
-        self.assertEquals([i for i in fl], [a, b, c, d, e, f])
+        self.assertEqual([i for i in fl], [a, b, c, d, e, f])
 
 
 class BuiltinFilters(unittest.TestCase):
@@ -109,7 +109,7 @@ class BuiltinFilters(unittest.TestCase):
     def test_skip_if(self):
         tests = deepcopy(self.tests)
         tests = list(skip_if(tests, {}))
-        self.assertEquals(len(tests), len(self.tests))
+        self.assertEqual(len(tests), len(self.tests))
 
         tests = deepcopy(self.tests)
         tests = list(skip_if(tests, {'foo': 'bar'}))
@@ -122,7 +122,7 @@ class BuiltinFilters(unittest.TestCase):
 
         tests = deepcopy(self.tests)
         tests = list(run_if(tests, {'foo': 'bar'}))
-        self.assertEquals(len(tests), len(self.tests))
+        self.assertEqual(len(tests), len(self.tests))
 
     def test_fail_if(self):
         tests = deepcopy(self.tests)
@@ -131,7 +131,7 @@ class BuiltinFilters(unittest.TestCase):
 
         tests = deepcopy(self.tests)
         tests = list(fail_if(tests, {'foo': 'bar'}))
-        self.assertEquals(tests[3]['expected'], 'fail')
+        self.assertEqual(tests[3]['expected'], 'fail')
 
     def test_enabled(self):
         tests = deepcopy(self.tests)
@@ -145,11 +145,11 @@ class BuiltinFilters(unittest.TestCase):
         tests = deepcopy(self.tests)
         tests = list(sub1(tests, {}))
         self.assertNotIn(self.tests[5], tests)
-        self.assertEquals(len(tests), len(self.tests) - 1)
+        self.assertEqual(len(tests), len(self.tests) - 1)
 
         tests = deepcopy(self.tests)
         tests = list(sub2(tests, {}))
-        self.assertEquals(len(tests), 1)
+        self.assertEqual(len(tests), 1)
         self.assertIn(self.tests[5], tests)
 
     def test_subsuite_condition(self):
@@ -164,9 +164,9 @@ class BuiltinFilters(unittest.TestCase):
 
         tests = deepcopy(self.tests)
         tests = list(sub2(tests, {'foo': 'bar'}))
-        self.assertEquals(len(tests), 2)
-        self.assertEquals(tests[0]['name'], 'test5')
-        self.assertEquals(tests[1]['name'], 'test6')
+        self.assertEqual(len(tests), 2)
+        self.assertEqual(tests[0]['name'], 'test5')
+        self.assertEqual(tests[1]['name'], 'test6')
 
     def test_tags(self):
         ftags1 = tags([])
@@ -174,9 +174,9 @@ class BuiltinFilters(unittest.TestCase):
 
         tests = deepcopy(self.tests)
         tests = list(ftags1(tests, {}))
-        self.assertEquals(len(tests), 0)
+        self.assertEqual(len(tests), 0)
 
         tests = deepcopy(self.tests)
         tests = list(ftags2(tests, {}))
-        self.assertEquals(len(tests), 1)
+        self.assertEqual(len(tests), 1)
         self.assertIn(self.tests[7], tests)

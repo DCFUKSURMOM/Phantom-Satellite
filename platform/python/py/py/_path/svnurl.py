@@ -56,7 +56,7 @@ class SvnCommandPath(svncommon.SvnPathBase):
         # fixing the locale because we can't otherwise parse
         string = " ".join(l)
         if DEBUG:
-            print("execing %s" % string)
+            print(("execing %s" % string))
         out = self._svncmdexecauth(string)
         return out
 
@@ -300,7 +300,7 @@ if verbose is True, then the LogEntry instances also know which files changed.
         from xml.dom import minidom
         tree = minidom.parse(xmlpipe)
         result = []
-        for logentry in filter(None, tree.firstChild.childNodes):
+        for logentry in [_f for _f in tree.firstChild.childNodes if _f]:
             if logentry.nodeType == logentry.ELEMENT_NODE:
                 result.append(svncommon.LogEntry(logentry))
         return result

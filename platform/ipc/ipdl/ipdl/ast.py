@@ -13,8 +13,8 @@ HIGH_PRIORITY = 2
 
 class Visitor:
     def defaultVisit(self, node):
-        raise Exception, "INTERNAL ERROR: no visitor for node type `%s'"% (
-            node.__class__.__name__)
+        raise Exception("INTERNAL ERROR: no visitor for node type `%s'"% (
+            node.__class__.__name__))
 
     def visitTranslationUnit(self, tu):
         for cxxInc in tu.cxxIncludes:
@@ -320,7 +320,7 @@ class MessageDecl(Node):
             elif modifier == 'verify':
                 self.verify = modifier
             elif modifier != '':
-                raise Exception, "Unexpected message modifier `%s'"% modifier
+                raise Exception("Unexpected message modifier `%s'"% modifier)
 
 class Transition(Node):
     def __init__(self, loc, trigger, msg, toStates):

@@ -33,13 +33,13 @@ class Label:
 # non-generated decoder implementation class. Otherwise, the JDK default
 # decoder is used as a placeholder.
 MULTI_BYTE_DECODER_IMPLEMENTED = [
-  u"x-user-defined",
-  u"replacement",
-  u"big5",
+  "x-user-defined",
+  "replacement",
+  "big5",
 ]
 
 MULTI_BYTE_ENCODER_IMPLEMENTED = [
-  u"big5",
+  "big5",
 ]
 
 preferred = []
@@ -55,14 +55,14 @@ single_byte = []
 multi_byte = []
 
 def to_camel_name(name):
-  if name == u"iso-8859-8-i":
-    return u"Iso8I"
-  if name.startswith(u"iso-8859-"):
-    return name.replace(u"iso-8859-", u"Iso")
-  return name.title().replace(u"X-", u"").replace(u"-", u"").replace(u"_", u"")
+  if name == "iso-8859-8-i":
+    return "Iso8I"
+  if name.startswith("iso-8859-"):
+    return name.replace("iso-8859-", "Iso")
+  return name.title().replace("X-", "").replace("-", "").replace("_", "")
 
 def to_constant_name(name):
-  return name.replace(u"-", u"_").upper()
+  return name.replace("-", "_").upper()
 
 # Encoding.java
 
@@ -328,8 +328,8 @@ for encoding in single_byte:
   labels.sort()
   class_name = to_camel_name(name)
   mapping_name = name
-  if mapping_name == u"iso-8859-8-i":
-    mapping_name = u"iso-8859-8"
+  if mapping_name == "iso-8859-8-i":
+    mapping_name = "iso-8859-8"
   mapping = indexes[mapping_name]
   class_file = open("src/nu/validator/encoding/%s.java" % class_name, "w")
   class_file.write('''/*
@@ -377,7 +377,7 @@ class ''')
       fallible = True
     if comma:
       class_file.write(",")
-    class_file.write("\n        '\u%04x'" % code_point);
+    class_file.write("\n        '\\u%04x'" % code_point);
     comma = True    
   class_file.write('''
     };
@@ -608,16 +608,16 @@ final class Big5Data {
 
 bits = []
 for (low, high) in astral_ranges:
-  for i in xrange(low, high):
+  for i in range(low, high):
     bits.append(1 if index[i] > 0xFFFF else 0)
 # pad length to multiple of 16
-for j in xrange(16 - (len(bits) % 16)):
+for j in range(16 - (len(bits) % 16)):
   bits.append(0)
 
 i = 0
 while i < len(bits):
   accu = 0
-  for j in xrange(16):
+  for j in range(16):
     accu |= bits[i + j] << j
   if accu == 0x22:
     class_file.write('\\"')
@@ -632,7 +632,7 @@ class_file.write('''";
 j = 0
 for (low, high) in ranges:
   class_file.write('''    private static final String TABLE%d = "''' % j)
-  for i in xrange(low, high):
+  for i in range(low, high):
     class_file.write('\\u%04X' % (index[i] & 0xFFFF))
   class_file.write('''";
 
@@ -704,7 +704,7 @@ prefer_last = [
 
 for code_point in prefer_last:
   # Python lists don't have .rindex() :-(
-  for i in xrange(len(index) - 1, -1, -1):
+  for i in range(len(index) - 1, -1, -1):
     candidate = index[i]
     if candidate == code_point:
        class_file.write('''                case 0x%04X:

@@ -68,7 +68,7 @@ for line in fin:
     skipLine = False
     for css in cssPattern.findall(line):
         skipLine = True
-        print('Ignoring stylesheet: ' + css)
+        print(('Ignoring stylesheet: ' + css))
 
     for inc in includePattern.findall(line):
         skipLine = True
@@ -82,10 +82,10 @@ for line in fin:
 
         incData = ReadLocalFile(inc + '.js')
         if not incData:
-            print('Warning: Unknown JS file ignored: ' + inc + '.js')
+            print(('Warning: Unknown JS file ignored: ' + inc + '.js'))
             continue
 
-        print('Injecting include: ' + inc + '.js')
+        print(('Injecting include: ' + inc + '.js'))
         fout.write('\n<script>\n// Imported from: ' + inc + '.js\n');
         fout.write(incData);
         fout.write('\n</script>\n');

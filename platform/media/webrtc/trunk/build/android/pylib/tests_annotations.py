@@ -23,7 +23,7 @@ class AnnotatedFunctions(object):
     """
     module_name = os.path.splitext(os.path.basename(
         function.__globals__['__file__']))[0]
-    qualified_function_name = '.'.join([module_name, function.func_name])
+    qualified_function_name = '.'.join([module_name, function.__name__])
     function_list = AnnotatedFunctions._ANNOTATED.get(annotation, [])
     function_list.append(qualified_function_name)
     AnnotatedFunctions._ANNOTATED[annotation] = function_list
@@ -52,7 +52,7 @@ class AnnotatedFunctions(object):
       List of all annotations for this function.
     """
     return [annotation
-            for annotation, tests in AnnotatedFunctions._ANNOTATED.iteritems()
+            for annotation, tests in AnnotatedFunctions._ANNOTATED.items()
             if qualified_function_name in tests]
 
 

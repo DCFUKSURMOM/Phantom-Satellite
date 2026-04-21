@@ -11,7 +11,7 @@ def attrmatch(attributes, **kwargs):
     must be in the set.  A callable is called with the attribute value.  If an
     attribute is specified as a keyword argument but not present in the
     attributes, the result is False."""
-    for kwkey, kwval in kwargs.iteritems():
+    for kwkey, kwval in kwargs.items():
         if kwkey not in attributes:
             return False
         attval = attributes[kwkey]

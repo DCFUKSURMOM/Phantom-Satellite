@@ -149,7 +149,7 @@ class ReftestRunner(MozbuildObject):
         import runreftestmulet
 
         if self.substs.get('ENABLE_MARIONETTE') != '1':
-            print(MARIONETTE_DISABLED % self.mozconfig['path'])
+            print((MARIONETTE_DISABLED % self.mozconfig['path']))
             return 1
 
         if not args.profile:
@@ -161,7 +161,7 @@ class ReftestRunner(MozbuildObject):
 
         if os.path.isfile(os.path.join(args.profile, 'extensions',
                                        'httpd@gaiamobile.org')):
-            print(GAIA_PROFILE_IS_DEBUG % args.profile)
+            print((GAIA_PROFILE_IS_DEBUG % args.profile))
             return 1
 
         args.app = self.get_binary_path()

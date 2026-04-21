@@ -45,7 +45,7 @@ class Checkers:
         return str(self.path).endswith(arg)
 
     def _evaluate(self, kw):
-        for name, value in kw.items():
+        for name, value in list(kw.items()):
             invert = False
             meth = None
             try:

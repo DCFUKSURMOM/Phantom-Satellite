@@ -6,7 +6,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 import unittest
-from StringIO import StringIO
+from io import StringIO
 from mozunit import main
 from buildconfig import (
     topobjdir,
@@ -42,9 +42,7 @@ class LintMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class Lint(unittest.TestCase):
-    __metaclass__ = LintMeta
-
+class Lint(unittest.TestCase, metaclass=LintMeta):
     def setUp(self):
         self._curdir = os.getcwd()
         os.chdir(topobjdir)

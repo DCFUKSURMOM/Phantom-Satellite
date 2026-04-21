@@ -55,7 +55,7 @@ def InvokeClWithDependencyGeneration(cmdline):
             break
 
     if target is None:
-        print >>sys.stderr, "No target set"
+        print("No target set", file=sys.stderr)
         return 1
 
     # Assume the source file is the last argument
@@ -76,7 +76,7 @@ def InvokeClWithDependencyGeneration(cmdline):
         # and an indentation corresponding to the depth (which we don't need)
         if line.startswith(CL_INCLUDES_PREFIX):
             dep = line[len(CL_INCLUDES_PREFIX):].strip()
-            # We can't handle pathes with spaces properly in mddepend.pl, but
+            # We can't handle paths with spaces properly in mddepend.pl, but
             # we can assume that anything in a path with spaces is a system
             # header and throw it away.
             dep = normcase(dep)

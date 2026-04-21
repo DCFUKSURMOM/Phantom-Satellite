@@ -15,7 +15,7 @@ def _get_string_types():
     if version_info < (3, ):
          return basestring
     # The latter evaluates to "bytes" in Python 3 -- even after conversion by 2to3.
-    return (unicode, type(u"a".encode('utf-8')))
+    return (str, type("a".encode('utf-8')))
 
 
 _STRING_TYPES = _get_string_types()

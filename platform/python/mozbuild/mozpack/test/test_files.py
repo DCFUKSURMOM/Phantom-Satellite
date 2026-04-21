@@ -61,7 +61,7 @@ import tarfile
 import mozpack.path as mozpath
 from tempfile import mkdtemp
 from io import BytesIO
-from StringIO import StringIO
+from io import StringIO
 from xpt import Typelib
 
 
@@ -146,7 +146,7 @@ class TestDest(TestWithTmpDir):
         dest.write('qux')
         self.assertEqual(dest.read(), 'qux')
 
-rand = ''.join(random.choice(string.letters) for i in xrange(131597))
+rand = ''.join(random.choice(string.letters) for i in range(131597))
 samples = [
     '',
     'test',
@@ -268,7 +268,7 @@ class TestAbsoluteSymlinkFile(TestWithTmpDir):
     def test_absolute_relative(self):
         AbsoluteSymlinkFile('/foo')
 
-        with self.assertRaisesRegexp(ValueError, 'Symlink target not absolute'):
+        with self.assertRaisesRegex(ValueError, 'Symlink target not absolute'):
             AbsoluteSymlinkFile('./foo')
 
     def test_symlink_file(self):
@@ -477,7 +477,7 @@ class TestPreprocessedFile(TestWithTmpDir):
 
 class TestExistingFile(TestWithTmpDir):
     def test_required_missing_dest(self):
-        with self.assertRaisesRegexp(ErrorMessage, 'Required existing file'):
+        with self.assertRaisesRegex(ErrorMessage, 'Required existing file'):
             f = ExistingFile(required=True)
             f.copy(self.tmppath('dest'))
 
@@ -566,7 +566,7 @@ class TestDeflatedFile(TestWithTmpDir):
         with JarWriter(src) as jar:
             for content in samples:
                 name = ''.join(random.choice(string.letters)
-                               for i in xrange(8))
+                               for i in range(8))
                 jar.add(name, content, compress=True)
                 contents[name] = content
 

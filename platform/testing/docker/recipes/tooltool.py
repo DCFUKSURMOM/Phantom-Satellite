@@ -23,7 +23,7 @@
 # 'manifest.tt'
 
 import hashlib
-import httplib
+import http.client
 import json
 import logging
 import optparse
@@ -34,8 +34,8 @@ import tarfile
 import tempfile
 import threading
 import time
-import urllib2
-import urlparse
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import zipfile
 
 from subprocess import PIPE
@@ -308,7 +308,7 @@ class Manifest(object):
             rv = json.dump(
                 self.file_records, output_file, indent=0, cls=FileRecordJSONEncoder,
                 separators=(',', ': '))
-            print >> output_file, ''
+            print('', file=output_file)
             return rv
 
     def dumps(self, fmt='json'):
@@ -367,9 +367,9 @@ def list_manifest(manifest_file):
         ))
         return False
     for f in manifest.file_records:
-        print "%s\t%s\t%s" % ("P" if f.present() else "-",
+        print("%s\t%s\t%s" % ("P" if f.present() else "-",
                               "V" if f.present() and f.validate() else "-",
-                              f.filename)
+                              f.filename))
     return True
 
 
@@ -460,7 +460,7 @@ def fetch_file(base_urls, file_record, grabchunk=1024 * 4, auth_file=None, regio
     fetched_path = None
     for base_url in base_urls:
         # Generate the URL for the file on the server side
-        url = urlparse.urljoin(base_url,
+        url = urllib.parse.urljoin(base_url,
                                '%s/%s' % (file_record.algorithm, file_record.digest))
         if region is not None:
             url += '?region=' + region
@@ -469,9 +469,9 @@ def fetch_file(base_urls, file_record, grabchunk=1024 * 4, auth_file=None, regio
 
         # Well, the file doesn't exist locally.  Let's fetch it.
         try:
-            req = urllib2.Request(url)
+            req = urllib.request.Request(url)
             _authorize(req, auth_file)
-            f = urllib2.urlopen(req)
+            f = urllib.request.urlopen(req)
             log.debug("opened %s for reading" % url)
             with open(temp_path, 'wb') as out:
                 k = True
@@ -488,7 +488,7 @@ def fetch_file(base_urls, file_record, grabchunk=1024 * 4, auth_file=None, regio
                          (file_record.filename, base_url, temp_path))
                 fetched_path = temp_path
                 break
-        except (urllib2.URLError, urllib2.HTTPError, ValueError) as e:
+        except (urllib.error.URLError, urllib.error.HTTPError, ValueError) as e:
             log.info("...failed to fetch '%s' from %s" %
                      (file_record.filename, base_url))
             log.debug("%s" % e)
@@ -668,7 +668,7 @@ def fetch_files(manifest_file, base_urls, filenames=[], cache_folder=None,
                 try:
                     if not os.path.exists(cache_folder):
                         log.info("Creating cache in %s..." % cache_folder)
-                        os.makedirs(cache_folder, 0700)
+                        os.makedirs(cache_folder, 0o700)
                     shutil.copy(os.path.join(os.getcwd(), localfile.filename),
                                 os.path.join(cache_folder, localfile.digest))
                     log.info("Local cache %s updated with %s" % (cache_folder,
@@ -759,14 +759,14 @@ def _authorize(req, auth_file):
 
 
 def _send_batch(base_url, auth_file, batch, region):
-    url = urlparse.urljoin(base_url, 'upload')
+    url = urllib.parse.urljoin(base_url, 'upload')
     if region is not None:
         url += "?region=" + region
-    req = urllib2.Request(url, json.dumps(batch), {'Content-Type': 'application/json'})
+    req = urllib.request.Request(url, json.dumps(batch), {'Content-Type': 'application/json'})
     _authorize(req, auth_file)
     try:
-        resp = urllib2.urlopen(req)
-    except (urllib2.URLError, urllib2.HTTPError) as e:
+        resp = urllib.request.urlopen(req)
+    except (urllib.error.URLError, urllib.error.HTTPError) as e:
         _log_api_error(e)
         return None
     return json.load(resp)['result']
@@ -774,8 +774,8 @@ def _send_batch(base_url, auth_file, batch, region):
 
 def _s3_upload(filename, file):
     # urllib2 does not support streaming, so we fall back to good old httplib
-    url = urlparse.urlparse(file['put_url'])
-    cls = httplib.HTTPSConnection if url.scheme == 'https' else httplib.HTTPConnection
+    url = urllib.parse.urlparse(file['put_url'])
+    cls = http.client.HTTPSConnection if url.scheme == 'https' else http.client.HTTPConnection
     host, port = url.netloc.split(':') if ':' in url.netloc else (url.netloc, 443)
     port = int(port)
     conn = cls(host, port)
@@ -797,14 +797,14 @@ def _s3_upload(filename, file):
 
 
 def _notify_upload_complete(base_url, auth_file, file):
-    req = urllib2.Request(
-        urlparse.urljoin(
+    req = urllib.request.Request(
+        urllib.parse.urljoin(
             base_url,
             'upload/complete/%(algorithm)s/%(digest)s' % file))
     _authorize(req, auth_file)
     try:
-        urllib2.urlopen(req)
-    except urllib2.HTTPError as e:
+        urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
         if e.code != 409:
             _log_api_error(e)
             return
@@ -855,7 +855,7 @@ def upload(manifest, message, base_urls, auth_file, region):
     # Upload the files, each in a thread.  This allows us to start all of the
     # uploads before any of the URLs expire.
     threads = {}
-    for filename, file in files.iteritems():
+    for filename, file in files.items():
         if 'put_url' in file:
             log.info("%s: starting upload" % (filename,))
             thd = threading.Thread(target=_s3_upload,
@@ -869,7 +869,7 @@ def upload(manifest, message, base_urls, auth_file, region):
     # re-join all of those threads as they exit
     success = True
     while threads:
-        for filename, thread in threads.items():
+        for filename, thread in list(threads.items()):
             if not thread.is_alive():
                 # _s3_upload has annotated file with result information
                 file = files[filename]
@@ -885,7 +885,7 @@ def upload(manifest, message, base_urls, auth_file, region):
     # notify the server that the uploads are completed.  If the notification
     # fails, we don't consider that an error (the server will notice
     # eventually)
-    for filename, file in files.iteritems():
+    for filename, file in files.items():
         if 'put_url' in file and file['upload_ok']:
             log.info("notifying server of upload completion for %s" % (filename,))
             _notify_upload_complete(base_urls[0], auth_file, file)

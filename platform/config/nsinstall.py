@@ -149,7 +149,7 @@ def _nsinstall_internal(argv):
 
 # nsinstall as a native command is always UTF-8
 def nsinstall(argv):
-  return _nsinstall_internal([unicode(arg, "utf-8") for arg in argv])
+  return _nsinstall_internal([str(arg, "utf-8") for arg in argv])
 
 if __name__ == '__main__':
   # sys.argv corrupts characters outside the system code page on Windows
@@ -173,10 +173,7 @@ if __name__ == '__main__':
     # The first argv will be "python", the second will be the .py file
     argv = argv_arr[1:argc.value]
   else:
-    # For consistency, do it on Unix as well
-    if sys.stdin.encoding is not None:
-      argv = [unicode(arg, sys.stdin.encoding) for arg in sys.argv]
-    else:
-      argv = [unicode(arg) for arg in sys.argv]
+    # On Py3, we shouldn't do this for non-Windows. sys.argv is UTF-8 (or ASCII on old Unix).
+    argv = sys.argv
 
   sys.exit(_nsinstall_internal(argv[1:]))

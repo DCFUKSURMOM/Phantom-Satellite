@@ -28,7 +28,7 @@ import tarfile
 try:
     import urllib.request as urllib
 except ImportError:
-    import urllib
+    import urllib.request, urllib.parse, urllib.error
 from distutils import log
 try:
     from hashlib import md5
@@ -37,7 +37,7 @@ except ImportError:
     from md5 import md5
 
 if sys.version_info[0] == 2:
-    from ConfigParser import RawConfigParser, NoOptionError, NoSectionError
+    from configparser import RawConfigParser, NoOptionError, NoSectionError
 else:
     from configparser import RawConfigParser, NoOptionError, NoSectionError
 
@@ -64,7 +64,7 @@ def eval_marker(value):
 
     class M:
         def __init__(self, **kwds):
-            for k, v in kwds.items():
+            for k, v in list(kwds.items()):
                 setattr(self, k, v)
 
     variables = {
@@ -295,7 +295,7 @@ try:
 
     def get_pypi_src_download(package):
         url = 'https://pypi.python.org/pypi/%s/json'%(package,)
-        fp = urllib.urlopen(url)
+        fp = urllib.request.urlopen(url)
         try:
             try:
                 data = fp.read()
@@ -323,7 +323,7 @@ except ImportError:
 
     def get_pypi_src_download(package):
         url = 'https://pypi.python.org/pypi/%s/json'%(package,)
-        fp = urllib.urlopen(url)
+        fp = urllib.request.urlopen(url)
         try:
             try:
                 data = fp.read()
@@ -437,7 +437,7 @@ def download_setuptools(packagename, to_dir):
     try:
         from urllib.request import urlopen
     except ImportError:
-        from urllib2 import urlopen
+        from urllib.request import urlopen
 
     chksum, url = get_pypi_src_download(packagename)
     tgz_name = os.path.basename(url)
@@ -579,11 +579,11 @@ else:
             import shutil
             import zipfile
             import os
-            import urllib
-            import StringIO
+            import urllib.request, urllib.parse, urllib.error
+            import io
             from base64 import standard_b64encode
-            import httplib
-            import urlparse
+            import http.client
+            import urllib.parse
 
             # Extract the package name from distutils metadata
             meta = self.distribution.metadata
@@ -611,7 +611,7 @@ else:
                     fullname = os.path.join(toplevel, fn)
                     relname = os.path.relpath(fullname, 'doc/_build/html')
 
-                    print ("%s -> %s"%(fullname, relname))
+                    print(("%s -> %s"%(fullname, relname)))
 
                     zf.write(fullname, relname)
 
@@ -633,8 +633,8 @@ else:
             boundary = '--------------GHSKFJDLGDS7543FJKLFHRE75642756743254'
             sep_boundary = '\n--' + boundary
             end_boundary = sep_boundary + '--'
-            body = StringIO.StringIO()
-            for key, value in data.items():
+            body = io.StringIO()
+            for key, value in list(data.items()):
                 if not isinstance(value, list):
                     value = [value]
 
@@ -658,13 +658,13 @@ else:
             self.announce("Uploading documentation to %s"%(self.repository,), log.INFO)
 
             schema, netloc, url, params, query, fragments = \
-                    urlparse.urlparse(self.repository)
+                    urllib.parse.urlparse(self.repository)
 
 
             if schema == 'http':
-                http = httplib.HTTPConnection(netloc)
+                http = http.client.HTTPConnection(netloc)
             elif schema == 'https':
-                http = httplib.HTTPSConnection(netloc)
+                http = http.client.HTTPSConnection(netloc)
             else:
                 raise AssertionError("unsupported schema "+schema)
 
@@ -692,9 +692,9 @@ else:
                 self.announce('Upload failed (%s): %s' % (r.status, r.reason),
                     log.ERROR)
 
-                print ('-'*75)
-                print (r.read())
-                print ('-'*75)
+                print(('-'*75))
+                print((r.read()))
+                print(('-'*75))
 
 
 def recursiveGlob(root, pathPattern):
@@ -718,7 +718,7 @@ def importExternalTestCases(unittest,
     """
 
     testFiles = recursiveGlob(root, pathPattern)
-    testModules = map(lambda x:x[len(root)+1:-3].replace('/', '.'), testFiles)
+    testModules = [x[len(root)+1:-3].replace('/', '.') for x in testFiles]
     if package is not None:
         testModules = [(package + '.' + m) for m in testModules]
 
@@ -728,7 +728,7 @@ def importExternalTestCases(unittest,
         try:
             module = __import__(modName)
         except ImportError:
-            print("SKIP %s: %s"%(modName, sys.exc_info()[1]))
+            print(("SKIP %s: %s"%(modName, sys.exc_info()[1])))
             continue
 
         if '.' in modName:
@@ -843,7 +843,7 @@ class test (Command):
                 xpass=len(getattr(result, 'expectedSuccesses', [])),
                 skip=len(getattr(result, 'skipped', [])),
             )
-            print("SUMMARY: %s"%(summary,))
+            print(("SUMMARY: %s"%(summary,)))
 
         finally:
             self.remove_from_sys_path()

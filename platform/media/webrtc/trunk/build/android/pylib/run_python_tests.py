@@ -9,16 +9,16 @@ import os
 import sys
 import types
 
-import android_commands
-import apk_info
-import constants
-import python_test_base
-from python_test_caller import CallPythonTest
-from python_test_sharder import PythonTestSharder
-import run_java_tests
-from run_java_tests import FatalTestException
-from test_info_collection import TestInfoCollection
-from test_result import TestResults
+from . import android_commands
+from . import apk_info
+from . import constants
+from . import python_test_base
+from .python_test_caller import CallPythonTest
+from .python_test_sharder import PythonTestSharder
+from . import run_java_tests
+from .run_java_tests import FatalTestException
+from .test_info_collection import TestInfoCollection
+from .test_result import TestResults
 
 
 def _GetPythonFiles(root, files):
@@ -155,7 +155,7 @@ def _GetTestsFromClass(test_class):
   """
   test_names = [m for m in dir(test_class)
                 if _IsTestMethod(m, test_class)]
-  return map(test_class, test_names)
+  return list(map(test_class, test_names))
 
 
 def _GetTestClassesFromModule(test_module):
@@ -168,7 +168,7 @@ def _GetTestClassesFromModule(test_module):
 
 
 def _IsTestClass(test_class):
-  return (type(test_class) is types.TypeType and
+  return (type(test_class) is type and
           issubclass(test_class, python_test_base.PythonTestBase) and
           test_class is not python_test_base.PythonTestBase)
 

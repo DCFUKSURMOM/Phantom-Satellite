@@ -124,7 +124,7 @@ if __name__ == "__main__":
     print(f'Processing template {name}')
     path = source_path.joinpath(name)
     text = path.read_text().strip()
-    for key, value in substitutes.items():
+    for key, value in list(substitutes.items()):
       text = text.replace(key, value)
     #text = uglify(text, name)
     output_path.joinpath(name).write_text(text)

@@ -26,4 +26,4 @@ data = stdin.read()
 
 key = ecc.Key.Key.decode(binascii.unhexlify(pykey.ECCKey.secp384r1Encoded))
 sig = key.sign("Content-Signature:\00" + data, 'sha384')
-print base64.b64encode(sig).replace('+', '-').replace('/', '_')
+print(base64.b64encode(sig).replace('+', '-').replace('/', '_'))

@@ -38,7 +38,7 @@ class GLConstHeader:
     def write(self, arg):
         if isinstance(arg, list):
             self.f.write('\n'.join(arg) + '\n')
-        elif isinstance(arg, (int, long)):
+        elif isinstance(arg, (int, int)):
             self.f.write('\n' * arg)
         else:
             self.f.write(str(arg) + '\n')
@@ -137,7 +137,7 @@ class GLDatabase:
         xmlPath = getXMLDir() + path
 
         if not os.path.isfile(xmlPath):
-            print 'missing file "' + xmlPath + '"'
+            print('missing file "' + xmlPath + '"')
             return False
 
         tree = xml.etree.ElementTree.parse(xmlPath)
@@ -186,7 +186,7 @@ class GLDatabase:
             headerFile = GLConstHeader(f)
             headerFile.formatFileBegin()
 
-            constNames = self.consts.keys()
+            constNames = list(self.consts.keys())
             constNames.sort()
 
             for lib in GLDatabase.LIBS:

@@ -52,7 +52,7 @@ class TaskGraph(object):
 
     def __iter__(self):
         "Iterate over tasks in undefined order"
-        return self.tasks.itervalues()
+        return iter(self.tasks.values())
 
     def __repr__(self):
         return "<TaskGraph graph={!r} tasks={!r}>".format(self.graph, self.tasks)
@@ -68,7 +68,7 @@ class TaskGraph(object):
         """
         tasks = {}
         edges = set()
-        for key, value in tasks_dict.iteritems():
+        for key, value in tasks_dict.items():
             # We get the implementation from JSON
             implementation = value['kind_implementation']
             # Loading the module and creating a Task from a dictionary
@@ -76,7 +76,7 @@ class TaskGraph(object):
             tasks[key] = task_kind.from_json(value)
             if 'task_id' in value:
                 tasks[key].task_id = value['task_id']
-            for depname, dep in value['dependencies'].iteritems():
+            for depname, dep in value['dependencies'].items():
                 edges.add((key, dep, depname))
         task_graph = cls(tasks, Graph(set(tasks), edges))
         return tasks, task_graph

@@ -20,7 +20,7 @@ import re
 import socket
 import ssl
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from mercurial.i18n import _
 from mercurial.node import hex
@@ -314,7 +314,7 @@ def _docheckout(ui, url, dest, upstream, revision, branch, purge, sharebase,
             ui.warn('ssl error: %s\n' % e)
             handlenetworkfailure()
             return True
-        elif isinstance(e, urllib2.URLError):
+        elif isinstance(e, urllib.error.URLError):
             if isinstance(e.reason, socket.error):
                 ui.warn('socket error: %s\n' % e.reason)
                 handlenetworkfailure()
@@ -342,7 +342,7 @@ def _docheckout(ui, url, dest, upstream, revision, branch, purge, sharebase,
         try:
             res = hg.clone(ui, {}, cloneurl, dest=dest, update=False,
                            shareopts={'pool': sharebase, 'mode': 'identity'})
-        except (error.Abort, ssl.SSLError, urllib2.URLError) as e:
+        except (error.Abort, ssl.SSLError, urllib.error.URLError) as e:
             if handlepullerror(e):
                 return callself()
             raise
@@ -401,7 +401,7 @@ def _docheckout(ui, url, dest, upstream, revision, branch, purge, sharebase,
                 pullop = exchange.pull(repo, remote, heads=pullrevs)
                 if not pullop.rheads:
                     raise error.Abort('unable to pull requested revision')
-        except (error.Abort, ssl.SSLError, urllib2.URLError) as e:
+        except (error.Abort, ssl.SSLError, urllib.error.URLError) as e:
             if handlepullerror(e):
                 return callself()
             raise

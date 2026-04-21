@@ -44,7 +44,7 @@ def run_xpcshell(context, **kwargs):
     if args.testPaths:
         test_root = os.path.join(context.package_root, 'xpcshell', 'tests')
         normalize = partial(context.normalize_test_path, test_root)
-        args.testPaths = map(normalize, args.testPaths)
+        args.testPaths = list(map(normalize, args.testPaths))
 
     import runxpcshelltests
     xpcshell = runxpcshelltests.XPCShellTests(log=log)

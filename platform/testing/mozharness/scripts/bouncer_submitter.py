@@ -94,7 +94,7 @@ class BouncerSubmitter(BaseScript, PurgeMixin, BouncerSubmitterMixin, BuildbotMi
 
     def need_shipped_locales(self):
         return any(e.get("add-locales") for e in
-                   self.config["products"].values())
+                   list(self.config["products"].values()))
 
     def query_shipped_locales_path(self):
         dirs = self.query_abs_dirs()

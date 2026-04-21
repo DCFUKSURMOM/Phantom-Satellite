@@ -405,7 +405,7 @@ class OpenTypeRegistryParser (HTMLParser):
 		with open (filename, encoding='utf-8') as f:
 			self.feed (f.read ())
 		expect (self.header)
-		for tag, iso_codes in self.to_bcp_47.items ():
+		for tag, iso_codes in list(self.to_bcp_47.items ()):
 			for iso_code in iso_codes:
 				self.from_bcp_47[iso_code].add (tag)
 
@@ -483,7 +483,7 @@ class OpenTypeRegistryParser (HTMLParser):
 		first_time = self.from_bcp_47_uninherited is None
 		if first_time:
 			self.from_bcp_47_uninherited = dict (self.from_bcp_47)
-		for macrolanguage, languages in dict (bcp_47.macrolanguages).items ():
+		for macrolanguage, languages in list(dict (bcp_47.macrolanguages).items ()):
 			ot_macrolanguages = {
 				ot_macrolanguage for ot_macrolanguage in self.from_bcp_47_uninherited.get (macrolanguage, set ())
 			}
@@ -521,7 +521,7 @@ class OpenTypeRegistryParser (HTMLParser):
 
 	def sort_languages (self):
 		"""Sort the values of ``from_bcp_47`` in ascending rank order."""
-		for language, tags in self.from_bcp_47.items ():
+		for language, tags in list(self.from_bcp_47.items ()):
 			self.from_bcp_47[language] = sorted (tags,
 					key=lambda t: (self.ranks[t] + rank_delta (language, t), t))
 
@@ -642,10 +642,10 @@ class BCP47Parser (object):
 	def remove_extra_macrolanguages (self):
 		"""Make every language have at most one macrolanguage."""
 		inverted = collections.defaultdict (list)
-		for macrolanguage, languages in self.macrolanguages.items ():
+		for macrolanguage, languages in list(self.macrolanguages.items ()):
 			for language in languages:
 				inverted[language].append (macrolanguage)
-		for language, macrolanguages in inverted.items ():
+		for language, macrolanguages in list(inverted.items ()):
 			if len (macrolanguages) > 1:
 				macrolanguages.sort (key=lambda ml: len (self.macrolanguages[ml]))
 				biggest_macrolanguage = macrolanguages.pop ()
@@ -872,7 +872,7 @@ bcp_47.remove_extra_macrolanguages ()
 ot.inherit_from_macrolanguages ()
 ot.names[DEFAULT_LANGUAGE_SYSTEM] = '*/'
 ot.ranks[DEFAULT_LANGUAGE_SYSTEM] = max (ot.ranks.values ()) + 1
-for tricky_ot_tag in filter (lambda tag: re.match ('[A-Z]{3}$', tag), ot.names):
+for tricky_ot_tag in [tag for tag in ot.names if re.match ('[A-Z]{3}$', tag)]:
 	possible_bcp_47_tag = tricky_ot_tag.lower ()
 	if possible_bcp_47_tag in bcp_47.names and not ot.from_bcp_47[possible_bcp_47_tag]:
 		ot.add_language (possible_bcp_47_tag, DEFAULT_LANGUAGE_SYSTEM)
@@ -918,7 +918,7 @@ def get_variant_set (name):
 	Returns:
 		A set of normalized language names.
 	"""
-	return set (unicodedata.normalize ('NFD', n.replace ('\u2019', "'"))
+	return set (unicodedata.normalize ('NFD', n.replace ('\\u2019', "'"))
 			.encode ('ASCII', 'ignore')
 			.strip ()
 			for n in re.split ('[\n(),]', name) if n)
@@ -1008,7 +1008,7 @@ def print_subtag_matches (subtag, string, new_line):
 complex_tags = collections.defaultdict (list)
 for initial, group in itertools.groupby ((lt_tags for lt_tags in [
 			(LanguageTag (language), tags)
-			for language, tags in sorted (ot.from_bcp_47.items (),
+			for language, tags in sorted (list(ot.from_bcp_47.items ()),
 				key=lambda i: (-len (i[0]), i[0]))
 		] if lt_tags[0].is_complex ()),
 		key=lambda lt_tags: lt_tags[0].get_group ()):
@@ -1160,7 +1160,7 @@ def verify_disambiguation_dict ():
 	global bcp_47
 	global disambiguation
 	global ot
-	for ot_tag, bcp_47_tags in ot.to_bcp_47.items ():
+	for ot_tag, bcp_47_tags in list(ot.to_bcp_47.items ()):
 		if ot_tag == DEFAULT_LANGUAGE_SYSTEM:
 			primary_tags = []
 		else:
@@ -1194,7 +1194,7 @@ def verify_disambiguation_dict ():
 			different_bcp_47_tags = sorted (t for t in bcp_47_tags if not same_tag (t, ot.from_bcp_47.get (t)))
 			if different_bcp_47_tags and disambiguation[ot_tag] == different_bcp_47_tags[0] and '-' not in disambiguation[ot_tag]:
 				del disambiguation[ot_tag]
-	for ot_tag in disambiguation.keys ():
+	for ot_tag in list(disambiguation.keys ()):
 		expect (ot_tag in ot.to_bcp_47, 'unknown OT tag: %s' % ot_tag)
 
 verify_disambiguation_dict ()

@@ -5,10 +5,6 @@ as used in MachO headers.
 import struct
 import sys
 
-try:
-    from itertools import izip, imap
-except ImportError:
-    izip, imap = zip, map
 from itertools import chain, starmap
 import warnings
 
@@ -183,18 +179,18 @@ def _make():
             kwargs = args[0]._objects_
             args = ()
         self._objects_ = {}
-        iargs = chain(izip(self._names_, args), kwargs.items())
+        iargs = chain(zip(self._names_, args), list(kwargs.items()))
         for key, value in iargs:
             if key not in self._names_ and key != "_endian_":
                 raise TypeError
             setattr(self, key, value)
-        for key, typ in izip(self._names_, self._types_):
+        for key, typ in zip(self._names_, self._types_):
             if key not in self._objects_:
                 self._objects_[key] = typ()
 
     @as_method
     def _get_packables(self):
-        for obj in imap(self._objects_.__getitem__, self._names_):
+        for obj in map(self._objects_.__getitem__, self._names_):
             if obj._items_ == 1:
                 yield obj
             else:
@@ -222,7 +218,7 @@ def _make():
                 else:
                     raise TypeError()
 
-        for cmpval in starmap(_cmp, izip(self._get_packables(), other._get_packables())):
+        for cmpval in starmap(_cmp, zip(self._get_packables(), other._get_packables())):
             if cmpval != 0:
                 return cmpval
         return 0
@@ -262,7 +258,7 @@ Structure = _make()
 del _make
 
 try:
-    long
+    int
 except NameError:
     long = int
 
@@ -273,9 +269,9 @@ p_uint8 = pypackable('p_uint8', int, 'B')
 p_int16 = pypackable('p_int16', int, 'h')
 p_uint16 = pypackable('p_uint16', int, 'H')
 p_int32 = pypackable('p_int32', int, 'i')
-p_uint32 = pypackable('p_uint32', long, 'I')
-p_int64 = pypackable('p_int64', long, 'q')
-p_uint64 = pypackable('p_uint64', long, 'Q')
+p_uint32 = pypackable('p_uint32', int, 'I')
+p_int64 = pypackable('p_int64', int, 'q')
+p_uint64 = pypackable('p_uint64', int, 'Q')
 p_float = pypackable('p_float', float, 'f')
 p_double = pypackable('p_double', float, 'd')
 

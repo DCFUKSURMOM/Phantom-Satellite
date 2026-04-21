@@ -368,7 +368,8 @@ class MozbuildObject(ProcessExecutionMixin):
         args = o._normalize_command([p], True)
 
         _config_guess_output.append(
-                subprocess.check_output(args, cwd=self.topsrcdir).strip())
+                subprocess.check_output(args, cwd=self.topsrcdir,
+                                        universal_newlines=True).strip())
         return _config_guess_output[0]
 
     def notify(self, msg):
@@ -404,8 +405,8 @@ class MozbuildObject(ProcessExecutionMixin):
                                                 'org.freedesktop.Notifications')
                 method('Mozilla Build System', 0, '', msg, '', [], [], -1)
             elif sys.platform.startswith('win'):
-                from ctypes import Structure, windll, POINTER, sizeof
-                from ctypes.wintypes import DWORD, HANDLE, WINFUNCTYPE, BOOL, UINT
+                from ctypes import Structure, windll, POINTER, sizeof, WINFUNCTYPE
+                from ctypes.wintypes import DWORD, HANDLE, BOOL, UINT
                 class FLASHWINDOW(Structure):
                     _fields_ = [("cbSize", UINT),
                                 ("hwnd", HANDLE),
@@ -430,7 +431,7 @@ class MozbuildObject(ProcessExecutionMixin):
                 FlashWindowEx(params)
         except Exception as e:
             self.log(logging.WARNING, 'notifier-failed', {'error':
-                e.message}, 'Notification center failed: {error}')
+                str(e)}, 'Notification center failed: {error}')
 
     def _ensure_objdir_exists(self):
         if os.path.isdir(self.statedir):
@@ -489,7 +490,7 @@ class MozbuildObject(ProcessExecutionMixin):
             for flag in flags:
                 if flag == '-j':
                     try:
-                        flag = flags.next()
+                        flag = next(flags)
                     except StopIteration:
                         break
                     try:
@@ -534,7 +535,7 @@ class MozbuildObject(ProcessExecutionMixin):
             fn = self._run_command_in_srcdir
 
         append_env = dict(append_env or ())
-        append_env[b'MACH'] = '1'
+        append_env['MACH'] = '1'
 
         params = {
             'args': args,
@@ -686,7 +687,7 @@ class MachCommandBase(MozbuildObject):
         except MozconfigLoadException as e:
             print('Error loading mozconfig: ' + e.path)
             print('')
-            print(e.message)
+            print(str(e))
             if e.output:
                 print('')
                 print('mozconfig output:')
@@ -708,13 +709,13 @@ class MachCommandBase(MozbuildObject):
             self.mozconfig
 
         except MozconfigFindException as e:
-            print(e.message)
+            print(str(e))
             sys.exit(1)
 
         except MozconfigLoadException as e:
             print('Error loading mozconfig: ' + e.path)
             print('')
-            print(e.message)
+            print(str(e))
             if e.output:
                 print('')
                 print('mozconfig output:')
@@ -732,7 +733,7 @@ class MachCommandBase(MozbuildObject):
             self._ensure_state_subdir_exists('.')
             logfile = self._get_state_filename('last_log.json')
             try:
-                fd = open(logfile, "wb")
+                fd = open(logfile, "w", encoding='utf-8')
                 self.log_manager.add_json_handler(fd)
             except Exception as e:
                 self.log(logging.WARNING, 'mach', {'error': e},

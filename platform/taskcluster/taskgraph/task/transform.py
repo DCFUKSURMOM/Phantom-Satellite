@@ -48,9 +48,9 @@ class TransformTask(base.Task):
         """
         def jobs():
             defaults = config.get('job-defaults')
-            jobs = config.get('jobs', {}).iteritems()
+            jobs = iter(config.get('jobs', {}).items())
             jobs_from = itertools.chain.from_iterable(
-                load_yaml(path, filename).iteritems()
+                iter(load_yaml(path, filename).items())
                 for filename in config.get('jobs-from', {}))
             for name, job in itertools.chain(jobs, jobs_from):
                 if defaults:
@@ -83,7 +83,7 @@ class TransformTask(base.Task):
                                             task['attributes'], task['task'])
 
     def get_dependencies(self, taskgraph):
-        return [(label, name) for name, label in self.dependencies.items()]
+        return [(label, name) for name, label in list(self.dependencies.items())]
 
     def optimize(self, params):
         if 'files-changed' in self.when:

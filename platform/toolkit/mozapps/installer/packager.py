@@ -29,7 +29,7 @@ import mozpack.path as mozpath
 import buildconfig
 from argparse import ArgumentParser
 import os
-from StringIO import StringIO
+from io import StringIO
 import subprocess
 import platform
 
@@ -80,11 +80,11 @@ class ToolLauncher(object):
 
         # Work around a bug in Python 2.7.2 and lower where unicode types in
         # environment variables aren't handled by subprocess.
-        for k, v in env.items():
-            if isinstance(v, unicode):
+        for k, v in list(env.items()):
+            if isinstance(v, str):
                 env[k] = v.encode('utf-8')
 
-        print >>errors.out, 'Executing', ' '.join(cmd)
+        print('Executing', ' '.join(cmd), file=errors.out)
         errors.out.flush()
         return subprocess.call(cmd, env=env)
 
@@ -138,6 +138,10 @@ def precompile_cache(registry, source_path, gre_path, app_path):
         jar = JarReader(cache)
         resource = '/resource/%s/' % resource
         for f in jar:
+            if isinstance(resource, bytes):
+                resource = resource.decode('utf-8')
+            if isinstance(f.filename, bytes):
+                f.filename = f.filename.decode('utf-8')
             if resource in f.filename:
                 path = f.filename[f.filename.index(resource) + len(resource):]
                 if registry.contains(path):

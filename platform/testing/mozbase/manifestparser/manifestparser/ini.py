@@ -27,12 +27,13 @@ def read_ini(fp, variables=None, default='DEFAULT', defaults_only=False,
     sections = []
     key = value = None
     section_names = set()
-    if isinstance(fp, basestring):
-        fp = file(fp)
+    if isinstance(fp, str):
+        fp = open(fp, 'r', encoding='utf-8', errors='replace')
 
     # read the lines
     for (linenum, line) in enumerate(fp.read().splitlines(), start=1):
-
+        if isinstance(line, bytes):
+            line = line.decode('utf-8', errors='replace')
         stripped = line.strip()
 
         # ignore blank lines
@@ -131,7 +132,7 @@ def combine_fields(global_vars, local_vars):
         'support-files': '%s %s',
     }
     final_mapping = global_vars.copy()
-    for field_name, value in local_vars.items():
+    for field_name, value in list(local_vars.items()):
         if field_name not in field_patterns or field_name not in global_vars:
             final_mapping[field_name] = value
             continue

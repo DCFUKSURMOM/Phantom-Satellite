@@ -118,7 +118,7 @@ class CompileDBBackend(CommonBackend):
 
         db = []
 
-        for (directory, filename), cmd in self._db.iteritems():
+        for (directory, filename), cmd in self._db.items():
             env = self._envs[directory]
             cmd = list(cmd)
             cmd.append(filename)
@@ -151,7 +151,7 @@ class CompileDBBackend(CommonBackend):
                 a = expand_variables(a, variables).split()
                 if not a:
                     continue
-                if isinstance(a, types.StringTypes):
+                if isinstance(a, (str,)):
                     c.append(a)
                 else:
                     c.extend(a)
@@ -216,7 +216,7 @@ class CompileDBBackend(CommonBackend):
             value = cenv.substs.get(name)
             if not value:
                 return
-            if isinstance(value, types.StringTypes):
+            if isinstance(value, (str,)):
                 value = value.split()
             db.extend(value)
 

@@ -128,7 +128,7 @@ for addon in ('addon0', 'addon1'):
                 'foo': read_interfaces(foo2_xpt.open())['foo'],
                 'bar': read_interfaces(bar_xpt.open())['bar'],
             },
-        }.iteritems()
+        }.items()
     })
 
 RESULT_JAR = {
@@ -174,7 +174,7 @@ RESULT_JAR.update({
     },
     'addon1.xpi': {
         mozpath.relpath(p, 'addon1'): f
-        for p, f in RESULT_FLAT.iteritems()
+        for p, f in RESULT_FLAT.items()
         if p.startswith('addon1/')
     },
 })
@@ -234,7 +234,7 @@ RESULT_OMNIJAR['omni.foo'].update({
 CONTENTS_WITH_BASE = {
     'bases': {
         mozpath.join('base/root', b) if b else 'base/root': a
-        for b, a in CONTENTS['bases'].iteritems()
+        for b, a in CONTENTS['bases'].items()
     },
     'manifests': [
         m.move(mozpath.join('base/root', m.base))
@@ -242,7 +242,7 @@ CONTENTS_WITH_BASE = {
     ],
     'files': {
         mozpath.join('base/root', p): f
-        for p, f in CONTENTS['files'].iteritems()
+        for p, f in CONTENTS['files'].items()
     },
 }
 
@@ -255,7 +255,7 @@ CONTENTS_WITH_BASE['files'].update(EXTRA_CONTENTS)
 def result_with_base(results):
     result = {
         mozpath.join('base/root', p): v
-        for p, v in results.iteritems()
+        for p, v in results.items()
     }
     result.update(EXTRA_CONTENTS)
     return result
@@ -271,13 +271,13 @@ class MockDest(MockDest):
 
 
 def fill_formatter(formatter, contents):
-    for base, is_addon in contents['bases'].items():
+    for base, is_addon in list(contents['bases'].items()):
         formatter.add_base(base, is_addon)
 
     for manifest in contents['manifests']:
         formatter.add_manifest(manifest)
 
-    for k, v in contents['files'].iteritems():
+    for k, v in contents['files'].items():
         if k.endswith('.xpt'):
             formatter.add_interfaces(k, v)
         else:

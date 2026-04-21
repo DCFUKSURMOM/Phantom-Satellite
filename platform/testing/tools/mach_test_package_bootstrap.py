@@ -179,7 +179,7 @@ def bootstrap(test_package_root):
     mach = mach.main.Mach(os.getcwd())
     mach.populate_context_handler = populate_context
 
-    for category, meta in CATEGORIES.items():
+    for category, meta in list(CATEGORIES.items()):
         mach.define_category(category, meta['short'], meta['long'],
                              meta['priority'])
 

@@ -21,8 +21,8 @@ def cmdexec(cmd):
             default_encoding = sys.getdefaultencoding() # jython may not have it
         except AttributeError:
             default_encoding = sys.stdout.encoding or 'UTF-8'
-        out = unicode(out, process.stdout.encoding or default_encoding)
-        err = unicode(err, process.stderr.encoding or default_encoding)
+        out = str(out, process.stdout.encoding or default_encoding)
+        err = str(err, process.stderr.encoding or default_encoding)
     status = process.poll()
     if status:
         raise ExecutionFailed(status, status, cmd, out, err)

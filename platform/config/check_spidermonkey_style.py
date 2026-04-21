@@ -275,7 +275,7 @@ def check_style():
         edges[inclname] = set()
 
     # Process all the JS files.
-    for filename in js_names.keys():
+    for filename in list(js_names.keys()):
         inclname = js_names[filename]
         file_kind = FileKind.get(filename)
         if file_kind == FileKind.C or file_kind == FileKind.CPP or \

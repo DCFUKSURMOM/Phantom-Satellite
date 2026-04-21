@@ -4,19 +4,34 @@
 
 from __future__ import print_function, unicode_literals
 
-import imp
 import os
 import sys
+import importlib.machinery
+import types
 
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(base_dir, 'platform', 'python', 'mozbuild'))
 from mozbuild.configure import ConfigureSandbox
 
-# We can't just import config_status since configure is shadowed by this file!
-f, pathname, desc = imp.find_module('configure',
-                                    [os.path.join(base_dir, 'platform')])
-config_status = imp.load_module('configure', f, pathname, desc).config_status
+def load_source(module_name, path):
+    loader = importlib.machinery.SourceFileLoader(module_name, path)
+    module = types.ModuleType(module_name)
+    module.__loader__ = loader
+    module.__file__ = path
+    module.__package__ = module_name.rpartition('.')[0]
+
+    sys.modules[module_name] = module
+
+    code = loader.get_code(module_name)
+    exec(code, module.__dict__)
+    return module
+
+config_mod = load_source(
+        "configure",
+        os.path.join(base_dir, "platform", "configure.py")
+)
+config_status = config_mod.config_status
 
 def main(argv):
     config = {}

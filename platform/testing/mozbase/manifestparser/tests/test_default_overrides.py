@@ -87,10 +87,10 @@ class TestOmitDefaults(unittest.TestCase):
                 "skip-if": "os == 'win' && debug # a pesky comment",
             },
         }
-        for path, defaults in expected_defaults.items():
+        for path, defaults in list(expected_defaults.items()):
             self.assertIn(path, parser.manifest_defaults)
             actual_defaults = parser.manifest_defaults[path]
-            for key, value in defaults.items():
+            for key, value in list(defaults.items()):
                 self.assertIn(key, actual_defaults)
                 self.assertEqual(value, actual_defaults[key])
 

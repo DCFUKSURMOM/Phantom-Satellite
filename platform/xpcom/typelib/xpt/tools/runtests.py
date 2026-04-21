@@ -32,7 +32,7 @@
 
 import difflib
 import os
-from StringIO import StringIO
+from io import StringIO
 import subprocess
 import tempfile
 import mozunit
@@ -59,17 +59,17 @@ if "MOZILLA_OBJDIR" in os.environ:
                 fullpath = os.path.join(components, f)
                 # read a Typelib and dump it to a string
                 t = xpt.Typelib.read(fullpath)
-                self.assert_(t is not None)
+                self.assertTrue(t is not None)
                 outf = StringIO()
                 t.dump(outf)
                 out = outf.getvalue()
                 # now run xpt_dump on it
                 out2 = get_output(xptdump, fullpath)
                 if out != out2:
-                    print "diff %s" % f
+                    print("diff %s" % f)
                     for line in difflib.unified_diff(out2.split("\n"), out.split("\n"), lineterm=""):
-                        print line
-                self.assert_(out == out2, "xpt_dump output should be identical for %s" % f)
+                        print(line)
+                self.assertTrue(out == out2, "xpt_dump output should be identical for %s" % f)
 
 
 class TestIIDString(unittest.TestCase):
@@ -86,8 +86,8 @@ class TestIIDString(unittest.TestCase):
 
 class TypelibCompareMixin:
     def assertEqualTypelibs(self, t1, t2):
-        self.assert_(t1 is not None, "Should not be None")
-        self.assert_(t2 is not None, "Should not be None")
+        self.assertTrue(t1 is not None, "Should not be None")
+        self.assertTrue(t2 is not None, "Should not be None")
         self.assertEqual(t1.version, t2.version, "Versions should be equal")
         self.assertEqual(len(t1.interfaces), len(t2.interfaces),
                          "Number of interfaces should be equal")
@@ -95,8 +95,8 @@ class TypelibCompareMixin:
             self.assertEqualInterfaces(i, j)
 
     def assertEqualInterfaces(self, i1, i2):
-        self.assert_(i1 is not None, "Should not be None")
-        self.assert_(i2 is not None, "Should not be None")
+        self.assertTrue(i1 is not None, "Should not be None")
+        self.assertTrue(i2 is not None, "Should not be None")
         self.assertEqual(i1.name, i2.name, "Names should be equal")
         self.assertEqual(i1.iid, i2.iid, "IIDs should be equal")
         self.assertEqual(i1.namespace, i2.namespace,
@@ -119,8 +119,8 @@ class TypelibCompareMixin:
                              "Function status should be equal")
 
     def assertEqualMethods(self, m1, m2):
-        self.assert_(m1 is not None, "Should not be None")
-        self.assert_(m2 is not None, "Should not be None")
+        self.assertTrue(m1 is not None, "Should not be None")
+        self.assertTrue(m2 is not None, "Should not be None")
         self.assertEqual(m1.name, m2.name, "Names should be equal")
         self.assertEqual(m1.getter, m2.getter, "Getter flag should be equal")
         self.assertEqual(m1.setter, m2.setter, "Setter flag should be equal")
@@ -137,15 +137,15 @@ class TypelibCompareMixin:
         self.assertEqualParams(m1.result, m2.result)
 
     def assertEqualConstants(self, c1, c2):
-        self.assert_(c1 is not None, "Should not be None")
-        self.assert_(c2 is not None, "Should not be None")
+        self.assertTrue(c1 is not None, "Should not be None")
+        self.assertTrue(c2 is not None, "Should not be None")
         self.assertEqual(c1.name, c2.name)
         self.assertEqual(c1.value, c2.value)
         self.assertEqualTypes(c1.type, c2.type)
 
     def assertEqualParams(self, p1, p2):
-        self.assert_(p1 is not None, "Should not be None")
-        self.assert_(p2 is not None, "Should not be None")
+        self.assertTrue(p1 is not None, "Should not be None")
+        self.assertTrue(p2 is not None, "Should not be None")
         self.assertEqualTypes(p1.type, p2.type)
         self.assertEqual(p1.in_, p2.in_)
         self.assertEqual(p1.out, p2.out)
@@ -155,8 +155,8 @@ class TypelibCompareMixin:
         self.assertEqual(p1.optional, p2.optional)
 
     def assertEqualTypes(self, t1, t2):
-        self.assert_(t1 is not None, "Should not be None")
-        self.assert_(t2 is not None, "Should not be None")
+        self.assertTrue(t1 is not None, "Should not be None")
+        self.assertTrue(t2 is not None, "Should not be None")
         self.assertEqual(type(t1), type(t2), "type types should be equal")
         self.assertEqual(t1.pointer, t2.pointer,
                          "pointer flag should be equal for %s and %s" % (t1, t2))
@@ -189,7 +189,7 @@ class TestTypelibReadWrite(unittest.TestCase, TypelibCompareMixin):
         t.write(f)
         t2 = xpt.Typelib.read(f)
         os.remove(f)
-        self.assert_(t2 is not None)
+        self.assertTrue(t2 is not None)
         self.assertEqualTypelibs(t, t2)
 
 
@@ -200,7 +200,7 @@ class TestTypelibRoundtrip(unittest.TestCase, TypelibCompareMixin):
         t.write(s)
         s.seek(0)
         t2 = xpt.Typelib.read(s)
-        self.assert_(t2 is not None)
+        self.assertTrue(t2 is not None)
         self.assertEqualTypelibs(t, t2)
 
     def test_simple(self):
@@ -331,8 +331,8 @@ class TestInterfaceCmp(unittest.TestCase):
         """
         i1 = xpt.Interface("ABC")
         i2 = xpt.Interface("DEF")
-        self.assert_(i1 < i2)
-        self.assert_(i1 != i2)
+        self.assertTrue(i1 < i2)
+        self.assertTrue(i1 != i2)
 
     def test_unresolvedEqual(self):
         """
@@ -341,7 +341,7 @@ class TestInterfaceCmp(unittest.TestCase):
         """
         i1 = xpt.Interface("ABC")
         i2 = xpt.Interface("ABC")
-        self.assert_(i1 == i2)
+        self.assertTrue(i1 == i2)
 
     def test_unresolvedIID(self):
         """
@@ -351,8 +351,8 @@ class TestInterfaceCmp(unittest.TestCase):
         # IIDs sort before names
         i1 = xpt.Interface("ABC", iid="22334411-5566-7788-9900-aabbccddeeff")
         i2 = xpt.Interface("DEF", iid="11223344-5566-7788-9900-aabbccddeeff")
-        self.assert_(i2 < i1)
-        self.assert_(i2 != i1)
+        self.assertTrue(i2 < i1)
+        self.assertTrue(i2 != i1)
 
     def test_unresolvedResolved(self):
         """
@@ -365,8 +365,8 @@ class TestInterfaceCmp(unittest.TestCase):
         m = xpt.Method("Bar", p)
         i2 = xpt.Interface("ABC", iid="11223344-5566-7788-9900-aabbccddeeff",
                            methods=[m])
-        self.assert_(i2 < i1)
-        self.assert_(i2 != i1)
+        self.assertTrue(i2 < i1)
+        self.assertTrue(i2 != i1)
 
     def test_resolvedIdentical(self):
         """
@@ -380,7 +380,7 @@ class TestInterfaceCmp(unittest.TestCase):
                            methods=[m])
         i2 = xpt.Interface("ABC", iid="11223344-5566-7788-9900-aabbccddeeff",
                            methods=[m])
-        self.assert_(i2 == i1)
+        self.assertTrue(i2 == i1)
 
 
 class TestXPTLink(unittest.TestCase):
@@ -496,7 +496,7 @@ class TestXPTLink(unittest.TestCase):
         self.assertEqual(1, len(t3.interfaces))
         self.assertEqual("IFoo", t3.interfaces[0].name)
         self.assertEqual("11223344-5566-7788-9900-aabbccddeeff", t3.interfaces[0].iid)
-        self.assert_(t3.interfaces[0].resolved)
+        self.assertTrue(t3.interfaces[0].resolved)
         self.assertEqual(1, len(t3.interfaces[0].methods))
         self.assertEqual("Bar", t3.interfaces[0].methods[0].name)
 
@@ -515,7 +515,7 @@ class TestXPTLink(unittest.TestCase):
         self.assertEqual(1, len(t3.interfaces))
         self.assertEqual("IFoo", t3.interfaces[0].name)
         self.assertEqual("11223344-5566-7788-9900-aabbccddeeff", t3.interfaces[0].iid)
-        self.assert_(t3.interfaces[0].resolved)
+        self.assertTrue(t3.interfaces[0].resolved)
         self.assertEqual(1, len(t3.interfaces[0].methods))
         self.assertEqual("Bar", t3.interfaces[0].methods[0].name)
 
@@ -548,10 +548,10 @@ class TestXPTLink(unittest.TestCase):
         self.assertEqual("11111111-1111-1111-1111-111111111111", t3.interfaces[0].iid)
         self.assertEqual("IFoo", t3.interfaces[1].name)
         self.assertEqual("11223344-5566-7788-9900-aabbccddeeff", t3.interfaces[1].iid)
-        self.assert_(t3.interfaces[0].resolved)
+        self.assertTrue(t3.interfaces[0].resolved)
         # Ensure that IChild's parent has been updated
         self.assertEqual(t3.interfaces[1], t3.interfaces[0].parent)
-        self.assert_(t3.interfaces[0].parent.resolved)
+        self.assertTrue(t3.interfaces[0].parent.resolved)
 
         # t1 has a resolved interface, t2 has an unresolved version,
         # but t2 also has another interface whose parent is the unresolved
@@ -576,10 +576,10 @@ class TestXPTLink(unittest.TestCase):
         self.assertEqual("11111111-1111-1111-1111-111111111111", t3.interfaces[0].iid)
         self.assertEqual("IFoo", t3.interfaces[1].name)
         self.assertEqual("11223344-5566-7788-9900-aabbccddeeff", t3.interfaces[1].iid)
-        self.assert_(t3.interfaces[0].resolved)
+        self.assertTrue(t3.interfaces[0].resolved)
         # Ensure that IChild's parent has been updated
         self.assertEqual(t3.interfaces[1], t3.interfaces[0].parent)
-        self.assert_(t3.interfaces[0].parent.resolved)
+        self.assertTrue(t3.interfaces[0].parent.resolved)
 
     def test_mergeReplaceRetval(self):
         """
@@ -613,10 +613,10 @@ class TestXPTLink(unittest.TestCase):
         self.assertEqual("11111111-1111-1111-1111-111111111111", t3.interfaces[0].iid)
         self.assertEqual("IFoo", t3.interfaces[1].name)
         self.assertEqual("11223344-5566-7788-9900-aabbccddeeff", t3.interfaces[1].iid)
-        self.assert_(t3.interfaces[1].resolved)
+        self.assertTrue(t3.interfaces[1].resolved)
         # Ensure that IRetval's method's return value type has been updated.
         self.assertEqual(1, len(t3.interfaces[0].methods))
-        self.assert_(t3.interfaces[0].methods[0].result.type.iface.resolved)
+        self.assertTrue(t3.interfaces[0].methods[0].result.type.iface.resolved)
         self.assertEqual(t3.interfaces[1],
                          t3.interfaces[0].methods[0].result.type.iface)
 
@@ -646,10 +646,10 @@ class TestXPTLink(unittest.TestCase):
         self.assertEqual("11111111-1111-1111-1111-111111111111", t3.interfaces[0].iid)
         self.assertEqual("IFoo", t3.interfaces[1].name)
         self.assertEqual("11223344-5566-7788-9900-aabbccddeeff", t3.interfaces[1].iid)
-        self.assert_(t3.interfaces[1].resolved)
+        self.assertTrue(t3.interfaces[1].resolved)
         # Ensure that IRetval's method's return value type has been updated.
         self.assertEqual(1, len(t3.interfaces[0].methods))
-        self.assert_(t3.interfaces[0].methods[0].result.type.iface.resolved)
+        self.assertTrue(t3.interfaces[0].methods[0].result.type.iface.resolved)
         self.assertEqual(t3.interfaces[1],
                          t3.interfaces[0].methods[0].result.type.iface)
 
@@ -685,10 +685,10 @@ class TestXPTLink(unittest.TestCase):
         self.assertEqual("11111111-1111-1111-1111-111111111111", t3.interfaces[0].iid)
         self.assertEqual("IFoo", t3.interfaces[1].name)
         self.assertEqual("11223344-5566-7788-9900-aabbccddeeff", t3.interfaces[1].iid)
-        self.assert_(t3.interfaces[1].resolved)
+        self.assertTrue(t3.interfaces[1].resolved)
         # Ensure that IRetval's method's param type has been updated.
         self.assertEqual(1, len(t3.interfaces[0].methods))
-        self.assert_(t3.interfaces[0].methods[0].params[0].type.iface.resolved)
+        self.assertTrue(t3.interfaces[0].methods[0].params[0].type.iface.resolved)
         self.assertEqual(t3.interfaces[1],
                          t3.interfaces[0].methods[0].params[0].type.iface)
 
@@ -718,10 +718,10 @@ class TestXPTLink(unittest.TestCase):
         self.assertEqual("11111111-1111-1111-1111-111111111111", t3.interfaces[0].iid)
         self.assertEqual("IFoo", t3.interfaces[1].name)
         self.assertEqual("11223344-5566-7788-9900-aabbccddeeff", t3.interfaces[1].iid)
-        self.assert_(t3.interfaces[1].resolved)
+        self.assertTrue(t3.interfaces[1].resolved)
         # Ensure that IRetval's method's param type has been updated.
         self.assertEqual(1, len(t3.interfaces[0].methods))
-        self.assert_(t3.interfaces[0].methods[0].params[0].type.iface.resolved)
+        self.assertTrue(t3.interfaces[0].methods[0].params[0].type.iface.resolved)
         self.assertEqual(t3.interfaces[1],
                          t3.interfaces[0].methods[0].params[0].type.iface)
 
@@ -759,10 +759,10 @@ class TestXPTLink(unittest.TestCase):
         self.assertEqual("11111111-1111-1111-1111-111111111111", t3.interfaces[0].iid)
         self.assertEqual("IFoo", t3.interfaces[1].name)
         self.assertEqual("11223344-5566-7788-9900-aabbccddeeff", t3.interfaces[1].iid)
-        self.assert_(t3.interfaces[1].resolved)
+        self.assertTrue(t3.interfaces[1].resolved)
         # Ensure that IRetval's method's param type has been updated.
         self.assertEqual(1, len(t3.interfaces[0].methods))
-        self.assert_(t3.interfaces[0].methods[0].params[0].type.element_type.iface.resolved)
+        self.assertTrue(t3.interfaces[0].methods[0].params[0].type.element_type.iface.resolved)
         self.assertEqual(t3.interfaces[1],
                          t3.interfaces[0].methods[0].params[0].type.element_type.iface)
 

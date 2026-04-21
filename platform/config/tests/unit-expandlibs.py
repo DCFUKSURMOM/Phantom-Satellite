@@ -7,7 +7,7 @@ from tempfile import mkdtemp
 from shutil import rmtree
 import mozunit
 
-from UserString import UserString
+from collections import UserString
 # Create a controlled configuration for use by expandlibs
 config_win = {
     'AR': 'lib',
@@ -120,8 +120,7 @@ class ReplicateTests(type):
             del dict[name]
         return type.__new__(cls, clsName, bases, dict)
 
-class TestCaseWithTmpDir(unittest.TestCase):
-    __metaclass__ = ReplicateTests
+class TestCaseWithTmpDir(unittest.TestCase, metaclass=ReplicateTests):
     def init(self):
         self.tmpdir = os.path.abspath(mkdtemp(dir=os.curdir))
 

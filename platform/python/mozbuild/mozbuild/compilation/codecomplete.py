@@ -59,5 +59,5 @@ class Introspection(MachCommandBase):
         # Drop the first flag since that is the pathname of the compiler.
         flags = (shell_split(build_vars[cc]) + shell_split(build_vars[name]))[1:]
 
-        print(' '.join(shell_quote(arg)
-                       for arg in util.sanitize_cflags(flags)))
+        print((' '.join(shell_quote(arg)
+                       for arg in util.sanitize_cflags(flags))))

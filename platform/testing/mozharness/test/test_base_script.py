@@ -54,7 +54,7 @@ def get_debug_script_obj():
 
 def _post_fatal(self, **kwargs):
     fh = open('tmpfile_stdout', 'w')
-    print >>fh, test_string
+    print(test_string, file=fh)
     fh.close()
 
 
@@ -100,7 +100,7 @@ class TestScript(unittest.TestCase):
             # now let's see if only unique items were added from each config
             t_override = local_cfg_files.get('test/test_override.py', {})
             self.assertTrue(
-                t_override.get('keep_string') == "don't change me" and len(t_override.keys()) == 1,
+                t_override.get('keep_string') == "don't change me" and len(list(t_override.keys())) == 1,
                 msg="--dump-config-hierarchy dumped wrong keys/value for "
                     "`test/test_override.py`. There should only be one "
                     "item and it should be unique to all the other "
@@ -421,13 +421,13 @@ class TestHelperFunctions(unittest.TestCase):
         self.s = script.BaseScript(initial_config_file='test/test.json')
         # create a very long path that the command-prompt cannot delete
         # by using unicode format (max path length 32000)
-        path = u'\\\\?\\%s\\test_dir' % os.getcwd()
-        win32file.CreateDirectoryExW(u'.', path)
+        path = '\\\\?\\%s\\test_dir' % os.getcwd()
+        win32file.CreateDirectoryExW('.', path)
 
         for x in range(0, 20):
-            print("path=%s" % path)
-            path = path + u'\\%sxxxxxxxxxxxxxxxxxxxx' % x
-            win32file.CreateDirectoryExW(u'.', path)
+            print(("path=%s" % path))
+            path = path + '\\%sxxxxxxxxxxxxxxxxxxxx' % x
+            win32file.CreateDirectoryExW('.', path)
         self.s.rmtree('test_dir')
         self.assertFalse(os.path.exists('test_dir'),
                          msg="rmtree unsuccessful")
@@ -445,7 +445,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_chmod(self):
         self._create_temp_file()
         self.s = script.BaseScript(initial_config_file='test/test.json')
-        self.s.chmod(self.temp_file, 0100700)
+        self.s.chmod(self.temp_file, 0o100700)
         self.assertEqual(os.stat(self.temp_file)[0], 33216,
                          msg="chmod unsuccessful")
 
@@ -679,22 +679,22 @@ class TestRetry(unittest.TestCase):
         """Tests that retry() doesn't call the action again after success"""
         self.s.retry(self._alwaysPass, attempts=3, sleeptime=0)
         # self.ATTEMPT_N gets increased regardless of pass/fail
-        self.assertEquals(2, self.ATTEMPT_N)
+        self.assertEqual(2, self.ATTEMPT_N)
 
     def testRetryReturns(self):
         ret = self.s.retry(self._alwaysPass, sleeptime=0)
-        self.assertEquals(ret, True)
+        self.assertEqual(ret, True)
 
     def testRetryCleanupIsCalled(self):
         cleanup = mock.Mock()
         self.s.retry(self._succeedOnSecondAttempt, cleanup=cleanup, sleeptime=0)
-        self.assertEquals(cleanup.call_count, 1)
+        self.assertEqual(cleanup.call_count, 1)
 
     def testRetryArgsPassed(self):
         args = (1, 'two', 3)
         kwargs = dict(foo='a', bar=7)
         ret = self.s.retry(self._mirrorArgs, args=args, kwargs=kwargs.copy(), sleeptime=0)
-        print ret
+        print(ret)
         self.assertEqual(ret[0], args)
         self.assertEqual(ret[1], kwargs)
 

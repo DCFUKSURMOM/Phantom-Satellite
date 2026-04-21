@@ -110,7 +110,7 @@ class MockMixin(object):
 
         if env:
             env_cmd = ['/usr/bin/env']
-            for key, value in env.items():
+            for key, value in list(env.items()):
                 # $HOME won't work inside the mock chroot
                 if key == 'HOME':
                     continue

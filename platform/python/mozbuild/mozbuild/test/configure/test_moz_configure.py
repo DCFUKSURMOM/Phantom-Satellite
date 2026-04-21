@@ -23,10 +23,10 @@ class TestMozConfigure(BaseConfigureTest):
             shell = mozpath.abspath('/bin/sh')
             return result.replace('CONFIG_SHELL=%s ' % shell, '')
 
-        self.assertEquals('--enable-application=browser',
+        self.assertEqual('--enable-application=browser',
                           get_value_for(['--enable-application=browser']))
 
-        self.assertEquals('--enable-application=browser '
+        self.assertEqual('--enable-application=browser '
                           'MOZ_PROFILING=1',
                           get_value_for(['--enable-application=browser',
                                          'MOZ_PROFILING=1']))
@@ -35,25 +35,25 @@ class TestMozConfigure(BaseConfigureTest):
             environ={'MOZ_PROFILING': '1'},
             mozconfig='ac_add_options --enable-project=js')
 
-        self.assertEquals('--enable-project=js MOZ_PROFILING=1',
+        self.assertEqual('--enable-project=js MOZ_PROFILING=1',
                           value)
 
         # --disable-js-shell is the default, so it's filtered out.
-        self.assertEquals('--enable-application=browser',
+        self.assertEqual('--enable-application=browser',
                           get_value_for(['--enable-application=browser',
                                          '--disable-js-shell']))
 
         # Normally, --without-foo would be filtered out because that's the
         # default, but since it is a (fake) old-configure option, it always
         # appears.
-        self.assertEquals('--enable-application=browser --without-foo',
+        self.assertEqual('--enable-application=browser --without-foo',
                           get_value_for(['--enable-application=browser',
                                          '--without-foo']))
-        self.assertEquals('--enable-application=browser --with-foo',
+        self.assertEqual('--enable-application=browser --with-foo',
                           get_value_for(['--enable-application=browser',
                                          '--with-foo']))
 
-        self.assertEquals("--enable-application=browser '--with-foo=foo bar'",
+        self.assertEqual("--enable-application=browser '--with-foo=foo bar'",
                           get_value_for(['--enable-application=browser',
                                          '--with-foo=foo bar']))
 
@@ -65,7 +65,7 @@ class TestMozConfigure(BaseConfigureTest):
                 self.version = version
 
             def __call__(self, stdin, args):
-                this.assertEquals(args, ('-version',))
+                this.assertEqual(args, ('-version',))
                 return 0, self.version, ''
 
         def check_nsis_version(version):
@@ -80,13 +80,13 @@ class TestMozConfigure(BaseConfigureTest):
         with self.assertRaises(SystemExit) as e:
             check_nsis_version('v3.0a2')
 
-        self.assertEquals(check_nsis_version('v3.0b1'), '3.0b1')
-        self.assertEquals(check_nsis_version('v3.0b2'), '3.0b2')
-        self.assertEquals(check_nsis_version('v3.0rc1'), '3.0rc1')
-        self.assertEquals(check_nsis_version('v3.0'), '3.0')
-        self.assertEquals(check_nsis_version('v3.0-2'), '3.0')
-        self.assertEquals(check_nsis_version('v3.0.1'), '3.0')
-        self.assertEquals(check_nsis_version('v3.1'), '3.1')
+        self.assertEqual(check_nsis_version('v3.0b1'), '3.0b1')
+        self.assertEqual(check_nsis_version('v3.0b2'), '3.0b2')
+        self.assertEqual(check_nsis_version('v3.0rc1'), '3.0rc1')
+        self.assertEqual(check_nsis_version('v3.0'), '3.0')
+        self.assertEqual(check_nsis_version('v3.0-2'), '3.0')
+        self.assertEqual(check_nsis_version('v3.0.1'), '3.0')
+        self.assertEqual(check_nsis_version('v3.1'), '3.1')
 
 
 if __name__ == '__main__':

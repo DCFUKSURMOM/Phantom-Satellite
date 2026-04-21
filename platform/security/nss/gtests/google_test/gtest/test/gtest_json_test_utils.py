@@ -53,7 +53,7 @@ def normalize(obj):
     else:
       return normalize(value)
   if isinstance(obj, dict):
-    return {k: _normalize(k, v) for k, v in obj.items()}
+    return {k: _normalize(k, v) for k, v in list(obj.items())}
   if isinstance(obj, list):
     return [normalize(x) for x in obj]
   else:

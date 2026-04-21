@@ -23,7 +23,7 @@ Google Visualization API.
 __author__ = "Amit Weinstein, Misha Seltzer, Jacob Baskin"
 
 import cgi
-import cStringIO
+import io
 import csv
 import datetime
 try:
@@ -213,7 +213,7 @@ class DataTable(object):
           (len(value) == 3 and not isinstance(value[2], dict))):
         raise DataTableException("Wrong format for value and formatting - %s." %
                                  str(value))
-      if not isinstance(value[1], types.StringTypes + (types.NoneType,)):
+      if not isinstance(value[1], (str,) + (type(None),)):
         raise DataTableException("Formatted value is not string, given %s." %
                                  type(value[1]))
       js_value = DataTable.CoerceValue(value[0], value_type)
@@ -226,12 +226,12 @@ class DataTable(object):
       return bool(value)
 
     elif value_type == "number":
-      if isinstance(value, (int, long, float)):
+      if isinstance(value, (int, int, float)):
         return value
       raise DataTableException("Wrong type %s when expected number" % t_value)
 
     elif value_type == "string":
-      if isinstance(value, unicode):
+      if isinstance(value, str):
         return value
       else:
         return str(value).decode("utf-8")
@@ -296,7 +296,7 @@ class DataTable(object):
                             datetime.date,
                             datetime.time)):
       return str(value)
-    elif isinstance(value, unicode):
+    elif isinstance(value, str):
       return value
     elif isinstance(value, bool):
       return str(value).lower()
@@ -329,17 +329,17 @@ class DataTable(object):
     if not description:
       raise DataTableException("Description error: empty description given")
 
-    if not isinstance(description, (types.StringTypes, tuple)):
+    if not isinstance(description, ((str,), tuple)):
       raise DataTableException("Description error: expected either string or "
                                "tuple, got %s." % type(description))
 
-    if isinstance(description, types.StringTypes):
+    if isinstance(description, (str,)):
       description = (description,)
 
     # According to the tuple's length, we fill the keys
     # We verify everything is of type string
     for elem in description[:3]:
-      if not isinstance(elem, types.StringTypes):
+      if not isinstance(elem, (str,)):
         raise DataTableException("Description error: expected tuple of "
                                  "strings, current element of type %s." %
                                  type(elem))
@@ -456,7 +456,7 @@ class DataTable(object):
       -- second 'b' is the label, and {} is the custom properties field.
     """
     # For the recursion step, we check for a scalar object (string or tuple)
-    if isinstance(table_description, (types.StringTypes, tuple)):
+    if isinstance(table_description, ((str,), tuple)):
       parsed_col = DataTable.ColumnTypeParser(table_description)
       parsed_col["depth"] = depth
       parsed_col["container"] = "scalar"
@@ -491,9 +491,9 @@ class DataTable(object):
     # dictionary).
     # NOTE: this way of differentiating might create ambiguity. See docs.
     if (len(table_description) != 1 or
-        (isinstance(table_description.keys()[0], types.StringTypes) and
-         isinstance(table_description.values()[0], tuple) and
-         len(table_description.values()[0]) < 4)):
+        (isinstance(list(table_description.keys())[0], (str,)) and
+         isinstance(list(table_description.values())[0], tuple) and
+         len(list(table_description.values())[0]) < 4)):
       # This is the most inner dictionary. Parsing types.
       columns = []
       # We sort the items, equivalent to sort the keys since they are unique
@@ -509,11 +509,11 @@ class DataTable(object):
         columns.append(parsed_col)
       return columns
     # This is an outer dictionary, must have at most one key.
-    parsed_col = DataTable.ColumnTypeParser(table_description.keys()[0])
+    parsed_col = DataTable.ColumnTypeParser(list(table_description.keys())[0])
     parsed_col["depth"] = depth
     parsed_col["container"] = "dict"
     return ([parsed_col] +
-            DataTable.TableDescriptionParser(table_description.values()[0],
+            DataTable.TableDescriptionParser(list(table_description.values())[0],
                                              depth=depth + 1))
 
   @property
@@ -622,7 +622,7 @@ class DataTable(object):
       return
 
     # We have a dictionary in an inner depth level.
-    if not data.keys():
+    if not list(data.keys()):
       # In case this is an empty dictionary, we add a record with the columns
       # filled only until this point.
       self.__data.append(prev_col_values)
@@ -655,12 +655,12 @@ class DataTable(object):
       return self.__data
 
     proper_sort_keys = []
-    if isinstance(order_by, types.StringTypes) or (
+    if isinstance(order_by, (str,)) or (
         isinstance(order_by, tuple) and len(order_by) == 2 and
         order_by[1].lower() in ["asc", "desc"]):
       order_by = (order_by,)
     for key in order_by:
-      if isinstance(key, types.StringTypes):
+      if isinstance(key, (str,)):
         proper_sort_keys.append((key, 1))
       elif (isinstance(key, (list, tuple)) and len(key) == 2 and
             key[1].lower() in ("asc", "desc")):
@@ -856,7 +856,7 @@ class DataTable(object):
       DataTableException: The data does not match the type.
     """
 
-    csv_buffer = cStringIO.StringIO()
+    csv_buffer = io.StringIO()
     writer = csv.writer(csv_buffer, delimiter=separator)
 
     if columns_order is None:

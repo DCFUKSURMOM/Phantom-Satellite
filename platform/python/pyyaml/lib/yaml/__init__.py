@@ -1,17 +1,17 @@
 
-from error import *
+from .error import *
 
-from tokens import *
-from events import *
-from nodes import *
+from .tokens import *
+from .events import *
+from .nodes import *
 
-from loader import *
-from dumper import *
+from .loader import *
+from .dumper import *
 
 __version__ = '3.11'
 
 try:
-    from cyaml import *
+    from .cyaml import *
     __with_libyaml__ = True
 except ImportError:
     __with_libyaml__ = False
@@ -109,7 +109,7 @@ def emit(events, stream=None, Dumper=Dumper,
     """
     getvalue = None
     if stream is None:
-        from StringIO import StringIO
+        from io import StringIO
         stream = StringIO()
         getvalue = stream.getvalue
     dumper = Dumper(stream, canonical=canonical, indent=indent, width=width,
@@ -134,9 +134,9 @@ def serialize_all(nodes, stream=None, Dumper=Dumper,
     getvalue = None
     if stream is None:
         if encoding is None:
-            from StringIO import StringIO
+            from io import StringIO
         else:
-            from cStringIO import StringIO
+            from io import StringIO
         stream = StringIO()
         getvalue = stream.getvalue
     dumper = Dumper(stream, canonical=canonical, indent=indent, width=width,
@@ -173,9 +173,9 @@ def dump_all(documents, stream=None, Dumper=Dumper,
     getvalue = None
     if stream is None:
         if encoding is None:
-            from StringIO import StringIO
+            from io import StringIO
         else:
-            from cStringIO import StringIO
+            from io import StringIO
         stream = StringIO()
         getvalue = stream.getvalue
     dumper = Dumper(stream, default_style=default_style,
@@ -283,13 +283,11 @@ class YAMLObjectMetaclass(type):
             cls.yaml_loader.add_constructor(cls.yaml_tag, cls.from_yaml)
             cls.yaml_dumper.add_representer(cls, cls.to_yaml)
 
-class YAMLObject(object):
+class YAMLObject(object, metaclass=YAMLObjectMetaclass):
     """
     An object that can dump itself to a YAML stream
     and load itself from a YAML stream.
     """
-
-    __metaclass__ = YAMLObjectMetaclass
     __slots__ = ()  # no direct instantiation, so allow immutable subclasses
 
     yaml_loader = Loader

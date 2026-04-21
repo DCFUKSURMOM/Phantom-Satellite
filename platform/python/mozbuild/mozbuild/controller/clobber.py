@@ -115,13 +115,13 @@ class Clobberer(object):
 
         if full:
             # mozfile doesn't like unicode arguments (bug 818783).
-            paths = [self.topobjdir.encode('utf-8')]
+            paths = [self.topobjdir]
         else:
             try:
                 paths = []
                 for p in os.listdir(self.topobjdir):
                     if p not in no_clobber:
-                        paths.append(os.path.join(self.topobjdir, p).encode('utf-8'))
+                        paths.append(os.path.join(self.topobjdir, p))
             except OSError as e:
                 if e.errno != errno.ENOENT:
                     raise

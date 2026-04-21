@@ -47,7 +47,7 @@ class TestDTD(ParserTestMixin, unittest.TestCase):
             return qr.sub(lambda m: m.group(0) == '"' and "'" or '"', s)
 
         self._test(quot2apos(self.quoteContent),
-                   map(lambda t: (t[0], quot2apos(t[1])), self.quoteRef))
+                   [(t[0], quot2apos(t[1])) for t in self.quoteRef])
 
     def test_parsed_ref(self):
         self._test('''<!ENTITY % fooDTD SYSTEM "chrome://brand.dtd">
@@ -70,7 +70,7 @@ class TestDTD(ParserTestMixin, unittest.TestCase):
         for e in p:
             self.assertEqual(e.key, 'foo')
             self.assertEqual(e.val, 'value')
-        self.assert_('MPL' in p.header)
+        self.assertTrue('MPL' in p.header)
         p.readContents('''\
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -80,7 +80,7 @@ class TestDTD(ParserTestMixin, unittest.TestCase):
         for e in p:
             self.assertEqual(e.key, 'foo')
             self.assertEqual(e.val, 'value')
-        self.assert_('MPL' in p.header)
+        self.assertTrue('MPL' in p.header)
 
 if __name__ == '__main__':
     unittest.main()

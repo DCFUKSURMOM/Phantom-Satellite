@@ -438,7 +438,7 @@ class SUTDeviceHandler(BaseDeviceHandler):
             self.devicemanager = DeviceManagerSUT(c['device_ip'])
             # TODO configurable?
             self.devicemanager.debug = c.get('devicemanager_debug_level', 0)
-        except ImportError, e:
+        except ImportError as e:
             self.fatal("Can't import DeviceManagerSUT! %s\nDid you check out talos?" % str(e))
         return self.devicemanager
 
@@ -524,7 +524,7 @@ class SUTDeviceHandler(BaseDeviceHandler):
         try:
             dm.sendCMD(['settime %s' % s])
             return True
-        except self.DMError, e:
+        except self.DMError as e:
             self.add_device_flag(DEVICE_CANT_SET_TIME)
             self.fatal("Exception while setting device time: %s" % str(e))
 
@@ -564,7 +564,7 @@ class SUTDeviceHandler(BaseDeviceHandler):
                 self.info(repr(dm.getInfo('memory')))
                 self.info(repr(dm.getInfo('uptime')))
                 self.info(repr(dm.sendCMD(['exec su -c "logcat -d -v time *:W"'])))
-            except Exception, e:
+            except Exception as e:
                 self.info("Exception hit while trying to run logcat: %s" % str(e))
                 self.fatal("Remote Device Error: can't run logcat")
         except self.DMError:
@@ -676,7 +676,7 @@ device_config_options = [[
     {"action": "store",
      "type": "choice",
      "dest": "device_protocol",
-     "choices": DEVICE_PROTOCOL_DICT.keys(),
+     "choices": list(DEVICE_PROTOCOL_DICT.keys()),
      "help": "Specify the device communication protocol."
      }
 ], [

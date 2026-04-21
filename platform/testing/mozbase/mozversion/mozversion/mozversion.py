@@ -3,8 +3,8 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import argparse
-import ConfigParser
-from StringIO import StringIO
+import configparser
+from io import StringIO
 import os
 import re
 import sys
@@ -15,7 +15,7 @@ import zipfile
 import mozfile
 import mozlog
 
-import errors
+from . import errors
 
 
 INI_DATA_MAPPING = (('application', 'App'), ('platform', 'Build'))
@@ -38,7 +38,7 @@ class Version(object):
                 self._logger.warning('Unable to find %s' % config_file)
 
     def _parse_ini_file(self, fp, type, section):
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.readfp(fp)
         name_map = {'codename': 'display_name',
                     'milestone': 'version',
@@ -242,7 +242,7 @@ class RemoteB2GVersion(B2GVersion):
         for line in build_props.split('\n'):
             if not line.strip().startswith('#') and '=' in line:
                 key, value = [s.strip() for s in line.split('=', 1)]
-                if key in desired_props.keys():
+                if key in list(desired_props.keys()):
                     self._info[desired_props[key]] = value
 
         if self._info.get('device_id', '').lower() == 'flame':

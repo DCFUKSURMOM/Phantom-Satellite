@@ -272,7 +272,7 @@ class Terminal(object):
                 # optimization: combine all formatting into a single escape
                 # sequence.
                 return self._formatting_string(
-                    u''.join(self._resolve_formatter(s) for s in formatters))
+                    ''.join(self._resolve_formatter(s) for s in formatters))
             else:
                 return ParametrizingString(self._resolve_capability(attr))
 
@@ -289,7 +289,7 @@ class Terminal(object):
             # contain chars > 127, and UTF-8 never changes anything within that
             # range..
             return code.decode('utf-8')
-        return u''
+        return ''
 
     def _resolve_color(self, color):
         """Resolve a color like red or on_bright_green into a callable capability."""
@@ -333,7 +333,7 @@ COMPOUNDABLES = (COLORS |
                       'shadow', 'standout', 'subscript', 'superscript']))
 
 
-class ParametrizingString(unicode):
+class ParametrizingString(str):
     """A Unicode string which can be called to parametrize it as a terminal capability"""
     def __new__(cls, formatting, normal=None):
         """Instantiate.
@@ -343,7 +343,7 @@ class ParametrizingString(unicode):
             "normal" capability.
 
         """
-        new = unicode.__new__(cls, formatting)
+        new = str.__new__(cls, formatting)
         new._normal = normal
         return new
 
@@ -360,7 +360,7 @@ class ParametrizingString(unicode):
             # running simply `nosetests` (without progressive) on nose-
             # progressive. Perhaps the terminal has gone away between calling
             # tigetstr and calling tparm.
-            return u''
+            return ''
         except TypeError:
             # If the first non-int (i.e. incorrect) arg was a string, suggest
             # something intelligent:
@@ -375,10 +375,10 @@ class ParametrizingString(unicode):
                 raise
 
 
-class FormattingString(unicode):
+class FormattingString(str):
     """A Unicode string which can be called upon a piece of text to wrap it in formatting"""
     def __new__(cls, formatting, normal):
-        new = unicode.__new__(cls, formatting)
+        new = str.__new__(cls, formatting)
         new._normal = normal
         return new
 
@@ -393,7 +393,7 @@ class FormattingString(unicode):
         return self + text + self._normal
 
 
-class NullCallableString(unicode):
+class NullCallableString(str):
     """A dummy class to stand in for ``FormattingString`` and ``ParametrizingString``
 
     A callable bytestring that returns an empty Unicode when called with an int
@@ -402,12 +402,12 @@ class NullCallableString(unicode):
 
     """
     def __new__(cls):
-        new = unicode.__new__(cls, u'')
+        new = str.__new__(cls, '')
         return new
 
     def __call__(self, arg):
         if isinstance(arg, int):
-            return u''
+            return ''
         return arg  # TODO: Force even strs in Python 2.x to be unicodes? Nah. How would I know what encoding to use to convert it?
 
 

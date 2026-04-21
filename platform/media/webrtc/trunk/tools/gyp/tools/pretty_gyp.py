@@ -125,15 +125,15 @@ def prettyprint_input(lines):
         (brace_diff, after) = count_braces(line)
       if brace_diff != 0:
         if after:
-          print " " * (basic_offset * indent) + line
+          print(" " * (basic_offset * indent) + line)
           indent += brace_diff
         else:
           indent += brace_diff
-          print " " * (basic_offset * indent) + line
+          print(" " * (basic_offset * indent) + line)
       else:
-        print " " * (basic_offset * indent) + line
+        print(" " * (basic_offset * indent) + line)
     else:
-      print ""
+      print("")
     last_line = line
 
 

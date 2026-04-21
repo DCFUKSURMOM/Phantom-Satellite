@@ -6,7 +6,7 @@
 # The beginning of this script is both valid shell and valid python,
 # such that the script starts with the shell and is reexecuted with
 # the right python.
-'''which' python2.7 > /dev/null && exec python2.7 "$0" "$@" || exec python "$0" "$@"
+'''which' python3 > /dev/null && exec python3 "$0" "$@" || exec python "$0" "$@"
 '''
 
 from __future__ import print_function, unicode_literals
@@ -22,13 +22,23 @@ def ancestors(path):
             break
 
 def load_mach(dir_path, mach_path):
-    import imp
-    with open(mach_path, 'r') as fh:
-        imp.load_module('mach_bootstrap', fh, mach_path,
-                        ('.py', 'r', imp.PY_SOURCE))
-    import mach_bootstrap
-    return mach_bootstrap.bootstrap(dir_path)
+    import types
+    import importlib.util
+    import importlib.machinery
+    module_name = "mach_bootstrap"
+    loader = importlib.machinery.SourceFileLoader(module_name, mach_path)
+    mod = types.ModuleType(module_name)
+    mod.__loader__ = loader
+    mod.__file__ = mach_path
+    mod.__package__ = module_name.rpartition('.')[0]
+    mod.__spec__ = None
 
+    sys.modules[module_name] = mod
+
+    code = loader.get_code(module_name)
+    exec(code, mod.__dict__)
+
+    return mod.bootstrap(dir_path)
 
 def check_and_get_mach(dir_path):
     bootstrap_paths = (
@@ -83,7 +93,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' and sys.version_info < (3, 4):
         # This is a complete hack to work around the fact that Windows
         # multiprocessing needs to import the original module (ie: this
         # file), but only works if it has a .py extension.
@@ -142,7 +152,15 @@ if __name__ == '__main__':
             # levels of indentation (12 spaces).
             fork_string = ''.join(x[12:] for x in fork_code[1:])
             cmdline = orig_command_line()
-            cmdline[2] = fork_string
+            try:
+                i = cmdline.index('-c')
+                if i + 1 < len(cmdline):
+                    cmdline[i + 1] = fork_string
+                else:
+                    cmdline.append(fork_string)
+            except ValueError:
+                pass
+
             return cmdline
         orig_command_line = forking.get_command_line
         forking.get_command_line = my_get_command_line

@@ -13,7 +13,7 @@ HazardSummary = namedtuple('HazardSummary', ['function', 'variable', 'type', 'GC
 
 def equal(got, expected):
     if got != expected:
-        print("Got '%s', expected '%s'" % (got, expected))
+        print(("Got '%s', expected '%s'" % (got, expected)))
 
 def extract_unmangled(func):
     return func.split('$')[-1]
@@ -37,7 +37,7 @@ class Test(object):
             CXX=self.cfg.cxx, sixgill=self.cfg.sixgill_plugin,
             options=options)
         if self.cfg.verbose:
-            print("Running %s" % cmd)
+            print(("Running %s" % cmd))
         subprocess.check_call(["sh", "-c", cmd])
 
     def load_db_entry(self, dbname, pattern):
@@ -46,7 +46,7 @@ class Test(object):
 
         if not isinstance(pattern, basestring):
             output = subprocess.check_output([self.binpath("xdbkeys"), dbname + ".xdb"])
-            matches = filter(lambda _: re.search(pattern, _), output.splitlines())
+            matches = [_ for _ in output.splitlines() if re.search(pattern, _)]
             if len(matches) == 0:
                 raise Exception("entry not found")
             if len(matches) > 1:
@@ -69,7 +69,7 @@ sixgill_bin = '{bindir}'
         cmd.append("--js=%s" % self.cfg.js)
         if self.cfg.verbose:
             cmd.append("--verbose")
-            print("Running " + " ".join(cmd))
+            print(("Running " + " ".join(cmd)))
         subprocess.check_call(cmd)
 
     def computeGCTypes(self):
@@ -81,7 +81,7 @@ sixgill_bin = '{bindir}'
     def load_text_file(self, filename, extract=lambda l: l):
         fullpath = os.path.join(self.outdir, filename)
         values = (extract(line.strip()) for line in file(fullpath))
-        return filter(lambda _: _ is not None, values)
+        return [_ for _ in values if _ is not None]
 
     def load_suppressed_functions(self):
         return set(self.load_text_file("suppressedFunctions.lst"))

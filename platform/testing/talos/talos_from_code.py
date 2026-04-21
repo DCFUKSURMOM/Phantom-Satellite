@@ -12,8 +12,8 @@
 from optparse import OptionParser
 import json
 import re
-import urllib2
-import urlparse
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import sys
 import os
 
@@ -40,27 +40,27 @@ def main():
         jsonFilename = download_file(options.talos_json_url)
     except Exception as e:
         print("ERROR: We tried to download the talos.json file but something failed.")
-        print("ERROR: %s" % str(e))
+        print(("ERROR: %s" % str(e)))
         sys.exit(1)
 
     # 3) download the necessary files
-    print("INFO: talos.json URL: %s" % options.talos_json_url)
+    print(("INFO: talos.json URL: %s" % options.talos_json_url))
     try:
         key = 'talos.zip'
         entity = get_value(jsonFilename, key)
         if passesRestrictions(options.talos_json_url, entity["url"]):
             # the key is at the same time the filename e.g. talos.zip
-            print("INFO: Downloading %s as %s" %
-                  (entity["url"], os.path.join(entity["path"], key)))
+            print(("INFO: Downloading %s as %s" %
+                  (entity["url"], os.path.join(entity["path"], key))))
             download_file(entity["url"], entity["path"], key)
         else:
-            print("ERROR: You have tried to download a file " +
+            print(("ERROR: You have tried to download a file " +
                   "from: %s " % entity["url"] +
-                  "which is a location different than http://talos-bundles.pvt.build.mozilla.org/")
+                  "which is a location different than http://talos-bundles.pvt.build.mozilla.org/"))
             print("ERROR: This is only allowed for the certain branches.")
             sys.exit(1)
     except Exception as e:
-        print("ERROR: %s" % str(e))
+        print(("ERROR: %s" % str(e)))
         sys.exit(1)
 
 
@@ -88,12 +88,12 @@ def get_filename_from_url(url):
     '''
     This returns the filename of the file we're trying to download
     '''
-    parsed = urlparse.urlsplit(url.rstrip('/'))
+    parsed = urllib.parse.urlsplit(url.rstrip('/'))
     if parsed.path != '':
         return parsed.path.rsplit('/', 1)[-1]
     else:
-        print("ERROR: We were trying to download a file from %s " +
-              "but the URL seems to be incorrect.")
+        print(("ERROR: We were trying to download a file from %s " +
+              "but the URL seems to be incorrect."))
         sys.exit(1)
 
 
@@ -101,14 +101,14 @@ def download_file(url, path="", saveAs=None):
     '''
     It downloads a file from URL to the indicated path
     '''
-    req = urllib2.Request(url)
-    f = urllib2.urlopen(req)
+    req = urllib.request.Request(url)
+    f = urllib.request.urlopen(req)
     if path != "" and not os.path.isdir(path):
         try:
             os.makedirs(path)
-            print("INFO: directory %s created" % path)
+            print(("INFO: directory %s created" % path))
         except Exception as e:
-            print("ERROR: %s" % str(e))
+            print(("ERROR: %s" % str(e)))
             sys.exit(1)
     filename = saveAs if saveAs else get_filename_from_url(url)
     local_file = open(os.path.join(path, filename), 'wb')

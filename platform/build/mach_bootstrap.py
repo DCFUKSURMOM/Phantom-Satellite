@@ -12,7 +12,7 @@ import random
 import subprocess
 import sys
 import uuid
-import __builtin__
+import builtins
 
 from types import ModuleType
 
@@ -170,11 +170,16 @@ def bootstrap(topsrcdir, mozilla_dir=None):
     if mozilla_dir is None:
         mozilla_dir = topsrcdir
 
-    # Ensure we are running Python 2.7+. We put this check here so we generate a
-    # user-friendly error message rather than a cryptic stack trace on module
-    # import.
-    if sys.version_info[0] != 2 or sys.version_info[1] < 7:
-        print('Python 2.7 or above (but not Python 3) is required to run mach.')
+    # Ensure we are not running Python 2.
+    # We put this check here so we generate a user-friendly error message
+    # rather than a cryptic stack trace on module import.
+    if sys.version_info[0] < 3 or sys.version_info[1] < 3:
+        print('Python 3.3 or above is required to run mach.')
+        print('You are running Python', platform.python_version())
+        sys.exit(1)
+    # This sanity check is overkill, but why not?
+    if sys.version_info[0] > 3:
+        print('Python 4.x or higher not supported. Use Python 3 instead.')
         print('You are running Python', platform.python_version())
         sys.exit(1)
 
@@ -335,7 +340,7 @@ def bootstrap(topsrcdir, mozilla_dir=None):
     # always load local repository configuration
     mach.settings_paths.append(mozilla_dir)
 
-    for category, meta in CATEGORIES.items():
+    for category, meta in list(CATEGORIES.items()):
         mach.define_category(category, meta['short'], meta['long'],
             meta['priority'])
 
@@ -360,7 +365,7 @@ class ImportHook(object):
         self._modules = set()
 
     def __call__(self, name, globals=None, locals=None, fromlist=None,
-                 level=-1):
+                 level=0):
         # name might be a relative import. Instead of figuring out what that
         # resolves to, which is complex, just rely on the real import.
         # Since we don't know the full module name, we can't check sys.modules,
@@ -409,4 +414,4 @@ class ImportHook(object):
 
 
 # Install our hook
-__builtin__.__import__ = ImportHook(__builtin__.__import__)
+builtins.__import__ = ImportHook(builtins.__import__)

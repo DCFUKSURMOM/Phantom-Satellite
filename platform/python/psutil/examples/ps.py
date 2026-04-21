@@ -26,8 +26,8 @@ def main():
     if os.name == 'posix':
         attrs.append('uids')
         attrs.append('terminal')
-    print(templ % ("USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY",
-                   "START", "TIME", "COMMAND"))
+    print((templ % ("USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY",
+                   "START", "TIME", "COMMAND")))
     for p in psutil.process_iter():
         try:
             pinfo = p.as_dict(attrs, ad_value='')
@@ -64,7 +64,7 @@ def main():
                 int(pinfo['memory_info'].rss / 1024) or '?'
             memp = pinfo['memory_percent'] and \
                 round(pinfo['memory_percent'], 1) or '?'
-            print(templ % (
+            print((templ % (
                 user[:10],
                 pinfo['pid'],
                 pinfo['cpu_percent'],
@@ -74,7 +74,7 @@ def main():
                 pinfo.get('terminal', '') or '?',
                 ctime,
                 cputime,
-                pinfo['name'].strip() or '?'))
+                pinfo['name'].strip() or '?')))
 
 
 if __name__ == '__main__':

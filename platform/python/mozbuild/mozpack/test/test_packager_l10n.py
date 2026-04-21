@@ -4,7 +4,7 @@
 
 import unittest
 import mozunit
-from test_packager import MockFinder
+from .test_packager import MockFinder
 from mozpack.packager import l10n
 from mozpack.files import (
     GeneratedFile,
@@ -118,7 +118,7 @@ class TestL10NRepack(unittest.TestCase):
 
         self.assertEqual(
             dict((p, f.open().read()) for p, f in copier),
-            dict((p, f.open().read()) for p, f in repacked.iteritems())
+            dict((p, f.open().read()) for p, f in repacked.items())
         )
 
 

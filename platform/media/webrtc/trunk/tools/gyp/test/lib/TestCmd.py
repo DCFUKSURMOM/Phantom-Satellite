@@ -226,11 +226,12 @@ import shutil
 import stat
 import string
 import sys
+import atexit
 import tempfile
 import time
 import traceback
 import types
-import UserList
+import collections
 
 __all__ = [
     'diff_re',
@@ -250,23 +251,23 @@ except ImportError:
     __all__.append('simple_diff')
 
 def is_List(e):
-    return type(e) is types.ListType \
-        or isinstance(e, UserList.UserList)
+    return type(e) is list \
+        or isinstance(e, collections.UserList)
 
 try:
-    from UserString import UserString
+    from collections import UserString
 except ImportError:
     class UserString:
         pass
 
 if hasattr(types, 'UnicodeType'):
     def is_String(e):
-        return type(e) is types.StringType \
-            or type(e) is types.UnicodeType \
+        return type(e) is bytes \
+            or type(e) is str \
             or isinstance(e, UserString)
 else:
     def is_String(e):
-        return type(e) is types.StringType or isinstance(e, UserString)
+        return type(e) is bytes or isinstance(e, UserString)
 
 tempfile.template = 'testcmd.'
 if os.name in ('posix', 'nt'):
@@ -282,7 +283,7 @@ _chain_to_exitfunc = None
 
 def _clean():
     global _Cleanup
-    cleanlist = filter(None, _Cleanup)
+    cleanlist = [_f for _f in _Cleanup if _f]
     del _Cleanup[:]
     cleanlist.reverse()
     for test in cleanlist:
@@ -298,7 +299,7 @@ except ImportError:
         _chain_to_exitfunc = sys.exitfunc
     except AttributeError:
         pass
-    sys.exitfunc = _clean
+    atexit.register(_clean)
 else:
     atexit.register(_clean)
 
@@ -307,7 +308,7 @@ try:
 except NameError:
     def zip(*lists):
         result = []
-        for i in xrange(min(map(len, lists))):
+        for i in range(min(list(map(len, lists)))):
             result.append(tuple(map(lambda l, i=i: l[i], lists)))
         return result
 
@@ -316,7 +317,7 @@ class Collector:
         self.entries = [top]
     def __call__(self, arg, dirname, names):
         pathjoin = lambda n, d=dirname: os.path.join(d, n)
-        self.entries.extend(map(pathjoin, names))
+        self.entries.extend(list(map(pathjoin, names)))
 
 def _caller(tblist, skip):
     string = ""
@@ -433,9 +434,9 @@ def match_re(lines = None, res = None):
         s = "^" + res[i] + "$"
         try:
             expr = re.compile(s)
-        except re.error, e:
+        except re.error as e:
             msg = "Regular expression error in %s: %s"
-            raise re.error, msg % (repr(s), e[0])
+            raise re.error(msg % (repr(s), e[0]))
         if not expr.search(lines[i]):
             return
     return 1
@@ -450,9 +451,9 @@ def match_re_dotall(lines = None, res = None):
     s = "^" + res + "$"
     try:
         expr = re.compile(s, re.DOTALL)
-    except re.error, e:
+    except re.error as e:
         msg = "Regular expression error in %s: %s"
-        raise re.error, msg % (repr(s), e[0])
+        raise re.error(msg % (repr(s), e[0]))
     if expr.match(lines):
         return 1
 
@@ -475,15 +476,15 @@ else:
         for op, a1, a2, b1, b2 in sm.get_opcodes():
             if op == 'delete':
                 result.append("%sd%d" % (comma(a1, a2), b1))
-                result.extend(map(lambda l: '< ' + l, a[a1:a2]))
+                result.extend(['< ' + l for l in a[a1:a2]])
             elif op == 'insert':
                 result.append("%da%s" % (a1, comma(b1, b2)))
-                result.extend(map(lambda l: '> ' + l, b[b1:b2]))
+                result.extend(['> ' + l for l in b[b1:b2]])
             elif op == 'replace':
                 result.append("%sc%s" % (comma(a1, a2), comma(b1, b2)))
-                result.extend(map(lambda l: '< ' + l, a[a1:a2]))
+                result.extend(['< ' + l for l in a[a1:a2]])
                 result.append('---')
-                result.extend(map(lambda l: '> ' + l, b[b1:b2]))
+                result.extend(['> ' + l for l in b[b1:b2]])
         return result
 
 def diff_re(a, b, fromfile='', tofile='',
@@ -506,9 +507,9 @@ def diff_re(a, b, fromfile='', tofile='',
         s = "^" + aline + "$"
         try:
             expr = re.compile(s)
-        except re.error, e:
+        except re.error as e:
             msg = "Regular expression error in %s: %s"
-            raise re.error, msg % (repr(s), e[0])
+            raise re.error(msg % (repr(s), e[0]))
         if not expr.search(bline):
             result.append("%sc%s" % (i+1, i+1))
             result.append('< ' + repr(a[i]))
@@ -564,7 +565,7 @@ else:
                     st = os.stat(f)
                 except OSError:
                     continue
-                if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
+                if stat.S_IMODE(st[stat.ST_MODE]) & 0o111:
                     return f
         return None
 
@@ -652,14 +653,14 @@ except ImportError:
             universal_newlines = 1
             def __init__(self, command, **kw):
                 if kw.get('stderr') == 'STDOUT':
-                    apply(popen2.Popen4.__init__, (self, command, 1))
+                    popen2.Popen4.__init__(*(self, command, 1))
                 else:
-                    apply(popen2.Popen3.__init__, (self, command, 1))
+                    popen2.Popen3.__init__(*(self, command, 1))
                 self.stdin = self.tochild
                 self.stdout = self.fromchild
                 self.stderr = self.childerr
             def wait(self, *args, **kw):
-                resultcode = apply(popen2.Popen3.wait, (self,)+args, kw)
+                resultcode = popen2.Popen3.wait(*(self,)+args, **kw)
                 if os.WIFEXITED(resultcode):
                     return os.WEXITSTATUS(resultcode)
                 elif os.WIFSIGNALED(resultcode):
@@ -722,7 +723,7 @@ class Popen(subprocess.Popen):
                 (errCode, written) = WriteFile(x, input)
             except ValueError:
                 return self._close('stdin')
-            except (subprocess.pywintypes.error, Exception), why:
+            except (subprocess.pywintypes.error, Exception) as why:
                 if why[0] in (109, errno.ESHUTDOWN):
                     return self._close('stdin')
                 raise
@@ -743,7 +744,7 @@ class Popen(subprocess.Popen):
                     (errCode, read) = ReadFile(x, nAvail, None)
             except ValueError:
                 return self._close(which)
-            except (subprocess.pywintypes.error, Exception), why:
+            except (subprocess.pywintypes.error, Exception) as why:
                 if why[0] in (109, errno.ESHUTDOWN):
                     return self._close(which)
                 raise
@@ -762,7 +763,7 @@ class Popen(subprocess.Popen):
 
             try:
                 written = os.write(self.stdin.fileno(), input)
-            except OSError, why:
+            except OSError as why:
                 if why[0] == errno.EPIPE: #broken pipe
                     return self._close('stdin')
                 raise
@@ -821,13 +822,12 @@ def recv_some(p, t=.1, e=1, tr=5, stderr=0):
             time.sleep(max((x-time.time())/tr, 0))
     return ''.join(y)
 
-# TODO(3.0:  rewrite to use memoryview()
 def send_all(p, data):
     while len(data):
         sent = p.send(data)
         if sent is None:
             raise Exception(disconnect_message)
-        data = buffer(data, sent)
+        data = memoryview(data)[sent:]
 
 
 
@@ -882,7 +882,7 @@ class TestCmd(object):
                 #self.diff_function = difflib.unified_diff
         self._dirlist = []
         self._preserve = {'pass_test': 0, 'fail_test': 0, 'no_result': 0}
-        if os.environ.has_key('PRESERVE') and not os.environ['PRESERVE'] is '':
+        if 'PRESERVE' in os.environ and not os.environ['PRESERVE'] is '':
             self._preserve['pass_test'] = os.environ['PRESERVE']
             self._preserve['fail_test'] = os.environ['PRESERVE']
             self._preserve['no_result'] = os.environ['PRESERVE']
@@ -947,7 +947,7 @@ class TestCmd(object):
 
     def canonicalize(self, path):
         if is_List(path):
-            path = apply(os.path.join, tuple(path))
+            path = os.path.join(*tuple(path))
         if not os.path.isabs(path):
             path = os.path.join(self.workdir, path)
         return path
@@ -981,7 +981,7 @@ class TestCmd(object):
             condition = self.condition
         if self._preserve[condition]:
             for dir in self._dirlist:
-                print "Preserved directory", dir
+                print("Preserved directory", dir)
         else:
             list = self._dirlist[:]
             list.reverse()
@@ -1028,17 +1028,17 @@ class TestCmd(object):
         difflib
     except NameError:
         def diff(self, a, b, name, *args, **kw):
-            print self.banner('Expected %s' % name)
-            print a
-            print self.banner('Actual %s' % name)
-            print b
+            print(self.banner('Expected %s' % name))
+            print(a)
+            print(self.banner('Actual %s' % name))
+            print(b)
     else:
         def diff(self, a, b, name, *args, **kw):
-            print self.banner(name)
+            print(self.banner(name))
             args = (a.splitlines(), b.splitlines()) + args
-            lines = apply(self.diff_function, args, kw)
+            lines = self.diff_function(*args, **kw)
             for l in lines:
-                print l
+                print(l)
 
     def fail_test(self, condition = 1, function = None, skip = 0):
         """Cause the test to fail.
@@ -1126,7 +1126,7 @@ class TestCmd(object):
         """
         file = self.canonicalize(file)
         if mode[0] != 'r':
-            raise ValueError, "mode must begin with 'r'"
+            raise ValueError("mode must begin with 'r'")
         with open(file, mode) as f:
             result = f.read()
         return result
@@ -1154,7 +1154,7 @@ class TestCmd(object):
         prepended unless it is enclosed in a [list].
         """
         cmd = self.command_args(program, interpreter, arguments)
-        cmd_string = string.join(map(self.escape, cmd), ' ')
+        cmd_string = string.join(list(map(self.escape, cmd)), ' ')
         if self.verbose:
             sys.stderr.write(cmd_string + "\n")
         if universal_newlines is None:
@@ -1319,7 +1319,7 @@ class TestCmd(object):
             if sub is None:
                 continue
             if is_List(sub):
-                sub = apply(os.path.join, tuple(sub))
+                sub = os.path.join(*tuple(sub))
             new = os.path.join(self.workdir, sub)
             try:
                 os.mkdir(new)
@@ -1409,7 +1409,7 @@ class TestCmd(object):
         """Find an executable file.
         """
         if is_List(file):
-            file = apply(os.path.join, tuple(file))
+            file = os.path.join(*tuple(file))
         if not os.path.isabs(file):
             file = where_is(file, path, pathext)
         return file
@@ -1431,7 +1431,7 @@ class TestCmd(object):
         the temporary working directory name with the specified
         arguments using the os.path.join() method.
         """
-        return apply(os.path.join, (self.workdir,) + tuple(args))
+        return os.path.join(*(self.workdir,) + tuple(args))
 
     def readable(self, top, read=1):
         """Make the specified directory tree readable (read == 1)
@@ -1508,12 +1508,12 @@ class TestCmd(object):
                 def do_chmod(fname):
                     try: st = os.stat(fname)
                     except OSError: pass
-                    else: os.chmod(fname, stat.S_IMODE(st[stat.ST_MODE]|0200))
+                    else: os.chmod(fname, stat.S_IMODE(st[stat.ST_MODE]|0o200))
             else:
                 def do_chmod(fname):
                     try: st = os.stat(fname)
                     except OSError: pass
-                    else: os.chmod(fname, stat.S_IMODE(st[stat.ST_MODE]&~0200))
+                    else: os.chmod(fname, stat.S_IMODE(st[stat.ST_MODE]&~0o200))
 
         if os.path.isfile(top):
             do_chmod(top)
@@ -1586,7 +1586,7 @@ class TestCmd(object):
         """
         file = self.canonicalize(file)
         if mode[0] != 'w':
-            raise ValueError, "mode must begin with 'w'"
+            raise ValueError("mode must begin with 'w'")
         with open(file, mode) as f:
             f.write(content)
 

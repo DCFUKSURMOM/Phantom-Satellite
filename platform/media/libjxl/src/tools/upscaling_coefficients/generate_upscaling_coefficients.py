@@ -32,7 +32,7 @@ def convolution(pixels, kernel):
   offset = kernel_len // 2
   scale = 1 / sum(kernel)
   out_pixels = np.zeros(shape=(x, y), dtype=pixels.dtype)
-  for i, j in itertools.product(range(x), range(y)):
+  for i, j in itertools.product(list(range(x)), list(range(y))):
     if kernel_len < i < x - kernel_len:
       out_pixels[i, j] = scale * sum(
           pixels[j, i - offset + k] * kernel[k] for k in range(kernel_len))
@@ -57,8 +57,8 @@ def smooth_4x4_corners(pixels):
   overshoot = 3.5
   m = 1.0 / (4.0 - overshoot)
   y_size, x_size = pixels.shape
-  for y, x in itertools.product(range(3, y_size - 3, 4),
-                                range(3, x_size - 3, 4)):
+  for y, x in itertools.product(list(range(3, y_size - 3, 4)),
+                                list(range(3, x_size - 3, 4))):
     ave = (
         pixels[y, x] + pixels[y, x + 1] + pixels[y + 1, x] +
         pixels[y + 1, x + 1])
@@ -125,7 +125,7 @@ def get_coeffs(upscaling_factor, kernel_size=5, normalized=True, dtype="float"):
   middle = patch_size // 2
   lower = middle - kernel_size // 2
   upper = middle + kernel_size // 2 + 1
-  assert len(range(lower, upper)) == kernel_size
+  assert len(list(range(lower, upper))) == kernel_size
   assert sum(range(lower, upper)) == kernel_size * middle
 
   coefficients = np.array([[[[

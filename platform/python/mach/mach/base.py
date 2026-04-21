@@ -14,7 +14,7 @@ class CommandContext(object):
         self.log_manager = log_manager
         self.commands = commands
 
-        for k,v in kwargs.items():
+        for k,v in list(kwargs.items()):
             setattr(self, k, v)
 
 

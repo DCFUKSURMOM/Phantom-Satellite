@@ -36,7 +36,7 @@ class Anandan(MotionEST):
     self.c_mins = []
     self.e_maxs = []
     self.e_mins = []
-    for l in xrange(self.levels + 1):
+    for l in range(self.levels + 1):
       c_max, c_min, e_max, e_min = self.get_curvature(self.cur_Is[l])
       self.c_maxs.append(c_max)
       self.c_mins.append(c_min)
@@ -71,11 +71,11 @@ class Anandan(MotionEST):
     c_min = np.zeros((self.num_row, self.num_col))
     e_max = np.zeros((self.num_row, self.num_col, 2))
     e_min = np.zeros((self.num_row, self.num_col, 2))
-    for r in xrange(self.num_row):
-      for c in xrange(self.num_col):
+    for r in range(self.num_row):
+      for c in range(self.num_col):
         h11, h12, h21, h22 = 0, 0, 0, 0
-        for i in xrange(r * self.blk_sz, r * self.blk_sz + self.blk_sz):
-          for j in xrange(c * self.blk_sz, c * self.blk_sz + self.blk_sz):
+        for i in range(r * self.blk_sz, r * self.blk_sz + self.blk_sz):
+          for j in range(c * self.blk_sz, c * self.blk_sz + self.blk_sz):
             if 0 <= i < self.height - 1 and 0 <= j < self.width - 1:
               Ix = I[i][j + 1] - I[i][j]
               Iy = I[i + 1][j] - I[i][j]
@@ -99,8 +99,8 @@ class Anandan(MotionEST):
 
   def get_ssd(self, cur_I, ref_I, center, mv):
     ssd = 0
-    for r in xrange(int(center[0]), int(center[0]) + self.blk_sz):
-      for c in xrange(int(center[1]), int(center[1]) + self.blk_sz):
+    for r in range(int(center[0]), int(center[0]) + self.blk_sz):
+      for c in range(int(center[1]), int(center[1]) + self.blk_sz):
         if 0 <= r < self.height and 0 <= c < self.width:
           tr, tc = r + int(mv[0]), c + int(mv[1])
           if 0 <= tr < self.height and 0 <= tc < self.width:
@@ -119,8 +119,8 @@ class Anandan(MotionEST):
   def region_match(self, l, last_mvs, radius):
     mvs = np.zeros((self.num_row, self.num_col, 2))
     min_ssds = np.zeros((self.num_row, self.num_col))
-    for r in xrange(self.num_row):
-      for c in xrange(self.num_col):
+    for r in range(self.num_row):
+      for c in range(self.num_col):
         center = np.array([r * self.blk_sz, c * self.blk_sz])
         #use overlap hierarchy policy
         init_mvs = []
@@ -134,8 +134,8 @@ class Anandan(MotionEST):
         min_ssd = None
         min_mv = None
         for init_mv in init_mvs:
-          for i in xrange(-2, 3):
-            for j in xrange(-2, 3):
+          for i in range(-2, 3):
+            for j in range(-2, 3):
               mv = init_mv + np.array([i, j]) * radius
               ssd = self.get_ssd(self.cur_Is[l], self.ref_Is[l], center, mv)
               if min_ssd is None or ssd < min_ssd:
@@ -159,8 +159,8 @@ class Anandan(MotionEST):
     c_min = self.c_mins[l]
     e_max = self.e_maxs[l]
     e_min = self.e_mins[l]
-    for r in xrange(self.num_row):
-      for c in xrange(self.num_col):
+    for r in range(self.num_row):
+      for c in range(self.num_col):
         w_max = c_max[r, c] / (
             self.k1 + self.k2 * min_ssds[r, c] + self.k3 * c_max[r, c])
         w_min = c_min[r, c] / (
@@ -182,12 +182,12 @@ class Anandan(MotionEST):
 
   def motion_field_estimation(self):
     last_mvs = None
-    for l in xrange(self.levels, -1, -1):
+    for l in range(self.levels, -1, -1):
       mvs, min_ssds = self.region_match(l, last_mvs, 2**l)
       uvs = np.zeros(mvs.shape)
-      for _ in xrange(self.max_iter):
+      for _ in range(self.max_iter):
         uvs = self.smooth(uvs, mvs, min_ssds, l)
       last_mvs = uvs
-    for r in xrange(self.num_row):
-      for c in xrange(self.num_col):
+    for r in range(self.num_row):
+      for c in range(self.num_col):
         self.mf[r, c] = uvs[r, c]

@@ -23,23 +23,23 @@ def find_dupes(source):
         md5s[m][1].append(p)
     total = 0
     num_dupes = 0
-    for m, (size, paths) in md5s.iteritems():
+    for m, (size, paths) in md5s.items():
         if len(paths) > 1:
-            print 'Duplicates %d bytes%s:' % (size,
-                  ' (%d times)' % (len(paths) - 1) if len(paths) > 2 else '')
-            print ''.join('  %s\n' % p for p in paths)
+            print('Duplicates %d bytes%s:' % (size,
+                  ' (%d times)' % (len(paths) - 1) if len(paths) > 2 else ''))
+            print(''.join('  %s\n' % p for p in paths))
             total += (len(paths) - 1) * size
             num_dupes += 1
     if num_dupes:
-        print "WARNING: Found %d duplicated files taking %d bytes" % \
-              (num_dupes, total) + " (uncompressed)"
+        print("WARNING: Found %d duplicated files taking %d bytes" % \
+              (num_dupes, total) + " (uncompressed)")
 
 
 def main():
     if len(sys.argv) != 2:
         import os
-        print >>sys.stderr, "Usage: %s directory" % \
-                            os.path.basename(sys.argv[0])
+        print("Usage: %s directory" % \
+                            os.path.basename(sys.argv[0]), file=sys.stderr)
         sys.exit(1)
 
     find_dupes(sys.argv[1])

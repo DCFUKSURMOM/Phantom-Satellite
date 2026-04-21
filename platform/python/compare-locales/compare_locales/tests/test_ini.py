@@ -24,7 +24,7 @@ class TestIniParser(ParserTestMixin, unittest.TestCase):
 [Strings]
 TitleText=Some Title
 ''', (('TitleText', 'Some Title'),))
-        self.assert_('UTF-8' in self.parser.header)
+        self.assertTrue('UTF-8' in self.parser.header)
 
     def testMPL2_Space_UTF(self):
         self._test(mpl2 + '''
@@ -32,14 +32,14 @@ TitleText=Some Title
 [Strings]
 TitleText=Some Title
 ''', (('TitleText', 'Some Title'),))
-        self.assert_('MPL' in self.parser.header)
+        self.assertTrue('MPL' in self.parser.header)
 
     def testMPL2_Space(self):
         self._test(mpl2 + '''
 [Strings]
 TitleText=Some Title
 ''', (('TitleText', 'Some Title'),))
-        self.assert_('MPL' in self.parser.header)
+        self.assertTrue('MPL' in self.parser.header)
 
     def testMPL2_MultiSpace(self):
         self._test(mpl2 + '''\
@@ -49,7 +49,7 @@ TitleText=Some Title
 [Strings]
 TitleText=Some Title
 ''', (('TitleText', 'Some Title'),))
-        self.assert_('MPL' in self.parser.header)
+        self.assertTrue('MPL' in self.parser.header)
 
     def testMPL2_JunkBeforeCategory(self):
         self._test(mpl2 + '''\
@@ -59,7 +59,7 @@ TitleText=Some Title
 ''', (('_junk_\\d+_0-213$', mpl2 + '''\
 Junk
 [Strings]'''), ('TitleText', 'Some Title')))
-        self.assert_('MPL' not in self.parser.header)
+        self.assertTrue('MPL' not in self.parser.header)
 
     def test_TrailingComment(self):
         self._test(mpl2 + '''
@@ -67,7 +67,7 @@ Junk
 TitleText=Some Title
 ;Stray trailing comment
 ''', (('TitleText', 'Some Title'),))
-        self.assert_('MPL' in self.parser.header)
+        self.assertTrue('MPL' in self.parser.header)
 
     def test_SpacedTrailingComments(self):
         self._test(mpl2 + '''
@@ -78,7 +78,7 @@ TitleText=Some Title
 ;Second stray comment
 
 ''', (('TitleText', 'Some Title'),))
-        self.assert_('MPL' in self.parser.header)
+        self.assertTrue('MPL' in self.parser.header)
 
     def test_TrailingCommentsAndJunk(self):
         self._test(mpl2 + '''
@@ -96,7 +96,7 @@ Junk
 ;Second stray comment
 
 ''')))
-        self.assert_('MPL' in self.parser.header)
+        self.assertTrue('MPL' in self.parser.header)
 
     def test_JunkInbetweenEntries(self):
         self._test(mpl2 + '''
@@ -109,7 +109,7 @@ Good=other string
 ''', (('TitleText', 'Some Title'), ('_junk_\\d+_231-236$', '''\
 
 Junk'''), ('Good', 'other string')))
-        self.assert_('MPL' in self.parser.header)
+        self.assertTrue('MPL' in self.parser.header)
 
 if __name__ == '__main__':
     unittest.main()

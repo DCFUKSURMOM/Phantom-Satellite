@@ -2,19 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import StringIO
+import io
 import moznetwork
 import re
 import threading
 import time
 
-import version_codes
+from . import version_codes
 
-from Zeroconf import Zeroconf, ServiceBrowser
-from devicemanager import ZeroconfListener
-from devicemanagerADB import DeviceManagerADB
-from devicemanagerSUT import DeviceManagerSUT
-from devicemanager import DMError
+from .Zeroconf import Zeroconf, ServiceBrowser
+from .devicemanager import ZeroconfListener
+from .devicemanagerADB import DeviceManagerADB
+from .devicemanagerSUT import DeviceManagerSUT
+from .devicemanager import DMError
 
 
 class DroidMixin(object):
@@ -54,7 +54,7 @@ class DroidMixin(object):
             acmd.extend(["-a", intent])
 
         if extras:
-            for (key, val) in extras.iteritems():
+            for (key, val) in extras.items():
                 if type(val) is int:
                     extraTypeParam = "--ei"
                 elif type(val) is bool:
@@ -69,7 +69,7 @@ class DroidMixin(object):
         # shell output not that interesting and debugging logs should already
         # show what's going on here... so just create an empty memory buffer
         # and ignore (except on error)
-        shellOutput = StringIO.StringIO()
+        shellOutput = io.StringIO()
         if self.shell(acmd, shellOutput) == 0:
             return
 
@@ -96,7 +96,7 @@ class DroidMixin(object):
         if mozEnv:
             # mozEnv is expected to be a dictionary of environment variables: Fennec
             # itself will set them when launched
-            for (envCnt, (envkey, envval)) in enumerate(mozEnv.iteritems()):
+            for (envCnt, (envkey, envval)) in enumerate(mozEnv.items()):
                 extras["env" + str(envCnt)] = envkey + "=" + envval
 
         # Additional command line arguments that fennec will read and use (e.g.
@@ -251,7 +251,7 @@ def DroidConnectByHWID(hwid, timeout=30, **kwargs):
 
     if foundIP is not None:
         return DroidSUT(foundIP, **kwargs)
-    print "Connected via SUT to %s [at %s]" % (hwid, foundIP)
+    print("Connected via SUT to %s [at %s]" % (hwid, foundIP))
 
     # try connecting via adb
     try:
@@ -259,5 +259,5 @@ def DroidConnectByHWID(hwid, timeout=30, **kwargs):
     except:
         return None
 
-    print "Connected via ADB to %s" % (hwid)
+    print("Connected via ADB to %s" % (hwid))
     return sut

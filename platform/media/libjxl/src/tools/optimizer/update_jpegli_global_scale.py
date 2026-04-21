@@ -74,7 +74,7 @@ def EvalPnorm(build_dir, corpus_dir, codec):
 
 
 if len(sys.argv) != 3:
-  print("usage: ", sys.argv[0], "build-dir corpus-dir")
+  print(("usage: ", sys.argv[0], "build-dir corpus-dir"))
   exit(1)
 
 build_dir = sys.argv[1]
@@ -82,7 +82,7 @@ corpus_dir = sys.argv[2]
     
 jpeg_pnorm = EvalPnorm(build_dir, corpus_dir, "jpeg:q90")
 
-print("Libjpeg pnorm: %.8f" % jpeg_pnorm)
+print(("Libjpeg pnorm: %.8f" % jpeg_pnorm))
 
 for scale_type in ["YCbCr", "XYB"]:
   scale = ReadGlobalScale(scale_type)
@@ -91,8 +91,8 @@ for scale_type in ["YCbCr", "XYB"]:
   for i in range(10):
     jpegli_pnorm = EvalPnorm(build_dir, corpus_dir, CodecName(scale_type))
     rel_error = abs(jpegli_pnorm / jpeg_pnorm - 1)
-    print("[%-5s] scale: %.8f  pnorm: %.8f  error: %.8f" %
-          (scale_type, scale, jpegli_pnorm, rel_error))
+    print(("[%-5s] scale: %.8f  pnorm: %.8f  error: %.8f" %
+          (scale_type, scale, jpegli_pnorm, rel_error)))
     if rel_error < best_rel_error:
       best_rel_error = rel_error
       best_scale = scale

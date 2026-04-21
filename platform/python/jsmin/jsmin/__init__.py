@@ -29,9 +29,9 @@ is_3 = sys.version_info >= (3, 0)
 if is_3:
     import io
 else:
-    import StringIO
+    import io
     try:
-        import cStringIO
+        import io
     except ImportError:
         cStringIO = None
 
@@ -45,12 +45,12 @@ def jsmin(js, **kwargs):
     returns a minified version of the javascript string
     """
     if not is_3:        
-        if cStringIO and not isinstance(js, unicode):
+        if cStringIO and not isinstance(js, str):
             # strings can use cStringIO for a 3x performance
             # improvement, but unicode (in python2) cannot
-            klass = cStringIO.StringIO
+            klass = io.StringIO
         else:
-            klass = StringIO.StringIO
+            klass = io.StringIO
     else:
         klass = io.StringIO
     ins = klass(js)

@@ -18,7 +18,7 @@ import sys
 import tempfile
 import time
 
-import io_stats_parser
+from . import io_stats_parser
 from pylib import pexpect
 
 CHROME_SRC = os.path.join(
@@ -27,7 +27,7 @@ CHROME_SRC = os.path.join(
 sys.path.append(os.path.join(CHROME_SRC, 'third_party', 'android_testrunner'))
 import adb_interface
 
-import cmd_helper
+from . import cmd_helper
 import errors  #  is under ../../../third_party/android_testrunner/errors.py
 
 
@@ -347,7 +347,7 @@ class AndroidCommands(object):
         if 'Success' in install_status:
           return install_status
       except errors.WaitForResponseTimedOutError:
-        print '@@@STEP_WARNINGS@@@'
+        print('@@@STEP_WARNINGS@@@')
         logging.info('Timeout on installing %s' % apk_path)
 
       if reboots_left <= 0:
@@ -587,7 +587,7 @@ class AndroidCommands(object):
       if not os.path.exists(md5sum_path):
         md5sum_path = '%s/out/Release/md5sum_bin' % (CHROME_SRC)
         if not os.path.exists(md5sum_path):
-          print >> sys.stderr, 'Please build md5sum.'
+          print('Please build md5sum.', file=sys.stderr)
           sys.exit(1)
       command = 'push %s %s' % (md5sum_path, MD5SUM_DEVICE_PATH)
       assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
@@ -991,7 +991,7 @@ class AndroidCommands(object):
     for pid in pid_list:
       usage_dict_per_pid, smaps_per_pid = self.GetMemoryUsageForPid(pid)
       smaps[pid] = smaps_per_pid
-      for (key, value) in usage_dict_per_pid.items():
+      for (key, value) in list(usage_dict_per_pid.items()):
         usage_dict[key] += value
 
     return usage_dict, smaps

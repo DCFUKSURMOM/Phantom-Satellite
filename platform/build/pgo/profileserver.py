@@ -77,7 +77,7 @@ if __name__ == '__main__':
     jarlog = os.getenv("JARLOG_FILE")
     if jarlog:
       env["MOZ_JAR_LOG_FILE"] = os.path.abspath(jarlog)
-      print "jarlog: %s" % env["MOZ_JAR_LOG_FILE"]
+      print("jarlog: %s" % env["MOZ_JAR_LOG_FILE"])
 
     cmdargs = ["http://localhost:%d/index.html" % PORT]
     runner = FirefoxRunner(profile=profile,

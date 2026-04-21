@@ -39,6 +39,6 @@ def MergePGOFiles(basename, pgddir, pgcdir):
 
 if __name__ == '__main__':
   if len(sys.argv) != 3:
-      print >>sys.stderr, "Usage: pgomerge.py <binary basename> <dist/bin>"
+      print("Usage: pgomerge.py <binary basename> <dist/bin>", file=sys.stderr)
       sys.exit(1)
   MergePGOFiles(sys.argv[1], os.getcwd(), sys.argv[2])

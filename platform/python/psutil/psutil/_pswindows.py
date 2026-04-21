@@ -16,7 +16,7 @@ from . import _common
 from . import _psutil_windows as cext
 from ._common import conn_tmap, usage_percent, isfile_strict
 from ._common import sockfam_to_enum, socktype_to_enum
-from ._compat import PY3, xrange, lru_cache, long
+from ._compat import PY3, xrange, lru_cache, int
 from ._psutil_windows import (ABOVE_NORMAL_PRIORITY_CLASS,
                               BELOW_NORMAL_PRIORITY_CLASS,
                               HIGH_PRIORITY_CLASS,
@@ -215,7 +215,7 @@ def net_connections(kind, _pid=-1):
 
 def net_if_stats():
     ret = cext.net_if_stats()
-    for name, items in ret.items():
+    for name, items in list(ret.items()):
         isup, duplex, speed, mtu = items
         if hasattr(_common, 'NicDuplex'):
             duplex = _common.NicDuplex(duplex)
@@ -503,7 +503,7 @@ class Process(object):
     @wrap_exceptions
     def cpu_affinity_get(self):
         def from_bitmask(x):
-            return [i for i in xrange(64) if (1 << i) & x]
+            return [i for i in range(64) if (1 << i) & x]
         bitmask = cext.proc_cpu_affinity_get(self.pid)
         return from_bitmask(bitmask)
 
@@ -523,7 +523,7 @@ class Process(object):
         allcpus = list(range(len(per_cpu_times())))
         for cpu in value:
             if cpu not in allcpus:
-                if not isinstance(cpu, (int, long)):
+                if not isinstance(cpu, (int, int)):
                     raise TypeError(
                         "invalid CPU %r; an integer is required" % cpu)
                 else:

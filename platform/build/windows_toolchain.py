@@ -200,7 +200,7 @@ def format_manifest(manifest):
 
 def write_zip(zip_path, prefix=None):
     """Write toolchain data to a zip file."""
-    if isinstance(prefix, unicode):
+    if isinstance(prefix, str):
         prefix = prefix.encode('utf-8')
 
     with JarWriter(file=zip_path, optimize=False, compress=5) as zip:
@@ -226,7 +226,7 @@ def write_zip(zip_path, prefix=None):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print('usage: %s create-zip <path-prefix>' % sys.argv[0])
+        print(('usage: %s create-zip <path-prefix>' % sys.argv[0]))
         sys.exit(1)
 
     assert sys.argv[1] == 'create-zip'
@@ -244,7 +244,7 @@ if __name__ == '__main__':
         sha256.update(data)
         sha512.update(data)
 
-    print('Hashes of %s (size=%d)' % (destzip, len(data)))
-    print('SHA-1:   %s' % sha1.hexdigest())
-    print('SHA-256: %s' % sha256.hexdigest())
-    print('SHA-512: %s' % sha512.hexdigest())
+    print(('Hashes of %s (size=%d)' % (destzip, len(data))))
+    print(('SHA-1:   %s' % sha1.hexdigest()))
+    print(('SHA-256: %s' % sha256.hexdigest()))
+    print(('SHA-512: %s' % sha512.hexdigest()))

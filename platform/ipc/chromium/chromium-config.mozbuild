@@ -49,7 +49,7 @@ else:
             'OS_BSD': 1,
         })
 
-    elif CONFIG['OS_ARCH'] == 'FreeBSD' or CONFIG['OS_ARCH'] == 'GNU_kFreeBSD':
+    elif CONFIG['OS_ARCH'] == 'FreeBSD' or CONFIG['OS_ARCH'] == 'kFreeBSD':
         DEFINES.update({
             'OS_FREEBSD': 1,
             'OS_BSD': 1,

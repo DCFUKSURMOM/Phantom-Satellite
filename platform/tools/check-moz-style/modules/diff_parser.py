@@ -28,7 +28,7 @@
 
 """WebKit's Python module for interacting with patches."""
 
-import logging
+from . import logging
 import re
 
 

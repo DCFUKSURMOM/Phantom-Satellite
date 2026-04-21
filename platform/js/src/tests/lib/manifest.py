@@ -7,7 +7,7 @@ from __future__ import print_function
 import os, re, sys
 from subprocess import Popen, PIPE
 
-from tests import RefTestCase
+from .tests import RefTestCase
 
 
 def split_path_into_dirs(path):
@@ -199,7 +199,7 @@ def _emit_manifest_at(location, relative, test_gen, depth):
     filename = os.path.join(location, 'jstests.list')
     manifest = []
     numTestFiles = 0
-    for k, test_list in manifests.iteritems():
+    for k, test_list in manifests.items():
         fullpath = os.path.join(location, k)
         if os.path.isdir(fullpath):
             manifest.append("include " + k + "/jstests.list")

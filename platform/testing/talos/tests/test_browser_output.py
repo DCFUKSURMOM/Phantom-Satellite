@@ -52,7 +52,7 @@ class TestBrowserOutput(unittest.TestCase):
         pageloader_results = PageloaderResults(raw_report)
         self.assertEqual(len(pageloader_results.results), 12)
         indices = [i['index'] for i in pageloader_results.results]
-        self.assertEqual(indices, range(12))
+        self.assertEqual(indices, list(range(12)))
 
         # test hixie-001.xml just as a spot-check
         hixie_001 = pageloader_results.results[5]

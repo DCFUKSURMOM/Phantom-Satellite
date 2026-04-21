@@ -11,7 +11,7 @@
 # _declare_exceptions template, and add it to the return statement. Then
 # destructure in the assignment below the function declaration.
 @template
-@imports(_from='__builtin__', _import='Exception')
+@imports(_from='builtins', _import='Exception')
 def _declare_exceptions():
     class FatalCheckError(Exception):
         '''An exception to throw from a function decorated with @checking.

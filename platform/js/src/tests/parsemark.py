@@ -96,7 +96,7 @@ def parsemark(filepaths, fbench, stfu=False):
             print('Parsemarking {}...'.format(filename))
         bench_map[filename] = fbench(filepath)
     print('{')
-    for i, (filename, (avg, stddev)) in enumerate(bench_map.iteritems()):
+    for i, (filename, (avg, stddev)) in enumerate(bench_map.items()):
         assert '"' not in filename
         fmt = '    {:30s}: {{"average_ms": {:6.2f}, "stddev_ms": {:6.2f}}}'
         if i != len(bench_map) - 1:
@@ -105,7 +105,7 @@ def parsemark(filepaths, fbench, stfu=False):
         print(fmt.format(filename_str, avg, stddev))
     print('}')
     return dict((filename, dict(average_ms=avg, stddev_ms=stddev))
-                for filename, (avg, stddev) in bench_map.iteritems())
+                for filename, (avg, stddev) in bench_map.items())
 
 
 def main():

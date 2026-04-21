@@ -52,7 +52,7 @@ if  sys.version_info[:2] == (2, 6):
         something on __getattr__ calls (see #1035).
         Backport of https://hg.python.org/cpython/rev/35bf8f7a8edc
         """
-        return isinstance(object, (type, types.ClassType))
+        return isinstance(object, (type, type))
 
 def _has_positional_arg(func):
     return func.__code__.co_argcount
@@ -96,7 +96,7 @@ def getimfunc(func):
         return func.__func__
     except AttributeError:
         try:
-            return func.im_func
+            return func.__func__
         except AttributeError:
             return func
 
@@ -517,7 +517,7 @@ def add_funcarg_pseudo_fixture_def(collector, metafunc, fixturemanager):
     arg2params = {}
     arg2scope = {}
     for callspec in metafunc._calls:
-        for argname, argvalue in callspec.funcargs.items():
+        for argname, argvalue in list(callspec.funcargs.items()):
             assert argname not in callspec.params
             callspec.params[argname] = argvalue
             arg2params_list = arg2params.setdefault(argname, [])
@@ -532,7 +532,7 @@ def add_funcarg_pseudo_fixture_def(collector, metafunc, fixturemanager):
     # register artificial FixtureDef's so that later at test execution
     # time we can rely on a proper FixtureDef to exist for fixture setup.
     arg2fixturedefs = metafunc._arg2fixturedefs
-    for argname, valuelist in arg2params.items():
+    for argname, valuelist in list(arg2params.items()):
         # if we have a scope that is higher than function we need
         # to make sure we only ever create an according fixturedef on
         # a per-scope basis. We thus store and cache the fixturedef on the
@@ -861,7 +861,7 @@ class CallSpec2(object):
 
     @property
     def id(self):
-        return "-".join(map(str, filter(None, self._idlist)))
+        return "-".join(map(str, [_f for _f in self._idlist if _f]))
 
     def setmulti(self, valtypes, argnames, valset, id, keywords, scopenum,
                  param_index):
@@ -1127,7 +1127,7 @@ def _idval(val, argname, idx, idfn):
         return str(val)
     elif isclass(val) and hasattr(val, '__name__'):
         return val.__name__
-    elif _PY2 and isinstance(val, unicode):
+    elif _PY2 and isinstance(val, str):
         # special case for python 2: if a unicode string is
         # convertible to ascii, return it as an str() object instead
         try:
@@ -1164,7 +1164,7 @@ def _showfixtures_main(config, session):
     fm = session._fixturemanager
 
     available = []
-    for argname, fixturedefs in fm._arg2fixturedefs.items():
+    for argname, fixturedefs in list(fm._arg2fixturedefs.items()):
         assert fixturedefs is not None
         if not fixturedefs:
             continue
@@ -1762,7 +1762,7 @@ class FixtureLookupError(LookupError):
         tblines = []
         addline = tblines.append
         stack = [self.request._pyfuncitem.obj]
-        stack.extend(map(lambda x: x.func, self.fixturestack))
+        stack.extend([x.func for x in self.fixturestack])
         msg = self.msg
         if msg is not None:
             # the last fixture raise an error, let's present
@@ -1786,7 +1786,7 @@ class FixtureLookupError(LookupError):
         if msg is None:
             fm = self.request._fixturemanager
             available = []
-            for name, fixturedef in fm._arg2fixturedefs.items():
+            for name, fixturedef in list(fm._arg2fixturedefs.items()):
                 parentid = self.request._pyfuncitem.parent.nodeid
                 faclist = list(fm._matchfactories(fixturedef, parentid))
                 if faclist:
@@ -2257,7 +2257,7 @@ def get_parametrized_fixture_keys(item, scopenum):
         # cs.indictes.items() is random order of argnames but
         # then again different functions (items) can change order of
         # arguments so it doesn't matter much probably
-        for argname, param_index in cs.indices.items():
+        for argname, param_index in list(cs.indices.items()):
             if cs._arg2scopenum[argname] != scopenum:
                 continue
             if scopenum == 0:    # session

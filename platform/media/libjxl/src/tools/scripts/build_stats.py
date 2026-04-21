@@ -232,7 +232,7 @@ def PrintStats(stats):
   for objstat in stats:
     bin_size = 0
     ram_size = 0
-    for kind, size in objstat.size_map.items():
+    for kind, size in list(objstat.size_map.items()):
       if kind in BIN_SIZE:
         bin_size += size
       if kind in RAM_SIZE:
@@ -263,7 +263,7 @@ def PrintStackStats(tgt_stack_sizes, top_entries=20):
   if not tgt_stack_sizes:
     return
   print(' Stack   Symbol name')
-  for i, (name, size) in zip(itertools.count(), tgt_stack_sizes.items()):
+  for i, (name, size) in zip(itertools.count(), list(tgt_stack_sizes.items())):
     if top_entries > 0 and i >= top_entries:
       break
     print('%8d %s' % (size, name))
@@ -304,7 +304,7 @@ def SizeStats(args):
   # Cache of symbols of a target.
   syms = {}
   # Load the symbols from the all targets and its deps.
-  all_deps = set(tgts.keys()).union(*[set(tgt.deps) for tgt in tgts.values()])
+  all_deps = set(tgts.keys()).union(*[set(tgt.deps) for tgt in list(tgts.values())])
   for entry in all_deps:
     fn = os.path.join(args.build_dir,
                       tgts[entry].filename if entry in tgts else entry)
@@ -396,7 +396,7 @@ def SizeStats(args):
   # Check the maximum stack size.
   exit_code = 0
   if args.max_stack:
-    for name, size in tgt_stack_sizes.items():
+    for name, size in list(tgt_stack_sizes.items()):
       if size > args.max_stack:
         print('Error: %s exceeds stack limit: %d vs %d' % (
                   name, size, args.max_stack),
