@@ -165,7 +165,7 @@ AtomHasher::Lookup::Lookup(const JSAtom* atom)
     }
 }
 
-MOZ_ALWAYS_INLINE bool
+inline bool
 AtomHasher::match(const AtomStateEntry& entry, const Lookup& lookup)
 {
     JSAtom* key = entry.asPtrUnbarriered();

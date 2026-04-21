@@ -10,9 +10,7 @@
 #include "jsatominlines.h"
 
 #include "mozilla/ArrayUtils.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/RangedPtr.h"
-#include "mozilla/Unused.h"
 
 #include <string.h>
 
@@ -65,9 +63,7 @@ const char js_setter_str[]          = "setter";
 // which create a small number of atoms.
 static const uint32_t JS_STRING_HASH_COUNT = 64;
 
-MOZ_ALWAYS_INLINE AtomSet::Ptr
-js::FrozenAtomSet::readonlyThreadsafeLookup(const AtomSet::Lookup& l) const
-{
+AtomSet::Ptr js::FrozenAtomSet::readonlyThreadsafeLookup(const AtomSet::Lookup& l) const {
     return mSet->readonlyThreadsafeLookup(l);
 }
 
@@ -287,17 +283,9 @@ static JSAtom*
 AtomizeAndCopyChars(ExclusiveContext* cx, const CharT* tbchars, size_t length, PinningBehavior pin)
 {
     if (JSAtom* s = cx->staticStrings().lookup(tbchars, length))
-        return s;
+         return s;
 
     AtomHasher::Lookup lookup(tbchars, length);
-
-    JS::Zone* zone = cx->zone();
-    mozilla::Maybe<AtomSet::AddPtr> zonePtr;
-    if (zone && pin == DoNotPinAtom) {
-        zonePtr.emplace(zone->atomCache().lookupForAdd(lookup));
-        if (zonePtr.ref())
-            return zonePtr.ref()->asPtrUnbarriered();
-    }
 
     // Note: when this function is called while the permanent atoms table is
     // being initialized (in initializeAtoms()), |permanentAtoms| is not yet
@@ -306,12 +294,8 @@ AtomizeAndCopyChars(ExclusiveContext* cx, const CharT* tbchars, size_t length, P
     // initialized and then this lookup will go ahead.
     if (cx->isPermanentAtomsInitialized()) {
         AtomSet::Ptr pp = cx->permanentAtoms().readonlyThreadsafeLookup(lookup);
-        if (pp) {
-            JSAtom* atom = pp->asPtr(cx);
-            if (zonePtr)
-                mozilla::Unused << zone->atomCache().add(zonePtr.ref(), AtomStateEntry(atom, false));
-            return atom;
-        }
+        if (pp)
+            return pp->asPtr(cx);
     }
 
     AutoLockForExclusiveAccess lock(cx);
@@ -321,13 +305,8 @@ AtomizeAndCopyChars(ExclusiveContext* cx, const CharT* tbchars, size_t length, P
     if (p) {
         JSAtom* atom = p->asPtr(cx);
         p->setPinned(bool(pin));
-        if (zonePtr)
-            mozilla::Unused << zone->atomCache().add(zonePtr.ref(), AtomStateEntry(atom, false));
         return atom;
     }
-
-    if (!JSString::validateLength(cx, length))
-        return nullptr;
 
     AutoCompartment ac(cx, cx->atomsCompartment(lock), &lock);
 
@@ -350,9 +329,6 @@ AtomizeAndCopyChars(ExclusiveContext* cx, const CharT* tbchars, size_t length, P
         ReportOutOfMemory(cx); /* SystemAllocPolicy does not report OOM. */
         return nullptr;
     }
-
-    if (zonePtr)
-        mozilla::Unused << zone->atomCache().add(zonePtr.ref(), AtomStateEntry(atom, false));
 
     return atom;
 }
@@ -406,6 +382,9 @@ js::Atomize(ExclusiveContext* cx, const char* bytes, size_t length, PinningBehav
 {
     CHECK_REQUEST(cx);
 
+    if (!JSString::validateLength(cx, length))
+        return nullptr;
+
     const Latin1Char* chars = reinterpret_cast<const Latin1Char*>(bytes);
     return AtomizeAndCopyChars(cx, chars, length, pin);
 }
@@ -415,6 +394,9 @@ JSAtom*
 js::AtomizeChars(ExclusiveContext* cx, const CharT* chars, size_t length, PinningBehavior pin)
 {
     CHECK_REQUEST(cx);
+
+    if (!JSString::validateLength(cx, length))
+        return nullptr;
 
     return AtomizeAndCopyChars(cx, chars, length, pin);
 }
