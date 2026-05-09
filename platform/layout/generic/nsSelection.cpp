@@ -2166,28 +2166,31 @@ nsFrameSelection::CommonPageMove(bool aForward,
   //get the frame from the scrollable view
 
   nsIFrame* scrolledFrame = aScrollableFrame->GetScrolledFrame();
-  if (!scrolledFrame)
+  if (!scrolledFrame) [[unlikely]] {
     return;
+  }
 
   // find out where the caret is.
   // we should know mDesiredPos value of nsFrameSelection, but I havent seen that behavior in other windows applications yet.
   nsISelection* domSel = GetSelection(SelectionType::eNormal);
-  if (!domSel) {
+  if (!domSel) [[unlikely]] {
     return;
   }
 
   nsRect caretPos;
   nsIFrame* caretFrame = nsCaret::GetGeometry(domSel, &caretPos);
-  if (!caretFrame) 
+  if (!caretFrame) [[unlikely]] {
     return;
+  }
   
   //need to adjust caret jump by percentage scroll
   nsSize scrollDelta = aScrollableFrame->GetPageScrollAmount();
 
-  if (aForward)
+  if (aForward) {
     caretPos.y += scrollDelta.height;
-  else
+  } else {
     caretPos.y -= scrollDelta.height;
+  }
 
   caretPos += caretFrame->GetOffsetTo(scrolledFrame);
     
@@ -2195,11 +2198,11 @@ nsFrameSelection::CommonPageMove(bool aForward,
   nsPoint desiredPoint;
   desiredPoint.x = caretPos.x;
   desiredPoint.y = caretPos.y + caretPos.height/2;
-  nsIFrame::ContentOffsets offsets =
-      scrolledFrame->GetContentOffsetsFromPoint(desiredPoint);
+  nsIFrame::ContentOffsets offsets = scrolledFrame->GetContentOffsetsFromPoint(desiredPoint);
 
-  if (!offsets.content)
+  if (!offsets.content) [[unlikely]] {
     return;
+  }
 
   // scroll one page
   aScrollableFrame->ScrollBy(nsIntPoint(0, aForward ? 1 : -1),

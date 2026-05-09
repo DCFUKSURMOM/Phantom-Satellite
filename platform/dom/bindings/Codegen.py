@@ -3710,7 +3710,7 @@ class CGWrapWithCacheMethod(CGAbstractMethod):
         failureCode = dedent(
             """
             aCache->ReleaseWrapper(aObject);
-            aCache->ClearWrapper();
+            aCache->ClearWrapperOnWrapFailure();
             return false;
             """)
 
