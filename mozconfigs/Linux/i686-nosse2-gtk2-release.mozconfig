@@ -29,7 +29,7 @@ ac_add_options --disable-gold # Disable ld.gold, does not work on all architectu
 # Medium optimization (higher seems to make no difference or breaks stuff), suppress warnings, remove unused function sections, disable sse2 and enable sse
 ac_add_options --enable-optimize="-O2 -w -ffunction-sections -mfpmath=sse -mno-sse2 -msse"
 
-export MOZ_PKG_SPECIAL=gtk$_GTK_VERSION
+export MOZ_PKG_SPECIAL=nosse2-gtk$_GTK_VERSION
 
 # Optimize for Pentium 3, disable sse2 and enable sse
 export CFLAGS="-m32 -march=pentium3 -mtune=pentium3 -mfpmath=sse -mno-sse2 -msse"
