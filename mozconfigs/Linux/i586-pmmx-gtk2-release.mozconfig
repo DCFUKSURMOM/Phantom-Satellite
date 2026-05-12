@@ -8,6 +8,7 @@ _GTK_VERSION=2
 ac_add_options --enable-application=phantomsatellite
 
 ac_add_options --enable-default-toolkit=cairo-gtk$_GTK_VERSION
+ac_add_options --target=i586-pc-linux-gnu
 ac_add_options --enable-jemalloc
 ac_add_options --enable-strip
 ac_add_options --enable-devtools
@@ -29,7 +30,7 @@ ac_add_options --disable-gold # Disable ld.gold, does not work on all architectu
 # Medium optimization (higher seems to make no difference or breaks stuff), suppress warnings, remove unused function sections, disable sse/sse2, enable mmx
 ac_add_options --enable-optimize="-O2 -w -ffunction-sections -mfpmath=387 -mno-sse2 -mno-sse -mmmx"
 
-export MOZ_PKG_SPECIAL=nosse-gtk$_GTK_VERSION
+export MOZ_PKG_SPECIAL=pmmx-gtk$_GTK_VERSION
 
 # Set Pentium MMX as minimum, Optimize for Pentium 2, disable sse/sse2, enable mmx
 export CFLAGS="-m32 -march=pentium-mmx -mtune=pentium2 -mfpmath=387 -mno-sse2 -mno-sse -mmmx"
