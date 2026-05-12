@@ -1,0 +1,36 @@
+mk_add_options MOZ_MAKE_FLAGS="-j5"
+
+# Set GTK Version to 2 or 3
+# GTK 3 is not recommended because it uses more ram
+_GTK_VERSION=2
+
+# Build options for Phantom Satellite
+ac_add_options --enable-application=phantomsatellite
+
+ac_add_options --enable-default-toolkit=cairo-gtk$_GTK_VERSION
+ac_add_options --enable-jemalloc
+ac_add_options --enable-strip
+ac_add_options --enable-devtools
+ac_add_options --enable-av1
+ac_add_options --disable-webrtc
+ac_add_options --disable-gamepad
+ac_add_options --disable-tests
+ac_add_options --disable-debug
+ac_add_options --disable-necko-wifi
+ac_add_options --disable-updater
+ac_add_options --with-pthreads
+ac_add_options --x-libraries=/usr/lib
+ac_add_options --disable-crashreporter
+ac_add_options --disable-js-shell
+ac_add_options --disable-precompiled-startupcache
+ac_add_options --disable-elf-hack
+ac_add_options --disable-gold # Disable ld.gold, does not work on all architectures and I want consistent configs
+
+# Medium optimization (higher seems to make no difference or breaks stuff), suppress warnings, and remove unused function sections.
+ac_add_options --enable-optimize="-O2 -w -ffunction-sections"
+
+export MOZ_PKG_SPECIAL=gtk$_GTK_VERSION
+
+# Optimize for generic aarch64 since this should run on any aarch64 CPU
+export CFLAGS="-march=armv8-a -mtune=generic"
+export CXXFLAGS="-march=armv8-a -mtune=generic"
