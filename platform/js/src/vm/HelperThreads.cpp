@@ -926,7 +926,8 @@ GlobalHelperThreadState::maxParseThreads() const
 {
     if (IsHelperThreadSimulatingOOM(js::oom::THREAD_TYPE_PARSE))
         return 1;
-
+    if (cpuCount <= 2)
+        return cpuCount;
     return threadCount;
 }
 
