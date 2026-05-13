@@ -14,13 +14,15 @@ powerpc-gtk2 is the PowerPC (32 bit) GTK2 config, if building on PPC64 you need 
 
 powerpc64-gtk2 is the PowerPC (64 bit) GTK2 config
 
+aarch64-gtk2 is the aarch64/ARM64 GTK2 config
+
 Special x86 config files:
 
 i686-nosse2-gtk2 is mostly identical to i686-gtk2, except the compiler have been modified to allow the browser to run without SSE2
 
-i586-nosse-gtk2 is mostly identical to i686-gtk2, except the compiler flags have been modified to allow the browser to run without SSE
+i586-pmmx-gtk2 is mostly identical to i686-gtk2, except the compiler flags have been modified to allow the browser to run without SSE
 
-i686-nosse2-gtk2 requires at least a Pentium 3. i586-nosse-gtk2 requires at least a Pentium MMX.
+i686-nosse2-gtk2 requires at least a Pentium 3. i586-pmmx-gtk2 requires at least a Pentium MMX.
 
 I did not disable any features in these configs, I only tweaked compiler flags, they can likely be optimized further.
 
