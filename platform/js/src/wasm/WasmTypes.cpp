@@ -379,6 +379,7 @@ GetCPUID()
         ARM = 0x3,
         MIPS = 0x4,
         MIPS64 = 0x5,
+        LOONGARCH64 = 0x6,
         ARCH_BITS = 3
     };
 
@@ -399,6 +400,9 @@ GetCPUID()
 #elif defined(JS_CODEGEN_MIPS64)
     MOZ_ASSERT(jit::GetMIPSFlags() <= (UINT32_MAX >> ARCH_BITS));
     return MIPS64 | (jit::GetMIPSFlags() << ARCH_BITS);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+    MOZ_ASSERT(jit::GetLOONGARCH64Flags() <= (UINT32_MAX >> ARCH_BITS));
+    return LOONGARCH64 | (jit::GetLOONGARCH64Flags() << ARCH_BITS);
 #elif defined(JS_CODEGEN_NONE)
     return 0;
 #else

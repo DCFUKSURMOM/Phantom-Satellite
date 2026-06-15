@@ -47,7 +47,7 @@ class BuildConfig(object):
             mod.__file__ = path
             sys.modules['config.status'] = mod
 
-            with open(path, 'rt') as fh:
+            with open(path, 'rb') as fh:
                 source = fh.read()
                 code_cache[path] = (
                     mtime,

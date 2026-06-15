@@ -8,7 +8,11 @@
 #include "AbstractMediaDecoder.h"
 #include "MediaResource.h"
 #ifdef MOZ_AV1
+#ifdef AV1_USE_AOM
 #include "AOMDecoder.h"
+#else
+#include "Dav1dDecoder.h"
+#endif
 #endif
 #include "OpusDecoder.h"
 #include "VPXDecoder.h"
@@ -710,10 +714,16 @@ WebMDemuxer::GetNextPacket(TrackInfo::TrackType aType, MediaRawDataQueue *aSampl
           isKeyframe = VPXDecoder::IsKeyframe(sample, VPXDecoder::Codec::VP9);
           break;
 #ifdef MOZ_AV1
+#ifdef AV1_USE_AOM
         case NESTEGG_CODEC_AV1:
           isKeyframe = AOMDecoder::IsKeyframe(sample);
           break;
+#else
+        case NESTEGG_CODEC_AV1:
+          isKeyframe = nestegg_packet_has_keyframe(holder->Packet()) == NESTEGG_PACKET_HAS_KEYFRAME_TRUE;
+          break;
 #endif
+#endif // MOZ_AV1
         case NESTEGG_CODEC_AVC1:
          isKeyframe = nestegg_packet_has_keyframe(holder->Packet());
            break;
@@ -734,14 +744,21 @@ WebMDemuxer::GetNextPacket(TrackInfo::TrackType aType, MediaRawDataQueue *aSampl
             break;
 #ifdef MOZ_AV1
           case NESTEGG_CODEC_AV1:
+#ifdef AV1_USE_AOM
             dimensions = AOMDecoder::GetFrameSize(sample);
+#else
+            dimensions = Dav1dDecoder::GetFrameSize(sample);
+#endif
             break;
 #endif
-         }
-          if (mLastSeenFrameSize.isSome()
-              && (dimensions != mLastSeenFrameSize.value())) {
-            mInfo.mVideo.mDisplay = dimensions;
-            mSharedVideoTrackInfo = new SharedTrackInfo(mInfo.mVideo, ++sStreamSourceID);
+          }
+          if (dimensions.width > 0 && dimensions.height > 0) {
+            if (mLastSeenFrameSize.isSome()
+                && (dimensions != mLastSeenFrameSize.value())) {
+              mInfo.mVideo.mDisplay = dimensions;
+              mSharedVideoTrackInfo = new SharedTrackInfo(mInfo.mVideo, ++sStreamSourceID);
+            }
+            mLastSeenFrameSize = Some(dimensions);
           }
           mLastSeenFrameSize = Some(dimensions);
         }

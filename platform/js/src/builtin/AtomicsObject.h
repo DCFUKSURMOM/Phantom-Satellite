@@ -35,6 +35,7 @@ class AtomicsObject : public JSObject
 [[nodiscard]] bool atomics_xor(JSContext* cx, unsigned argc, Value* vp);
 [[nodiscard]] bool atomics_isLockFree(JSContext* cx, unsigned argc, Value* vp);
 [[nodiscard]] bool atomics_wait(JSContext* cx, unsigned argc, Value* vp);
+[[nodiscard]] bool atomics_waitAsync(JSContext* cx, unsigned argc, Value* vp);
 [[nodiscard]] bool atomics_notify(JSContext* cx, unsigned argc, Value* vp);
 
 /* asm.js callouts */

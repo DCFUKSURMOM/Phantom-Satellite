@@ -63,11 +63,6 @@ cairo_quartz_surface_get_image (cairo_surface_t *surface);
 cairo_public cairo_font_face_t *
 cairo_quartz_font_face_create_for_cgfont (CGFontRef font);
 
-#if !defined(__LP64__) && !TARGET_OS_IPHONE
-cairo_public cairo_font_face_t *
-cairo_quartz_font_face_create_for_atsu_font_id (ATSUFontID font_id);
-#endif
-
 #endif /* CAIRO_HAS_QUARTZ_FONT */
 
 CAIRO_END_DECLS

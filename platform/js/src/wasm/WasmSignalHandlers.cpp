@@ -168,6 +168,11 @@ class AutoSetHandlingSegFault
 #  define RSP_sig(p) ((p)->uc_mcontext.gregs[29])
 #  define RFP_sig(p) ((p)->uc_mcontext.gregs[30])
 # endif
+# if defined(__linux__) && defined(__loongarch__)
+#  define EPC_sig(p) ((p)->uc_mcontext.__pc)
+#  define RSP_sig(p) ((p)->uc_mcontext.__gregs[3])
+#  define RFP_sig(p) ((p)->uc_mcontext.__gregs[22])
+# endif
 #elif defined(__NetBSD__)
 # define XMM_sig(p,i) (((struct fxsave64*)(p)->uc_mcontext.__fpregs)->fx_xmm[i])
 # define EIP_sig(p) ((p)->uc_mcontext.__gregs[_REG_EIP])
@@ -308,14 +313,14 @@ struct macos_aarch64_context {
 # define PC_sig(p) R15_sig(p)
 #elif defined(__aarch64__)
 # define PC_sig(p) EPC_sig(p)
-#elif defined(JS_CPU_MIPS)
+#elif defined(JS_CPU_MIPS) || defined(JS_CPU_LOONGARCH64)
 # define PC_sig(p) EPC_sig(p)
 #endif
 
 static uint8_t**
 ContextToPC(CONTEXT* context)
 {
-#ifdef JS_CODEGEN_NONE
+#if defined(JS_CODEGEN_NONE)
     MOZ_CRASH();
 #else
     return reinterpret_cast<uint8_t**>(&PC_sig(context));

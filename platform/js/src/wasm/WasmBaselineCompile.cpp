@@ -110,6 +110,9 @@
 #if defined(JS_CODEGEN_ARM)
 # include "jit/arm/Assembler-arm.h"
 #endif
+#if defined(JS_CODEGEN_LOONGARCH64)
+# include "jit/loongarch64/Assembler-loongarch64.h"
+#endif
 #if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86)
 # include "jit/x86-shared/Architecture-x86-shared.h"
 # include "jit/x86-shared/Assembler-x86-shared.h"
@@ -219,7 +222,8 @@ class BaseCompiler
     // We define our own ScratchRegister abstractions, deferring to
     // the platform's when possible.
 
-#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
+#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM) || \
+    defined(JS_CODEGEN_LOONGARCH64)
     typedef ScratchDoubleScope ScratchF64;
 #else
     class ScratchF64
@@ -232,7 +236,8 @@ class BaseCompiler
     };
 #endif
 
-#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
+#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM) || \
+    defined(JS_CODEGEN_LOONGARCH64)
     typedef ScratchFloat32Scope ScratchF32;
 #else
     class ScratchF32
@@ -247,7 +252,7 @@ class BaseCompiler
 
 #if defined(JS_CODEGEN_X64)
     typedef ScratchRegisterScope ScratchI32;
-#elif defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
+#elif defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_LOONGARCH64)
     class ScratchI32
     {
 # ifdef DEBUG
@@ -268,8 +273,10 @@ class BaseCompiler
         operator Register() const {
 # ifdef JS_CODEGEN_X86
             return ScratchRegX86;
-# else
+# elif defined(JS_CODEGEN_ARM)
             return ScratchRegARM;
+# else
+            return ScratchRegister;
 # endif
         }
     };
@@ -1097,7 +1104,11 @@ class BaseCompiler
     }
 
     void loadConstI32(Register r, Stk& src) {
+#if defined(JS_CODEGEN_LOONGARCH64)
+        masm.move32(Imm32(src.i32val()), r);
+#else
         masm.mov(ImmWord((uint32_t)src.i32val() & 0xFFFFFFFFU), r);
+#endif
     }
 
     void loadMemI32(Register r, Stk& src) {
@@ -1823,21 +1834,24 @@ class BaseCompiler
             Stk& v = stk_[i];
             switch (v.kind()) {
               case Stk::MemI32:
-#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
+#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM) || \
+    defined(JS_CODEGEN_LOONGARCH64)
                 size += sizeof(intptr_t);
 #else
                 MOZ_CRASH("BaseCompiler platform hook: stackConsumed I32");
 #endif
                 break;
               case Stk::MemI64:
-#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
+#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM) || \
+    defined(JS_CODEGEN_LOONGARCH64)
                 size += sizeof(int64_t);
 #else
                 MOZ_CRASH("BaseCompiler platform hook: stackConsumed I64");
 #endif
                 break;
               case Stk::MemF64:
-#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
+#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM) || \
+    defined(JS_CODEGEN_LOONGARCH64)
                 size += sizeof(double);
 #else
                 MOZ_CRASH("BaseCompiler platform hook: stackConsumed F64");
@@ -1846,7 +1860,7 @@ class BaseCompiler
               case Stk::MemF32:
 #if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86)
                 size += sizeof(double);
-#elif defined(JS_CODEGEN_ARM)
+#elif defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_LOONGARCH64)
                 size += sizeof(float);
 #else
                 MOZ_CRASH("BaseCompiler platform hook: stackConsumed F32");
@@ -2242,6 +2256,9 @@ class BaseCompiler
                 masm.store32(scratch, Address(StackPointer, argLoc.offsetFromArgBase() + INT64LOW_OFFSET));
                 loadI64High(scratch, arg);
                 masm.store32(scratch, Address(StackPointer, argLoc.offsetFromArgBase() + INT64HIGH_OFFSET));
+#elif defined(JS_CODEGEN_LOONGARCH64)
+                loadI64(Register64(scratch), arg);
+                masm.store64(Register64(scratch), Address(StackPointer, argLoc.offsetFromArgBase()));
 #else
                 MOZ_CRASH("BaseCompiler platform hook: passArg I64");
 #endif
@@ -2395,6 +2412,18 @@ class BaseCompiler
             cl.target()->bind(labels[i]->offset());
             masm.addCodeLabel(cl);
         }
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        for (uint32_t i = 0; i < labels.length(); i++) {
+            CodeLabel cl;
+            masm.ma_li(ScratchRegister, cl.patchAt());
+            masm.jump(ScratchRegister);
+            masm.as_nop();
+            masm.as_nop();
+            masm.as_nop();
+            masm.as_nop();
+            cl.target()->bind(labels[i]->offset());
+            masm.addCodeLabel(cl);
+        }
 #else
         MOZ_CRASH("BaseCompiler platform hook: jumpTable");
 #endif
@@ -2431,6 +2460,17 @@ class BaseCompiler
         // Jump indirect via table element
         masm.ma_ldr(DTRAddr(scratch, DtrRegImmShift(switchValue.reg, LSL, 2)), pc, Offset,
                     Assembler::Always);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        ScratchI32 scratch(*this);
+        CodeLabel tableCl;
+
+        masm.ma_li(scratch, tableCl.patchAt());
+        tableCl.target()->bind(theTable->offset());
+        masm.addCodeLabel(tableCl);
+
+        masm.lshiftPtr(Imm32(5), switchValue.reg);
+        masm.addPtr(switchValue.reg, scratch);
+        masm.jump(scratch);
 #else
         MOZ_CRASH("BaseCompiler platform hook: tableSwitch");
 #endif
@@ -2586,6 +2626,11 @@ class BaseCompiler
             masm.cqo();
             masm.idivq(rhs.reg.reg);
         }
+# elif defined(JS_CODEGEN_LOONGARCH64)
+        if (isUnsigned)
+            masm.as_div_du(srcDest.reg.reg, srcDest.reg.reg, rhs.reg.reg);
+        else
+            masm.as_div_d(srcDest.reg.reg, srcDest.reg.reg, rhs.reg.reg);
 # else
         MOZ_CRASH("BaseCompiler platform hook: quotientI64");
 # endif
@@ -2613,6 +2658,11 @@ class BaseCompiler
             masm.idivq(rhs.reg.reg);
         }
         masm.movq(rdx, rax);
+# elif defined(JS_CODEGEN_LOONGARCH64)
+        if (isUnsigned)
+            masm.as_mod_du(srcDest.reg.reg, srcDest.reg.reg, rhs.reg.reg);
+        else
+            masm.as_mod_d(srcDest.reg.reg, srcDest.reg.reg, rhs.reg.reg);
 # else
         MOZ_CRASH("BaseCompiler platform hook: remainderI64");
 # endif
@@ -2649,7 +2699,7 @@ class BaseCompiler
     bool popcnt32NeedsTemp() const {
 #if defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_X64)
         return !AssemblerX86Shared::HasPOPCNT();
-#elif defined(JS_CODEGEN_ARM)
+#elif defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_LOONGARCH64)
         return true;
 #else
         MOZ_CRASH("BaseCompiler platform hook: popcnt32NeedsTemp");
@@ -2659,7 +2709,7 @@ class BaseCompiler
     bool popcnt64NeedsTemp() const {
 #if defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_X64)
         return !AssemblerX86Shared::HasPOPCNT();
-#elif defined(JS_CODEGEN_ARM)
+#elif defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_LOONGARCH64)
         return true;
 #else
         MOZ_CRASH("BaseCompiler platform hook: popcnt64NeedsTemp");
@@ -2676,6 +2726,8 @@ class BaseCompiler
         masm.freeStack(sizeof(uint64_t));
 #elif defined(JS_CODEGEN_ARM)
         masm.ma_vxfer(src.reg.low, src.reg.high, dest.reg);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        masm.moveToDouble(src.reg.reg, dest.reg);
 #else
         MOZ_CRASH("BaseCompiler platform hook: reinterpretI64AsF64");
 #endif
@@ -2691,6 +2743,8 @@ class BaseCompiler
         masm.Pop(dest.reg.high);
 #elif defined(JS_CODEGEN_ARM)
         masm.ma_vxfer(src.reg, dest.reg.low, dest.reg.high);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        masm.moveFromDouble(src.reg, dest.reg.reg);
 #else
         MOZ_CRASH("BaseCompiler platform hook: reinterpretF64AsI64");
 #endif
@@ -2702,6 +2756,8 @@ class BaseCompiler
         masm.movl(src.reg.reg, dest.reg);
 #elif defined(JS_NUNBOX32)
         masm.move32(src.reg.low, dest.reg);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        masm.move32(src.reg.reg, dest.reg);
 #else
         MOZ_CRASH("BaseCompiler platform hook: wrapI64ToI32");
 #endif
@@ -2736,6 +2792,8 @@ class BaseCompiler
 #elif defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
         masm.move8SignExtend(r.reg.low, r.reg.low);
         signExtendI32ToI64(RegI32(r.reg.low), r);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        masm.move8SignExtend(r.reg.reg, r.reg.reg);
 #else
         MOZ_CRASH("Basecompiler platform hook: signExtendI64_8");
 #endif
@@ -2747,6 +2805,8 @@ class BaseCompiler
 #elif defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
         masm.move16SignExtend(r.reg.low, r.reg.low);
         signExtendI32ToI64(RegI32(r.reg.low), r);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        masm.move16SignExtend(r.reg.reg, r.reg.reg);
 #else
         MOZ_CRASH("Basecompiler platform hook: signExtendI64_16");
 #endif
@@ -2763,6 +2823,8 @@ class BaseCompiler
 #elif defined(JS_CODEGEN_ARM)
         masm.ma_mov(src.reg, dest.reg.low);
         masm.ma_asr(Imm32(31), src.reg, dest.reg.high);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        masm.move32(src.reg, dest.reg.reg);
 #else
         MOZ_CRASH("BaseCompiler platform hook: signExtendI32ToI64");
 #endif
@@ -2774,6 +2836,8 @@ class BaseCompiler
 #elif defined(JS_NUNBOX32)
         masm.move32(src.reg, dest.reg.low);
         masm.move32(Imm32(0), dest.reg.high);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        masm.as_bstrpick_d(dest.reg.reg, src.reg, 31, 0);
 #else
         MOZ_CRASH("BaseCompiler platform hook: extendU32ToI64");
 #endif
@@ -2826,6 +2890,78 @@ class BaseCompiler
         }
     };
 
+#if defined(JS_CODEGEN_LOONGARCH64)
+    void truncateDoubleToI32LoongArch(FloatRegister input, RegI32 dest, bool isUnsigned) {
+        branchDoubleToTrap(Assembler::DoubleUnordered, input, input,
+                           Trap::InvalidConversionToInteger);
+        masm.loadConstantDouble(isUnsigned ? -1.0 : double(INT32_MIN) - 1.0, ScratchDoubleReg);
+        branchDoubleToTrap(isUnsigned ? Assembler::DoubleLessThanOrEqual
+                                      : Assembler::DoubleLessThanOrEqual,
+                           input, ScratchDoubleReg, Trap::IntegerOverflow);
+        masm.loadConstantDouble(isUnsigned ? double(UINT32_MAX) + 1.0
+                                           : double(INT32_MAX) + 1.0,
+                                ScratchDoubleReg);
+        branchDoubleToTrap(Assembler::DoubleGreaterThanOrEqual, input,
+                           ScratchDoubleReg, Trap::IntegerOverflow);
+
+        if (isUnsigned) {
+            masm.as_truncld(ScratchDoubleReg, input);
+            masm.moveFromFloat32(ScratchDoubleReg, dest.reg);
+        } else {
+            masm.as_truncwd(ScratchFloat32Reg, input);
+            masm.moveFromFloat32(ScratchFloat32Reg, dest.reg);
+        }
+    }
+
+    void truncateDoubleToI64LoongArch(FloatRegister input, RegI64 dest, bool isUnsigned) {
+        branchDoubleToTrap(Assembler::DoubleUnordered, input, input,
+                           Trap::InvalidConversionToInteger);
+        masm.loadConstantDouble(isUnsigned ? -1.0 : double(INT64_MIN), ScratchDoubleReg);
+        branchDoubleToTrap(isUnsigned ? Assembler::DoubleLessThanOrEqual
+                                      : Assembler::DoubleLessThan,
+                           input, ScratchDoubleReg, Trap::IntegerOverflow);
+
+        if (isUnsigned) {
+            Label isLarge, done;
+
+            masm.loadConstantDouble(double(UINT64_MAX), ScratchDoubleReg);
+            branchDoubleToTrap(Assembler::DoubleGreaterThanOrEqual, input,
+                               ScratchDoubleReg, Trap::IntegerOverflow);
+
+            masm.loadConstantDouble(double(INT64_MAX), ScratchDoubleReg);
+            masm.ma_bc1d(ScratchDoubleReg, input, &isLarge,
+                         Assembler::DoubleLessThanOrEqual, ShortJump);
+
+            masm.as_truncld(ScratchDoubleReg, input);
+            masm.moveFromDouble(ScratchDoubleReg, dest.reg.reg);
+            masm.ma_b(&done, ShortJump);
+
+            masm.bind(&isLarge);
+            masm.as_subd(ScratchDoubleReg, input, ScratchDoubleReg);
+            masm.as_truncld(ScratchDoubleReg, ScratchDoubleReg);
+            masm.moveFromDouble(ScratchDoubleReg, dest.reg.reg);
+            masm.ma_li(ScratchRegister, Imm32(1));
+            masm.ma_dins(dest.reg.reg, ScratchRegister, Imm32(63), Imm32(1));
+
+            masm.bind(&done);
+            return;
+        }
+
+        masm.loadConstantDouble(double(INT64_MAX), ScratchDoubleReg);
+        branchDoubleToTrap(Assembler::DoubleGreaterThanOrEqual, input,
+                           ScratchDoubleReg, Trap::IntegerOverflow);
+        masm.as_truncld(ScratchDoubleReg, input);
+        masm.moveFromDouble(ScratchDoubleReg, dest.reg.reg);
+    }
+
+    void branchDoubleToTrap(Assembler::DoubleCondition cond, FloatRegister lhs,
+                            FloatRegister rhs, Trap trapKind) {
+        Label trapLabel;
+        masm.branchDouble(cond, lhs, rhs, &trapLabel);
+        masm.bindLater(&trapLabel, trap(trapKind));
+    }
+#endif
+
     [[nodiscard]] bool truncateF32ToI32(RegF32 src, RegI32 dest, bool isUnsigned) {
         TrapOffset off = trapOffset();
         OutOfLineCode* ool;
@@ -2846,6 +2982,12 @@ class BaseCompiler
                 masm.wasmTruncateFloat32ToUInt32(src.reg, dest.reg, ool->entry());
             else
                 masm.wasmTruncateFloat32ToInt32(src.reg, dest.reg, ool->entry());
+#elif defined(JS_CODEGEN_LOONGARCH64)
+            RegF64 doubleInput = needF64();
+            masm.convertFloat32ToDouble(src.reg, doubleInput.reg);
+            truncateDoubleToI32LoongArch(doubleInput.reg, dest, isUnsigned);
+            freeF64(doubleInput);
+            return true;
 #else
             MOZ_CRASH("BaseCompiler platform hook: truncateF32ToI32 wasm");
 #endif
@@ -2874,6 +3016,9 @@ class BaseCompiler
                 masm.wasmTruncateDoubleToUInt32(src.reg, dest.reg, ool->entry());
             else
                 masm.wasmTruncateDoubleToInt32(src.reg, dest.reg, ool->entry());
+#elif defined(JS_CODEGEN_LOONGARCH64)
+            truncateDoubleToI32LoongArch(src.reg, dest, isUnsigned);
+            return true;
 #else
             MOZ_CRASH("BaseCompiler platform hook: truncateF64ToI32 wasm");
 #endif
@@ -2938,6 +3083,11 @@ class BaseCompiler
         else
             masm.wasmTruncateFloat32ToInt64(src.reg, dest.reg, ool->entry(),
                                             ool->rejoin(), temp.reg);
+# elif defined(JS_CODEGEN_LOONGARCH64)
+        RegF64 doubleInput = needF64();
+        masm.convertFloat32ToDouble(src.reg, doubleInput.reg);
+        truncateDoubleToI64LoongArch(doubleInput.reg, dest, isUnsigned);
+        freeF64(doubleInput);
 # else
         MOZ_CRASH("BaseCompiler platform hook: truncateF32ToI64");
 # endif
@@ -2958,6 +3108,8 @@ class BaseCompiler
         else
             masm.wasmTruncateDoubleToInt64(src.reg, dest.reg, ool->entry(),
                                            ool->rejoin(), temp.reg);
+# elif defined(JS_CODEGEN_LOONGARCH64)
+        truncateDoubleToI64LoongArch(src.reg, dest, isUnsigned);
 # else
         MOZ_CRASH("BaseCompiler platform hook: truncateF64ToI64");
 # endif
@@ -2980,6 +3132,11 @@ class BaseCompiler
             masm.convertUInt64ToFloat32(src.reg, dest.reg, temp.reg);
         else
             masm.convertInt64ToFloat32(src.reg, dest.reg);
+# elif defined(JS_CODEGEN_LOONGARCH64)
+        if (isUnsigned)
+            masm.convertUInt64ToFloat32(src.reg.reg, dest.reg);
+        else
+            masm.convertInt64ToFloat32(src.reg.reg, dest.reg);
 # else
         MOZ_CRASH("BaseCompiler platform hook: convertI64ToF32");
 # endif
@@ -2991,6 +3148,11 @@ class BaseCompiler
             masm.convertUInt64ToDouble(src.reg, dest.reg, temp.reg);
         else
             masm.convertInt64ToDouble(src.reg, dest.reg);
+# elif defined(JS_CODEGEN_LOONGARCH64)
+        if (isUnsigned)
+            masm.convertUInt64ToDouble(src.reg, dest.reg, temp.reg);
+        else
+            masm.convertInt64ToDouble(src.reg.reg, dest.reg);
 # else
         MOZ_CRASH("BaseCompiler platform hook: convertI64ToF64");
 # endif
@@ -3001,7 +3163,7 @@ class BaseCompiler
 #if defined(JS_CODEGEN_X64)
         masm.cmpq(rhs.reg.reg, lhs.reg.reg);
         masm.emitSet(cond, dest.reg);
-#elif defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
+#elif defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_LOONGARCH64)
         // TODO / OPTIMIZE (Bug 1316822): This is pretty branchy, we should be
         // able to do better.
         Label done, condTrue;
@@ -3042,6 +3204,9 @@ class BaseCompiler
         ScratchRegisterScope scratch(*this); // Really must be the ARM scratchreg
         unsigned addr = globalDataOffset - WasmGlobalRegBias;
         masm.ma_dtr(js::jit::IsLoad, GlobalReg, Imm32(addr), r.reg, scratch);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        unsigned addr = globalDataOffset - WasmGlobalRegBias;
+        masm.load32(Address(GlobalReg, addr), r.reg);
 #else
         MOZ_CRASH("BaseCompiler platform hook: loadGlobalVarI32");
 #endif
@@ -3063,6 +3228,9 @@ class BaseCompiler
         masm.ma_dtr(js::jit::IsLoad, GlobalReg, Imm32(addr + INT64LOW_OFFSET), r.reg.low, scratch);
         masm.ma_dtr(js::jit::IsLoad, GlobalReg, Imm32(addr + INT64HIGH_OFFSET), r.reg.high,
                     scratch);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        unsigned addr = globalDataOffset - WasmGlobalRegBias;
+        masm.load64(Address(GlobalReg, addr), r.reg);
 #else
         MOZ_CRASH("BaseCompiler platform hook: loadGlobalVarI64");
 #endif
@@ -3080,6 +3248,9 @@ class BaseCompiler
         unsigned addr = globalDataOffset - WasmGlobalRegBias;
         VFPRegister vd(r.reg);
         masm.ma_vldr(VFPAddr(GlobalReg, VFPOffImm(addr)), vd.singleOverlay());
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        unsigned addr = globalDataOffset - WasmGlobalRegBias;
+        masm.loadFloat32(Address(GlobalReg, addr), r.reg);
 #else
         MOZ_CRASH("BaseCompiler platform hook: loadGlobalVarF32");
 #endif
@@ -3096,6 +3267,9 @@ class BaseCompiler
 #elif defined(JS_CODEGEN_ARM)
         unsigned addr = globalDataOffset - WasmGlobalRegBias;
         masm.ma_vldr(VFPAddr(GlobalReg, VFPOffImm(addr)), r.reg);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        unsigned addr = globalDataOffset - WasmGlobalRegBias;
+        masm.loadDouble(Address(GlobalReg, addr), r.reg);
 #else
         MOZ_CRASH("BaseCompiler platform hook: loadGlobalVarF64");
 #endif
@@ -3115,6 +3289,9 @@ class BaseCompiler
         ScratchRegisterScope scratch(*this); // Really must be the ARM scratchreg
         unsigned addr = globalDataOffset - WasmGlobalRegBias;
         masm.ma_dtr(js::jit::IsStore, GlobalReg, Imm32(addr), r.reg, scratch);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        unsigned addr = globalDataOffset - WasmGlobalRegBias;
+        masm.store32(r.reg, Address(GlobalReg, addr));
 #else
         MOZ_CRASH("BaseCompiler platform hook: storeGlobalVarI32");
 #endif
@@ -3136,6 +3313,9 @@ class BaseCompiler
         masm.ma_dtr(js::jit::IsStore, GlobalReg, Imm32(addr + INT64LOW_OFFSET), r.reg.low, scratch);
         masm.ma_dtr(js::jit::IsStore, GlobalReg, Imm32(addr + INT64HIGH_OFFSET), r.reg.high,
                     scratch);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        unsigned addr = globalDataOffset - WasmGlobalRegBias;
+        masm.store64(r.reg, Address(GlobalReg, addr));
 #else
         MOZ_CRASH("BaseCompiler platform hook: storeGlobalVarI64");
 #endif
@@ -3153,6 +3333,9 @@ class BaseCompiler
         unsigned addr = globalDataOffset - WasmGlobalRegBias;
         VFPRegister vd(r.reg);
         masm.ma_vstr(vd.singleOverlay(), VFPAddr(GlobalReg, VFPOffImm(addr)));
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        unsigned addr = globalDataOffset - WasmGlobalRegBias;
+        masm.storeFloat32(r.reg, Address(GlobalReg, addr));
 #else
         MOZ_CRASH("BaseCompiler platform hook: storeGlobalVarF32");
 #endif
@@ -3169,6 +3352,9 @@ class BaseCompiler
 #elif defined(JS_CODEGEN_ARM)
         unsigned addr = globalDataOffset - WasmGlobalRegBias;
         masm.ma_vstr(r.reg, VFPAddr(GlobalReg, VFPOffImm(addr)));
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        unsigned addr = globalDataOffset - WasmGlobalRegBias;
+        masm.storeDouble(r.reg, Address(GlobalReg, addr));
 #else
         MOZ_CRASH("BaseCompiler platform hook: storeGlobalVarF64");
 #endif
@@ -3191,7 +3377,7 @@ class BaseCompiler
         {}
 
         void generate(MacroAssembler& masm) {
-# if defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
+# if defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_LOONGARCH64)
             switch (viewType) {
               case Scalar::MaxTypedArrayViewType:
                 MOZ_CRASH("unexpected array type");
@@ -3245,6 +3431,8 @@ class BaseCompiler
             }
         }
         return 0;
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        return IsUnaligned(access) && access.byteSize() > 1 ? 1 : 0;
 #else
         return 0;
 #endif
@@ -3327,6 +3515,64 @@ class BaseCompiler
           default:
             MOZ_CRASH("Compiler bug: unexpected array type");
         }
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        switch (access.type()) {
+          case Scalar::Uint8:
+          case Scalar::Uint16:
+          case Scalar::Uint32:
+          case Scalar::Int8:
+          case Scalar::Int16:
+          case Scalar::Int32: {
+            BaseIndex srcAddr(HeapReg, ptr.reg, TimesOne, access.offset());
+            LoadStoreSize size = static_cast<LoadStoreSize>(access.byteSize() * 8);
+            LoadStoreExtension ext = (access.type() == Scalar::Uint8 ||
+                                      access.type() == Scalar::Uint16 ||
+                                      access.type() == Scalar::Uint32)
+                                         ? ZeroExtend
+                                         : SignExtend;
+            Register out = dest.tag == AnyReg::I64 ? dest.i64().reg.reg : dest.i32().reg;
+            if (IsUnaligned(access) && access.byteSize() > 1) {
+                masm.ma_load_unaligned(access, out, srcAddr, tmp1.reg, size, ext);
+            } else {
+                masm.ma_load(out, srcAddr, size, ext);
+                masm.append(access, masm.size() - 4, masm.framePushed());
+            }
+            break;
+          }
+          case Scalar::Int64: {
+            BaseIndex srcAddr(HeapReg, ptr.reg, TimesOne, access.offset());
+            if (IsUnaligned(access))
+                masm.ma_load_unaligned(access, dest.i64().reg.reg, srcAddr, tmp1.reg,
+                                       SizeDouble, SignExtend);
+            else {
+                masm.load64(srcAddr, dest.i64().reg);
+                masm.append(access, masm.size() - 4, masm.framePushed());
+            }
+            break;
+          }
+          case Scalar::Float32: {
+            BaseIndex srcAddr(HeapReg, ptr.reg, TimesOne, access.offset());
+            if (IsUnaligned(access))
+                masm.loadUnalignedFloat32(access, srcAddr, tmp1.reg, dest.f32().reg);
+            else {
+                masm.loadFloat32(srcAddr, dest.f32().reg);
+                masm.append(access, masm.size() - 4, masm.framePushed());
+            }
+            break;
+          }
+          case Scalar::Float64: {
+            BaseIndex srcAddr(HeapReg, ptr.reg, TimesOne, access.offset());
+            if (IsUnaligned(access))
+                masm.loadUnalignedDouble(access, srcAddr, tmp1.reg, dest.f64().reg);
+            else {
+                masm.loadDouble(srcAddr, dest.f64().reg);
+                masm.append(access, masm.size() - 4, masm.framePushed());
+            }
+            break;
+          }
+          default:
+            MOZ_CRASH("Compiler bug: unexpected array type");
+        }
 #else
         MOZ_CRASH("BaseCompiler platform hook: load");
 #endif
@@ -3406,6 +3652,59 @@ class BaseCompiler
           default:
             MOZ_CRASH("Compiler bug: unexpected array type");
         }
+#elif defined(JS_CODEGEN_LOONGARCH64)
+        switch (access.type()) {
+          case Scalar::Uint8:
+          case Scalar::Uint16:
+          case Scalar::Uint32:
+          case Scalar::Int8:
+          case Scalar::Int16:
+          case Scalar::Int32: {
+            Register rt = src.tag == AnyReg::I64 ? src.i64().reg.reg : src.i32().reg;
+            BaseIndex dstAddr(HeapReg, ptr.reg, TimesOne, access.offset());
+            LoadStoreSize size = static_cast<LoadStoreSize>(access.byteSize() * 8);
+            if (IsUnaligned(access) && access.byteSize() > 1)
+                masm.ma_store_unaligned(access, rt, dstAddr, tmp1.reg, size, SignExtend);
+            else {
+                masm.ma_store(rt, dstAddr, size, SignExtend);
+                masm.append(access, masm.size() - 4, masm.framePushed());
+            }
+            break;
+          }
+          case Scalar::Int64: {
+            BaseIndex dstAddr(HeapReg, ptr.reg, TimesOne, access.offset());
+            if (IsUnaligned(access))
+                masm.ma_store_unaligned(access, src.i64().reg.reg, dstAddr, tmp1.reg,
+                                        SizeDouble, SignExtend);
+            else {
+                masm.store64(src.i64().reg, dstAddr);
+                masm.append(access, masm.size() - 4, masm.framePushed());
+            }
+            break;
+          }
+          case Scalar::Float32: {
+            BaseIndex dstAddr(HeapReg, ptr.reg, TimesOne, access.offset());
+            if (IsUnaligned(access))
+                masm.storeUnalignedFloat32(access, src.f32().reg, tmp1.reg, dstAddr);
+            else {
+                masm.storeFloat32(src.f32().reg, dstAddr);
+                masm.append(access, masm.size() - 4, masm.framePushed());
+            }
+            break;
+          }
+          case Scalar::Float64: {
+            BaseIndex dstAddr(HeapReg, ptr.reg, TimesOne, access.offset());
+            if (IsUnaligned(access))
+                masm.storeUnalignedDouble(access, src.f64().reg, tmp1.reg, dstAddr);
+            else {
+                masm.storeDouble(src.f64().reg, dstAddr);
+                masm.append(access, masm.size() - 4, masm.framePushed());
+            }
+            break;
+          }
+          default:
+            MOZ_CRASH("Compiler bug: unexpected array type");
+        }
 #else
         MOZ_CRASH("BaseCompiler platform hook: store");
 #endif
@@ -3415,6 +3714,123 @@ class BaseCompiler
 
         return true;
     }
+
+#if defined(JS_CODEGEN_LOONGARCH64)
+    void coerceAtomicStoreResult(Scalar::Type viewType, RegI32 value) {
+        switch (viewType) {
+          case Scalar::Int8:
+            masm.as_ext_w_b(value.reg, value.reg);
+            break;
+          case Scalar::Uint8:
+            masm.as_bstrpick_d(value.reg, value.reg, 7, 0);
+            break;
+          case Scalar::Int16:
+            masm.as_ext_w_h(value.reg, value.reg);
+            break;
+          case Scalar::Uint16:
+            masm.as_bstrpick_d(value.reg, value.reg, 15, 0);
+            break;
+          case Scalar::Int32:
+          case Scalar::Uint32:
+            break;
+          default:
+            MOZ_CRASH("Unexpected atomic array type");
+        }
+    }
+
+    void atomicBinopToTypedIntArray(AtomicOp op, Scalar::Type viewType, Register value,
+                                    const BaseIndex& addr, Register valueTemp,
+                                    Register offsetTemp, Register maskTemp,
+                                    Register output) {
+        switch (viewType) {
+          case Scalar::Int8:
+            masm.atomicFetchOp(1, true, op, value, addr, valueTemp, offsetTemp,
+                               maskTemp, output);
+            break;
+          case Scalar::Uint8:
+            masm.atomicFetchOp(1, false, op, value, addr, valueTemp, offsetTemp,
+                               maskTemp, output);
+            break;
+          case Scalar::Int16:
+            masm.atomicFetchOp(2, true, op, value, addr, valueTemp, offsetTemp,
+                               maskTemp, output);
+            break;
+          case Scalar::Uint16:
+            masm.atomicFetchOp(2, false, op, value, addr, valueTemp, offsetTemp,
+                               maskTemp, output);
+            break;
+          case Scalar::Int32:
+          case Scalar::Uint32:
+            masm.atomicFetchOp(4, false, op, value, addr, valueTemp, offsetTemp,
+                               maskTemp, output);
+            break;
+          default:
+            MOZ_CRASH("Unexpected atomic array type");
+        }
+    }
+
+    void atomicCompareExchangeToTypedIntArray(Scalar::Type viewType, const BaseIndex& addr,
+                                              Register oldval, Register newval,
+                                              Register valueTemp, Register offsetTemp,
+                                              Register maskTemp, Register output) {
+        switch (viewType) {
+          case Scalar::Int8:
+            masm.compareExchange(1, true, addr, oldval, newval, valueTemp,
+                                 offsetTemp, maskTemp, output);
+            break;
+          case Scalar::Uint8:
+            masm.compareExchange(1, false, addr, oldval, newval, valueTemp,
+                                 offsetTemp, maskTemp, output);
+            break;
+          case Scalar::Int16:
+            masm.compareExchange(2, true, addr, oldval, newval, valueTemp,
+                                 offsetTemp, maskTemp, output);
+            break;
+          case Scalar::Uint16:
+            masm.compareExchange(2, false, addr, oldval, newval, valueTemp,
+                                 offsetTemp, maskTemp, output);
+            break;
+          case Scalar::Int32:
+          case Scalar::Uint32:
+            masm.compareExchange(4, false, addr, oldval, newval, valueTemp,
+                                 offsetTemp, maskTemp, output);
+            break;
+          default:
+            MOZ_CRASH("Unexpected atomic array type");
+        }
+    }
+
+    void atomicExchangeToTypedIntArray(Scalar::Type viewType, const BaseIndex& addr,
+                                       Register value, Register valueTemp,
+                                       Register offsetTemp, Register maskTemp,
+                                       Register output) {
+        switch (viewType) {
+          case Scalar::Int8:
+            masm.atomicExchange(1, true, addr, value, valueTemp, offsetTemp,
+                                maskTemp, output);
+            break;
+          case Scalar::Uint8:
+            masm.atomicExchange(1, false, addr, value, valueTemp, offsetTemp,
+                                maskTemp, output);
+            break;
+          case Scalar::Int16:
+            masm.atomicExchange(2, true, addr, value, valueTemp, offsetTemp,
+                                maskTemp, output);
+            break;
+          case Scalar::Uint16:
+            masm.atomicExchange(2, false, addr, value, valueTemp, offsetTemp,
+                                maskTemp, output);
+            break;
+          case Scalar::Int32:
+          case Scalar::Uint32:
+            masm.atomicExchange(4, false, addr, value, valueTemp, offsetTemp,
+                                maskTemp, output);
+            break;
+          default:
+            MOZ_CRASH("Unexpected atomic array type");
+        }
+    }
+#endif
 
 #ifdef JS_CODEGEN_ARM
     void
@@ -3762,6 +4178,13 @@ class BaseCompiler
 #endif
     void emitReinterpretI32AsF32();
     void emitReinterpretI64AsF64();
+#if defined(JS_CODEGEN_LOONGARCH64)
+    [[nodiscard]] bool emitAtomicLoad();
+    [[nodiscard]] bool emitAtomicStore();
+    [[nodiscard]] bool emitAtomicBinOp();
+    [[nodiscard]] bool emitAtomicCompareExchange();
+    [[nodiscard]] bool emitAtomicExchange();
+#endif
     [[nodiscard]] bool emitGrowMemory();
     [[nodiscard]] bool emitCurrentMemory();
 };
@@ -6541,6 +6964,209 @@ BaseCompiler::emitTeeStoreWithCoercion(ValType resultType, Scalar::Type viewType
     return true;
 }
 
+#if defined(JS_CODEGEN_LOONGARCH64)
+bool
+BaseCompiler::emitAtomicLoad()
+{
+    LinearMemoryAddress<Nothing> addr;
+    Scalar::Type viewType;
+    if (!iter_.readAtomicLoad(&addr, &viewType))
+        return false;
+
+    if (deadCode_)
+        return true;
+
+    MemoryAccessDesc access(viewType, addr.align, addr.offset, Some(trapOffset()), 0,
+                            MembarBeforeLoad, MembarAfterLoad);
+
+    RegI32 rp = popI32();
+    checkOffset(&access, rp);
+#ifndef WASM_HUGE_MEMORY
+    masm.wasmBoundsCheck(Assembler::AboveOrEqual, rp.reg, trap(Trap::OutOfBounds));
+#endif
+
+    MOZ_ASSERT(!IsUnaligned(access));
+
+    BaseIndex srcAddr(HeapReg, rp.reg, TimesOne, access.offset());
+    LoadStoreSize size = static_cast<LoadStoreSize>(access.byteSize() * 8);
+    LoadStoreExtension ext = (viewType == Scalar::Uint8 ||
+                              viewType == Scalar::Uint16 ||
+                              viewType == Scalar::Uint32)
+                                 ? ZeroExtend
+                                 : SignExtend;
+
+    masm.memoryBarrier(access.barrierBefore());
+    masm.ma_load(rp.reg, srcAddr, size, ext);
+    masm.append(access, masm.size() - 4, masm.framePushed());
+    masm.memoryBarrier(access.barrierAfter());
+
+    pushI32(rp);
+    return true;
+}
+
+bool
+BaseCompiler::emitAtomicStore()
+{
+    LinearMemoryAddress<Nothing> addr;
+    Scalar::Type viewType;
+    Nothing unused_value;
+    if (!iter_.readAtomicStore(&addr, &viewType, &unused_value))
+        return false;
+
+    if (deadCode_)
+        return true;
+
+    MemoryAccessDesc access(viewType, addr.align, addr.offset, Some(trapOffset()), 0,
+                            MembarBeforeStore, MembarAfterStore);
+
+    RegI32 rv = popI32();
+    RegI32 rp = popI32();
+    checkOffset(&access, rp);
+#ifndef WASM_HUGE_MEMORY
+    masm.wasmBoundsCheck(Assembler::AboveOrEqual, rp.reg, trap(Trap::OutOfBounds));
+#endif
+
+    MOZ_ASSERT(!IsUnaligned(access));
+
+    BaseIndex dstAddr(HeapReg, rp.reg, TimesOne, access.offset());
+    LoadStoreSize size = static_cast<LoadStoreSize>(access.byteSize() * 8);
+
+    masm.memoryBarrier(access.barrierBefore());
+    masm.ma_store(rv.reg, dstAddr, size, SignExtend);
+    masm.append(access, masm.size() - 4, masm.framePushed());
+    masm.memoryBarrier(access.barrierAfter());
+
+    freeI32(rp);
+    coerceAtomicStoreResult(viewType, rv);
+    pushI32(rv);
+    return true;
+}
+
+bool
+BaseCompiler::emitAtomicBinOp()
+{
+    LinearMemoryAddress<Nothing> addr;
+    Scalar::Type viewType;
+    AtomicOp op;
+    Nothing unused_value;
+    if (!iter_.readAtomicBinOp(&addr, &viewType, &op, &unused_value))
+        return false;
+
+    if (deadCode_)
+        return true;
+
+    MemoryAccessDesc access(viewType, addr.align, addr.offset, Some(trapOffset()));
+
+    RegI32 rv = popI32();
+    RegI32 rp = popI32();
+    RegI32 rd = needI32();
+    RegI32 valueTemp = needI32();
+    RegI32 offsetTemp = needI32();
+    RegI32 maskTemp = needI32();
+
+    checkOffset(&access, rp);
+#ifndef WASM_HUGE_MEMORY
+    masm.wasmBoundsCheck(Assembler::AboveOrEqual, rp.reg, trap(Trap::OutOfBounds));
+#endif
+
+    MOZ_ASSERT(!IsUnaligned(access));
+    atomicBinopToTypedIntArray(op, viewType,
+                               rv.reg, BaseIndex(HeapReg, rp.reg, TimesOne, access.offset()),
+                               valueTemp.reg, offsetTemp.reg, maskTemp.reg, rd.reg);
+
+    freeI32(rp);
+    freeI32(rv);
+    freeI32(valueTemp);
+    freeI32(offsetTemp);
+    freeI32(maskTemp);
+    pushI32(rd);
+    return true;
+}
+
+bool
+BaseCompiler::emitAtomicCompareExchange()
+{
+    LinearMemoryAddress<Nothing> addr;
+    Scalar::Type viewType;
+    Nothing unused_oldValue, unused_newValue;
+    if (!iter_.readAtomicCompareExchange(&addr, &viewType, &unused_oldValue, &unused_newValue))
+        return false;
+
+    if (deadCode_)
+        return true;
+
+    MemoryAccessDesc access(viewType, addr.align, addr.offset, Some(trapOffset()));
+
+    RegI32 newval = popI32();
+    RegI32 oldval = popI32();
+    RegI32 rp = popI32();
+    RegI32 rd = needI32();
+    RegI32 valueTemp = needI32();
+    RegI32 offsetTemp = needI32();
+    RegI32 maskTemp = needI32();
+
+    checkOffset(&access, rp);
+#ifndef WASM_HUGE_MEMORY
+    masm.wasmBoundsCheck(Assembler::AboveOrEqual, rp.reg, trap(Trap::OutOfBounds));
+#endif
+
+    MOZ_ASSERT(!IsUnaligned(access));
+    atomicCompareExchangeToTypedIntArray(viewType,
+                                         BaseIndex(HeapReg, rp.reg, TimesOne, access.offset()),
+                                         oldval.reg, newval.reg, valueTemp.reg,
+                                         offsetTemp.reg, maskTemp.reg, rd.reg);
+
+    freeI32(newval);
+    freeI32(oldval);
+    freeI32(rp);
+    freeI32(valueTemp);
+    freeI32(offsetTemp);
+    freeI32(maskTemp);
+    pushI32(rd);
+    return true;
+}
+
+bool
+BaseCompiler::emitAtomicExchange()
+{
+    LinearMemoryAddress<Nothing> addr;
+    Scalar::Type viewType;
+    Nothing unused_value;
+    if (!iter_.readAtomicExchange(&addr, &viewType, &unused_value))
+        return false;
+
+    if (deadCode_)
+        return true;
+
+    MemoryAccessDesc access(viewType, addr.align, addr.offset, Some(trapOffset()));
+
+    RegI32 rv = popI32();
+    RegI32 rp = popI32();
+    RegI32 rd = needI32();
+    RegI32 valueTemp = needI32();
+    RegI32 offsetTemp = needI32();
+    RegI32 maskTemp = needI32();
+
+    checkOffset(&access, rp);
+#ifndef WASM_HUGE_MEMORY
+    masm.wasmBoundsCheck(Assembler::AboveOrEqual, rp.reg, trap(Trap::OutOfBounds));
+#endif
+
+    MOZ_ASSERT(!IsUnaligned(access));
+    atomicExchangeToTypedIntArray(viewType,
+                                  BaseIndex(HeapReg, rp.reg, TimesOne, access.offset()),
+                                  rv.reg, valueTemp.reg, offsetTemp.reg, maskTemp.reg, rd.reg);
+
+    freeI32(rv);
+    freeI32(rp);
+    freeI32(valueTemp);
+    freeI32(offsetTemp);
+    freeI32(maskTemp);
+    pushI32(rd);
+    return true;
+}
+#endif
+
 bool
 BaseCompiler::emitGrowMemory()
 {
@@ -7171,12 +7797,25 @@ BaseCompiler::emitBody()
             CHECK_NEXT(emitComparison(emitCompareF64, ValType::F64, JSOP_GE, MCompare::Compare_Double));
 
           // Atomics
+#if defined(JS_CODEGEN_LOONGARCH64)
+          case uint16_t(Op::I32AtomicsLoad):
+            CHECK_NEXT(emitAtomicLoad());
+          case uint16_t(Op::I32AtomicsStore):
+            CHECK_NEXT(emitAtomicStore());
+          case uint16_t(Op::I32AtomicsBinOp):
+            CHECK_NEXT(emitAtomicBinOp());
+          case uint16_t(Op::I32AtomicsCompareExchange):
+            CHECK_NEXT(emitAtomicCompareExchange());
+          case uint16_t(Op::I32AtomicsExchange):
+            CHECK_NEXT(emitAtomicExchange());
+#else
           case uint16_t(Op::I32AtomicsLoad):
           case uint16_t(Op::I32AtomicsStore):
           case uint16_t(Op::I32AtomicsBinOp):
           case uint16_t(Op::I32AtomicsCompareExchange):
           case uint16_t(Op::I32AtomicsExchange):
             MOZ_CRASH("Unimplemented Atomics");
+#endif
 
           // Sign extensions
           case uint16_t(Op::I32Extend8S):
@@ -7309,7 +7948,8 @@ BaseCompiler::BaseCompiler(const ModuleGeneratorData& mg,
     availGPR_.take(GlobalReg);
 #elif defined(JS_CODEGEN_X86)
     availGPR_.take(ScratchRegX86);
-#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || \
+      defined(JS_CODEGEN_LOONGARCH64)
     availGPR_.take(HeapReg);
     availGPR_.take(GlobalReg);
 #endif
@@ -7449,7 +8089,8 @@ js::wasm::BaselineCanCompile(const FunctionGenerator* fg)
         return false;
 #endif
 
-#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM)
+#if defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_ARM) || \
+    defined(JS_CODEGEN_LOONGARCH64)
     if (fg->usesAtomics())
         return false;
 

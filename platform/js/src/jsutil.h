@@ -321,7 +321,7 @@ PodSet(T* aDst, const T& aSrc, size_t aNElem)
 # define JS_SWEPT_CODE_PATTERN 0xED // IN instruction, crashes in user mode.
 #elif defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_ARM64)
 # define JS_SWEPT_CODE_PATTERN 0xA3 // undefined instruction
-#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || defined(JS_CODEGEN_LOONGARCH64)
 # define JS_SWEPT_CODE_PATTERN 0x01 // undefined instruction
 #else
 # error "JS_SWEPT_CODE_PATTERN not defined for this platform"

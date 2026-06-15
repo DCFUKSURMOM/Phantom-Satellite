@@ -65,6 +65,7 @@ extern  "C" void sync_instruction_memory(caddr_t v, u_int len);
 
 #if defined(__linux__) &&                                             \
      (defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)) &&    \
+     !defined(JS_CODEGEN_LOONGARCH64) &&                                  \
      (!defined(JS_SIMULATOR_MIPS32) && !defined(JS_SIMULATOR_MIPS64))
 #include <sys/cachectl.h>
 #endif
@@ -220,6 +221,12 @@ class ExecutableAllocator
     static void cacheFlush(void* code, size_t size)
     {
         js::jit::Simulator::FlushICache(code, size);
+    }
+#elif defined(JS_CODEGEN_LOONGARCH64)
+    static void cacheFlush(void* code, size_t size)
+    {
+        intptr_t end = reinterpret_cast<intptr_t>(code) + size;
+        __builtin___clear_cache(reinterpret_cast<char*>(code), reinterpret_cast<char*>(end));
     }
 #elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
     static void cacheFlush(void* code, size_t size)

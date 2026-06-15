@@ -5,8 +5,6 @@
 #ifndef CAIRO_DEPRECATED_H
 #define CAIRO_DEPRECATED_H
 
-#define CAIRO_FONT_TYPE_ATSUI CAIRO_FONT_TYPE_QUARTZ
-
 /* Obsolete functions. These definitions exist to coerce the compiler
  * into providing a little bit of guidance with its error
  * messages. The idea is to help users port their old code without
@@ -59,8 +57,6 @@
 #define cairo_ps_surface_set_dpi	cairo_ps_surface_set_dpi_REPLACED_BY_cairo_surface_set_fallback_resolution
 #define cairo_pdf_surface_set_dpi	cairo_pdf_surface_set_dpi_REPLACED_BY_cairo_surface_set_fallback_resolution
 #define cairo_svg_surface_set_dpi	cairo_svg_surface_set_dpi_REPLACED_BY_cairo_surface_set_fallback_resolution
-#define cairo_atsui_font_face_create_for_atsu_font_id  cairo_atsui_font_face_create_for_atsu_font_id_REPLACED_BY_cairo_quartz_font_face_create_for_atsu_font_id
-
 #define cairo_current_path	     cairo_current_path_DEPRECATED_BY_cairo_copy_path
 #define cairo_current_path_flat	     cairo_current_path_flat_DEPRECATED_BY_cairo_copy_path_flat
 #define cairo_get_path		     cairo_get_path_DEPRECATED_BY_cairo_copy_path

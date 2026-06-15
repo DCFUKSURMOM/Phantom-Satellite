@@ -15,6 +15,8 @@
 # include "jit/arm/BaselineCompiler-arm.h"
 #elif defined(JS_CODEGEN_ARM64)
 # include "jit/arm64/BaselineCompiler-arm64.h"
+#elif defined(JS_CODEGEN_LOONGARCH64)
+# include "jit/loongarch64/BaselineCompiler-loongarch64.h"
 #elif defined(JS_CODEGEN_MIPS32)
 # include "jit/mips32/BaselineCompiler-mips32.h"
 #elif defined(JS_CODEGEN_MIPS64)

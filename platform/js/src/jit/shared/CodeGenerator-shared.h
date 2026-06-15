@@ -27,6 +27,19 @@ class OutOfLineCode;
 class CodeGenerator;
 class MacroAssembler;
 class IonCache;
+class LSimdSplatX4;
+class LSimd128Int;
+class LSimd128Float;
+class LSimdReinterpretCast;
+class LSimdExtractElementI;
+class LSimdExtractElementF;
+class LSimdBinaryCompIx4;
+class LSimdBinaryCompFx4;
+class LSimdBinaryArithIx4;
+class LSimdBinaryArithFx4;
+class LSimdBinaryBitwise;
+class LSimdGeneralShuffleI;
+class LSimdGeneralShuffleF;
 
 template <class ArgSeq, class StoreOutputTo>
 class OutOfLineCallVM;

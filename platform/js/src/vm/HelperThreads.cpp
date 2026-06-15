@@ -72,7 +72,11 @@ static size_t
 ThreadCountForCPUCount(size_t cpuCount)
 {
     // Create additional threads on top of the number of cores available, to
-    // provide some excess capacity in case threads pause each other.
+    // provide some excess capacity in case threads pause each other and for mixed
+    // helper-thread workloads.
+    // Note that cpuCount here is the number of logical processors and threadCount
+    // calculated here just adds some extra capacity on top. Use threadCount
+    // with care as it may end up deadlocking.
     static const uint32_t EXCESS_THREADS = 4;
     return cpuCount + EXCESS_THREADS;
 }
@@ -474,7 +478,8 @@ js::CancelOffThreadParses(JSRuntime* rt)
     }
 
     // Clean up any parse tasks which haven't been finished by the main thread.
-    GlobalHelperThreadState::ParseTaskVector& finished = HelperThreadState().parseFinishedList(lock);
+    GlobalHelperThreadState::ParseTaskVector& finished =
+        HelperThreadState().parseFinishedList(lock);
     while (true) {
         bool found = false;
         for (size_t i = 0; i < finished.length(); i++) {
@@ -482,7 +487,8 @@ js::CancelOffThreadParses(JSRuntime* rt)
             if (task->runtimeMatches(rt)) {
                 found = true;
                 AutoUnlockHelperThreadState unlock(lock);
-                HelperThreadState().cancelParseTask(rt->contextFromMainThread(), task->kind, task);
+                HelperThreadState().cancelParseTask(rt->contextFromMainThread(),
+                                                    task->kind, task);
             }
         }
         if (!found)
@@ -933,9 +939,8 @@ GlobalHelperThreadState::maxParseThreads() const
 {
     if (IsHelperThreadSimulatingOOM(js::oom::THREAD_TYPE_PARSE))
         return 1;
-    if (cpuCount <= 2)
-        return cpuCount;
-    return threadCount;
+    // Use the number of logical processors in a system.
+    return cpuCount;
 }
 
 size_t

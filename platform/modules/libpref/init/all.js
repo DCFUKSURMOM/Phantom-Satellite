@@ -570,7 +570,13 @@ pref("media.mediasource.webm.enabled", true);
 pref("media.mediasource.webm.audio.enabled", true);
 
 #ifdef MOZ_AV1
+// Whether to enable AV1 support
+#ifdef AV1_USE_AOM
+// libAOM is not performant, so disbale by default.
 pref("media.av1.enabled", false);
+#else
+pref("media.av1.enabled", true);
+#endif
 #endif
 
 // Use new MediaFormatReader architecture for plain ogg.
@@ -1305,9 +1311,6 @@ pref("javascript.options.dynamicImport", true);
 
 // Streams API
 pref("javascript.options.streams", true);
-
-// Enable garbage collection of weakrefed objects
-pref("javascript.options.weakrefs", false);
 
 // advanced prefs
 pref("advanced.mailftp",                    false);
@@ -4201,12 +4204,18 @@ pref("image.animated.decode-on-demand.batch-size", 6);
 // advancing when out of view.
 pref("image.animated.resume-from-last-displayed", true);
 
+// Image cache prefs: Restart required for changes.
+
 // The maximum size, in bytes, of the decoded images we cache
-pref("image.cache.size", 5242880);
+pref("image.cache.size", 26214400);
 
 // A weight, from 0-1000, to place on time when comparing to size.
 // Size is given a weight of 1000 - timeweight.
-pref("image.cache.timeweight", 500);
+pref("image.cache.timeweight", 650);
+
+// Time in ms before unproxied entries in the in-memory image cache are
+// considered for eviction by the expiration tracker.
+pref("image.cache.entry_timeout", 15000);
 
 // Decode all images automatically on load, ignoring our normal heuristics.
 pref("image.decode-immediately.enabled", false);
@@ -4249,7 +4258,7 @@ pref("image.mem.decode_bytes_at_a_time", 16384);
 
 // Minimum timeout for expiring unused images from the surface cache, in
 // milliseconds. This controls how long we store cached temporary surfaces.
-pref("image.mem.surfacecache.min_expiration_ms", 60000); // 60s
+pref("image.mem.surfacecache.min_expiration_ms", 180000); // 180s
 
 // Maximum size for the surface cache, in kilobytes.
 pref("image.mem.surfacecache.max_size_kb", 1048576); // 1GB
@@ -4266,7 +4275,7 @@ pref("image.mem.surfacecache.size_factor", 4);
 // surface cache on memory pressure, a discard factor of 2 means to discard half
 // of the data, and so forth. The default should be a good balance for desktop
 // and laptop systems, where we never discard visible images.
-pref("image.mem.surfacecache.discard_factor", 1);
+pref("image.mem.surfacecache.discard_factor", 2);
 
 // How many threads we'll use for multithreaded decoding. If < 0, will be
 // automatically determined based on the system's number of cores.
@@ -4376,6 +4385,10 @@ pref("layers.acceleration.enabled", true);
 // Whether to force acceleration on, ignoring blacklists.
 // This requires layers.acceleration.enabled to be set to true
 pref("layers.acceleration.force", false);
+
+// Preferred X11 GL context provider. "auto" prefers EGL and falls back to GLX,
+// "egl" forces EGL, and "glx" forces the legacy GLX path. Restart required.
+pref("gfx.x11.gl-provider", "glx");
 
 // Preference that when switched at runtime will run a series of benchmarks
 // and output the result to stderr.

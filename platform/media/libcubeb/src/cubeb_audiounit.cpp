@@ -12,20 +12,16 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <AudioUnit/AudioUnit.h>
-#if !TARGET_OS_IPHONE
 #include <AvailabilityMacros.h>
 #include <CoreAudio/AudioHardware.h>
 #include <CoreAudio/HostTime.h>
 #include <CoreFoundation/CoreFoundation.h>
-#endif
 #include <CoreAudio/CoreAudioTypes.h>
 #include <AudioToolbox/AudioToolbox.h>
 #include "cubeb/cubeb.h"
 #include "cubeb-internal.h"
 #include "cubeb_panner.h"
-#if !TARGET_OS_IPHONE
 #include "cubeb_osx_run_loop.h"
-#endif
 #include "cubeb_resampler.h"
 #include "cubeb_ring_array.h"
 #include "cubeb_utils.h"
@@ -41,7 +37,7 @@
 #define DISPATCH_QUEUE_SERIAL NULL
 #endif
 
-#if !TARGET_OS_IPHONE && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
+#if !defined(MAC_OS_X_VERSION_10_6) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
 #define AudioComponent Component
 #define AudioComponentDescription ComponentDescription
 #define AudioComponentFindNext FindNextComponent

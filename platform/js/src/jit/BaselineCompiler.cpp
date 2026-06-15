@@ -458,7 +458,6 @@ BaselineCompiler::emitEpilogue()
     masm.pop(BaselineFrameReg);
 
     emitProfilerExitFrame();
-
     masm.ret();
     return true;
 }
@@ -484,7 +483,7 @@ BaselineCompiler::emitOutOfLinePostBarrierSlot()
     // On ARM, save the link register before calling.  It contains the return
     // address.  The |masm.ret()| later will pop this into |pc| to return.
     masm.push(lr);
-#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || defined(JS_CODEGEN_LOONGARCH64)
     masm.push(ra);
 #endif
     masm.pushValue(R0);

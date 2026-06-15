@@ -10,8 +10,31 @@ import sys
 
 from mozprocess.processhandler import ProcessHandlerMixin
 from mozbuild.makeutil import Makefile
+from mozbuild.getencoding import getencoding
 
-CL_INCLUDES_PREFIX = os.environ.get("CL_INCLUDES_PREFIX", "Note: including file:")
+def getenv_raw(name, default=None):
+
+    # Py3's os.environ.get uses _wgetenv on Windows, but Python is invoked via
+    # CreateProcessA by MSYS1, meaning non-ASCII variables are corrupted.
+    # Work around this by using ctypes and getting the bytes from Windows.
+    GetEnvironmentVariableA = ctypes.windll.kernel32.GetEnvironmentVariableA
+    # Tells Python to use uint32_t here (in Windows terms, a DWORD).
+    GetEnvironmentVariableA.restype = ctypes.c_uint32
+
+    # Allocate a string buffer.
+    buf = ctypes.create_string_buffer(32768)
+    # Call into GetEnvironmentVariableA.
+    ret = GetEnvironmentVariableA(name.encode('ascii'), buf, ctypes.sizeof(buf))
+
+    if ret == 0:
+        return default
+    return buf.value  # raw bytes
+
+# Get the UTF-8 bytes from the environment and decode them correctly.
+value_env = getenv_raw("CL_INCLUDES_PREFIX")
+decoded = value_env.decode('utf-8')
+# Re-encode them using the correct console output encoding.
+CL_INCLUDES_PREFIX = decoded.encode(getencoding())
 
 GetShortPathName = ctypes.windll.kernel32.GetShortPathNameW
 GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
@@ -74,25 +97,26 @@ def InvokeClWithDependencyGeneration(cmdline):
     def on_line(line):
         # cl -showIncludes prefixes every header with "Note: including file:"
         # and an indentation corresponding to the depth (which we don't need)
-        if line.startswith(CL_INCLUDES_PREFIX):
+        if CL_INCLUDES_PREFIX in line:
             dep = line[len(CL_INCLUDES_PREFIX):].strip()
             # We can't handle paths with spaces properly in mddepend.pl, but
             # we can assume that anything in a path with spaces is a system
             # header and throw it away.
+            dep = dep.decode(getencoding())
             dep = normcase(dep)
             if ' ' not in dep:
                 rule.add_dependencies([dep])
         else:
             # Make sure we preserve the relevant output from cl. mozprocess
             # swallows the newline delimiter, so we need to re-add it.
-            sys.stdout.write(line)
-            sys.stdout.write('\n')
+            sys.stdout.buffer.write(line)
+            sys.stdout.buffer.write(b'\n')
 
     # We need to ignore children because MSVC can fire up a background process
     # during compilation. This process is cleaned up on its own. If we kill it,
     # we can run into weird compilation issues.
     p = ProcessHandlerMixin(cmdline, processOutputLine=[on_line],
-        ignore_children=True)
+        ignore_children=True, raw=True)
     p.run()
     p.processOutput()
     ret = p.wait()

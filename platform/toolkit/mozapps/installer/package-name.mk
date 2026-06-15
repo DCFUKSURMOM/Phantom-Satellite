@@ -42,7 +42,7 @@ ifeq ($(OS_ARCH),Darwin)
 ifeq ($(TARGET_CPU),x86_64)
 MOZ_PKG_PLATFORM := intel64
 endif
-ifeq ($(TARGET_CPU),x86)
+ifeq ($(TARGET_CPU),i386)
 MOZ_PKG_PLATFORM := intel32
 endif
 ifeq ($(TARGET_CPU),aarch64)

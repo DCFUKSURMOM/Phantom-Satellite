@@ -1,18 +1,23 @@
 mimalloc vendor snapshot
 
 Source: https://github.com/microsoft/mimalloc
-Commit: b69f9cb39f22b95971a4b9196a9c265a7b474718
-Release: 2.2.7
+Commit: e2e6e70f8333e58ed0116591ca33a56227db9139
+Release: 3.3.1
 
 Notes:
-- Copied include/, src/, LICENSE, and readme.md from upstream.
+- Copied include/, src/, LICENSE, readme.md, and Windows x86/x64
+  mimalloc-redirect DLL/import libs from upstream.
 - Removed upstream prebuilt binaries under bin/, except Windows
   x86/x64 mimalloc-redirect DLL/import libs (stored under redirect/)
   to enable CRT malloc/free redirection when MOZ_MIMALLOC is on.
 - Added mozbuild integration via moz.build for static.c and exports.
-- Adjusted Unix getenv handling to avoid raw environ traversal during process init,
-  using getenv only after preloading to prevent loader-time crashes.
-- On GNU platforms, prefer weak `_environ` over `environ` to handle glibc DSO visibility.
+- Set MI_DEFAULT_PURGE_DECOMMITS=0, MI_DEFAULT_PURGE_DELAY=500, and
+  MI_DEFAULT_GENERIC_COLLECT=50000 in moz.build to preserve Basilisk's
+  allocator tuning.
+- Set MI_USE_ENVIRON=0 in moz.build so Unix/macOS builds use getenv only
+  after preloading, avoiding loader-time crashes from raw environ traversal.
+- On FreeBSD/DragonFly, wrap sysctl-related headers in default visibility
+  to avoid hidden-visibility header issues.
 - Guarded `mi_usable_size` to return 0 for non-mimalloc pointers to avoid early-init crashes.
 - Darwin build uses MI_OSX_ZONE without MI_OSX_INTERPOSE to avoid duplicate
   interpose definitions.

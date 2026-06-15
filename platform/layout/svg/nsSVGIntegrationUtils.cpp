@@ -537,7 +537,7 @@ CreateAndPaintMaskSurface(const PaintFramesParams& aParams,
 
   RefPtr<DrawTarget> maskDT =
     (ctx.GetDrawTarget()->GetBackendType() == BackendType::COREGRAPHICS)
-    ? Factory::CreateDrawTarget(BackendType::SKIA, maskSurfaceRect.Size(),
+    ? Factory::CreateDrawTarget(BackendType::CAIRO, maskSurfaceRect.Size(),
                                 SurfaceFormat::A8)
     : ctx.GetDrawTarget()->CreateSimilarDrawTarget(maskSurfaceRect.Size(),
                                                    SurfaceFormat::A8);

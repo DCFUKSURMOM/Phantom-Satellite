@@ -23,6 +23,8 @@
 
 #include "cairo-quartz.h"
 
+#include "nsCocoaFeatures.h"
+
 using namespace mozilla;
 using namespace mozilla::gfx;
 
@@ -474,25 +476,11 @@ gfxMacFont::InitMetrics()
     // If we are dealing with a weird font (Apple is notorious), we could have
     // the situation where we wind up with space == maxAdvance due to a 10.4 bug.
     // In that case, kludge a reasonable upper limit (TenFourFox issue 355).
-    //fprintf(stderr, "glyph: %i sB=%s width=%f avg=%f max=%f cgf=%f mAS=%f\n", glyphID, (IsSyntheticBold() ? "Y" : "n"), mMetrics.spaceWidth, mMetrics.aveCharWidth, mMetrics.maxAdvance, cgConvFactor, mAdjustedSize);
     if (MOZ_UNLIKELY(!hasX && mMetrics.spaceWidth >= mMetrics.maxAdvance)) {
             mMetrics.spaceWidth = std::min((float)mMetrics.emDescent * 1.4f,
                 (float)mMetrics.maxAdvance * 0.4f);
             mSpacingKludge = true;
     }
-    //fprintf(stderr, "glyph: %i sB=%s ......%f avg=%f max=%f cgf=%f mAS=%f\n", glyphID, (IsSyntheticBold() ? "Y" : "n"), mMetrics.spaceWidth, mMetrics.aveCharWidth, mMetrics.maxAdvance, cgConvFactor, mAdjustedSize);
-
-
-#if 0
-    fprintf (stderr, "Font: %p (%s) size: %f\n", this,
-             NS_ConvertUTF16toUTF8(GetName()).get(), mStyle.size);
-//    fprintf (stderr, "    fbounds.origin.x %f y %f size.width %f height %f\n", fbounds.origin.x, fbounds.origin.y, fbounds.size.width, fbounds.size.height);
-    fprintf (stderr, "    emHeight: %f emAscent: %f emDescent: %f\n", mMetrics.emHeight, mMetrics.emAscent, mMetrics.emDescent);
-    fprintf (stderr, "    maxAscent: %f maxDescent: %f maxAdvance: %f\n", mMetrics.maxAscent, mMetrics.maxDescent, mMetrics.maxAdvance);
-    fprintf (stderr, "    internalLeading: %f externalLeading: %f\n", mMetrics.internalLeading, mMetrics.externalLeading);
-    fprintf (stderr, "    spaceWidth: %f aveCharWidth: %f xHeight: %f capHeight: %f\n", mMetrics.spaceWidth, mMetrics.aveCharWidth, mMetrics.xHeight, mMetrics.capHeight);
-    fprintf (stderr, "    uOff: %f uSize: %f stOff: %f stSize: %f\n", mMetrics.underlineOffset, mMetrics.underlineSize, mMetrics.strikeoutOffset, mMetrics.strikeoutSize);
-#endif
 }
 
 gfxFloat
@@ -527,7 +515,10 @@ gfxMacFont::CreateCTFontFromCGFontWithVariations(CGFontRef aCGFont,
                                                  CGFloat aSize,
                                                  CTFontDescriptorRef aFontDesc)
 {
-    CFDictionaryRef variations = ::CGFontCopyVariations(aCGFont);
+    // Avoid calling potentially buggy variation APIs on pre-Sierra macOS
+    // versions (see bug 1331683)
+    CFDictionaryRef variations = nsCocoaFeatures::OnSierraOrLater() ?
+                                 ::CGFontCopyVariations(aCGFont) : 0;
     CTFontRef ctFont;
     if (variations) {
         CFDictionaryRef varAttr =

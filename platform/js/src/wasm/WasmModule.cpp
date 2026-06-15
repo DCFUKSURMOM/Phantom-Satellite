@@ -38,8 +38,10 @@ using mozilla::IsNaN;
 
 const char wasm::InstanceExportField[] = "exports";
 
-#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
-// On MIPS, CodeLabels are instruction immediates so InternalLinks only
+#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || \
+    defined(JS_CODEGEN_LOONGARCH64)
+// On MIPS and loongarch64, CodeLabels are instruction immediates so
+// InternalLinks only
 // patch instruction immediates.
 LinkData::InternalLink::InternalLink(Kind kind)
 {

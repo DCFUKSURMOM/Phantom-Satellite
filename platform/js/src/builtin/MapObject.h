@@ -110,7 +110,9 @@ class MapObject : public NativeObject {
     [[nodiscard]] static bool getKeysAndValuesInterleaved(JSContext* cx, HandleObject obj,
                                             JS::MutableHandle<GCVector<JS::Value>> entries);
     [[nodiscard]] static bool entries(JSContext* cx, unsigned argc, Value* vp);
+    [[nodiscard]] static bool get(JSContext* cx, unsigned argc, Value* vp);
     [[nodiscard]] static bool has(JSContext* cx, unsigned argc, Value* vp);
+    [[nodiscard]] static bool set(JSContext* cx, unsigned argc, Value* vp);
     static MapObject* create(JSContext* cx, HandleObject proto = nullptr);
 
     // Publicly exposed Map calls for JSAPI access (webidl maplike/setlike
@@ -137,6 +139,7 @@ class MapObject : public NativeObject {
 
     static const JSPropertySpec properties[];
     static const JSFunctionSpec methods[];
+    static const JSFunctionSpec staticMethods[];
     static const JSPropertySpec staticProperties[];
     ValueMap* getData() { return static_cast<ValueMap*>(getPrivate()); }
     static ValueMap& extract(HandleObject o);
@@ -153,10 +156,8 @@ class MapObject : public NativeObject {
     [[nodiscard]] static bool size_impl(JSContext* cx, const CallArgs& args);
     [[nodiscard]] static bool size(JSContext* cx, unsigned argc, Value* vp);
     [[nodiscard]] static bool get_impl(JSContext* cx, const CallArgs& args);
-    [[nodiscard]] static bool get(JSContext* cx, unsigned argc, Value* vp);
     [[nodiscard]] static bool has_impl(JSContext* cx, const CallArgs& args);
     [[nodiscard]] static bool set_impl(JSContext* cx, const CallArgs& args);
-    [[nodiscard]] static bool set(JSContext* cx, unsigned argc, Value* vp);
     [[nodiscard]] static bool delete_impl(JSContext* cx, const CallArgs& args);
     [[nodiscard]] static bool delete_(JSContext* cx, unsigned argc, Value* vp);
     [[nodiscard]] static bool keys_impl(JSContext* cx, const CallArgs& args);

@@ -679,9 +679,15 @@ ICToBool_Object::Compiler::generateStubCode(MacroAssembler& masm)
     EmitReturnFromIC(masm);
 
     masm.bind(&slowPath);
+#ifdef JS_CODEGEN_LOONGARCH64
+    masm.push(ra);
+#endif
     masm.setupUnalignedABICall(scratch);
     masm.passABIArg(objReg);
     masm.callWithABI(JS_FUNC_TO_DATA_PTR(void*, js::EmulatesUndefined));
+#ifdef JS_CODEGEN_LOONGARCH64
+    masm.pop(ra);
+#endif
     masm.convertBoolToInt32(ReturnReg, ReturnReg);
     masm.xor32(Imm32(1), ReturnReg);
     masm.tagValue(JSVAL_TYPE_BOOLEAN, ReturnReg, R0);
@@ -1464,6 +1470,12 @@ TryAttachGetElemStub(JSContext* cx, JSScript* script, jsbytecode* pc, ICGetElem_
         res.isNumber() &&
         !TypedArrayGetElemStubExists(stub, obj))
     {
+        if (obj->is<TypedArrayObject>() &&
+            obj->as<TypedArrayObject>().hasResizableOrGrowableBuffer())
+        {
+            return true;
+        }
+
         if (!cx->runtime()->jitSupportsFloatingPoint &&
             (TypedThingRequiresFloatingPoint(obj) || rhs.isDouble()))
         {
@@ -2154,6 +2166,8 @@ ICGetElem_TypedArray::Compiler::generateStubCode(MacroAssembler& masm)
     Register obj = masm.extractObject(R0, ExtractTemp0);
     masm.loadPtr(Address(ICStubReg, ICGetElem_TypedArray::offsetOfShape()), scratchReg);
     masm.branchTestObjShape(Assembler::NotEqual, obj, scratchReg, &failure);
+    if (layout_ == Layout_TypedArray)
+        GuardResizableOrGrowableTypedArray(masm, obj, scratchReg, &failure);
 
     // Ensure the index is an integer.
     if (cx->runtime()->jitSupportsFloatingPoint) {
@@ -2625,6 +2639,9 @@ DoSetElemFallback(JSContext* cx, BaselineFrame* frame, ICSetElem_Fallback* stub_
         bool expectOutOfBounds;
         double idx = index.toNumber();
         if (obj->is<TypedArrayObject>()) {
+            if (obj->as<TypedArrayObject>().hasResizableOrGrowableBuffer())
+                return true;
+
             expectOutOfBounds = (idx < 0 || idx >= double(obj->as<TypedArrayObject>().length()));
         } else {
             // Typed objects throw on out of bounds accesses. Don't attach
@@ -3215,6 +3232,8 @@ ICSetElem_TypedArray::Compiler::generateStubCode(MacroAssembler& masm)
     Register obj = masm.extractObject(R0, ExtractTemp0);
     masm.loadPtr(Address(ICStubReg, ICSetElem_TypedArray::offsetOfShape()), scratchReg);
     masm.branchTestObjShape(Assembler::NotEqual, obj, scratchReg, &failure);
+    if (layout_ == Layout_TypedArray)
+        GuardResizableOrGrowableTypedArray(masm, obj, scratchReg, &failure);
 
     // Ensure the index is an integer.
     if (cx->runtime()->jitSupportsFloatingPoint) {
@@ -7468,6 +7487,9 @@ ICTableSwitch::Compiler::generateStubCode(MacroAssembler& masm)
         masm.convertDoubleToInt32(FloatReg0, key, &outOfRange, /* negativeZeroCheck = */ false);
     } else {
         // Pass pointer to double value.
+#ifdef JS_CODEGEN_LOONGARCH64
+        masm.push(ra);
+#endif
         masm.pushValue(R0);
         masm.moveStackPtrTo(R0.scratchReg());
 
@@ -7479,6 +7501,9 @@ ICTableSwitch::Compiler::generateStubCode(MacroAssembler& masm)
         // int32.
         masm.movePtr(ReturnReg, scratch);
         masm.popValue(R0);
+#ifdef JS_CODEGEN_LOONGARCH64
+        masm.pop(ra);
+#endif
         masm.branchIfFalseBool(scratch, &outOfRange);
         masm.unboxInt32(R0, key);
     }

@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/Preferences.h"
-#ifdef MOZ_AV1
+#if defined(MOZ_AV1) && defined(AV1_USE_AOM)
 #include "AOMDecoder.h"
 #endif
 #include "MediaPrefs.h"
@@ -136,4 +136,3 @@ WebMDecoder::GetMozDebugReaderData(nsAString& aString)
 }
 
 } // namespace mozilla
-

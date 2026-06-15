@@ -848,6 +848,8 @@ ICStubCompiler::emitPostWriteBarrierSlot(MacroAssembler& masm, Register obj, Val
     // void PostWriteBarrier(JSRuntime* rt, JSObject* obj);
 #if defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
     saveRegs.add(ICTailCallReg);
+#elif defined(JS_CODEGEN_LOONGARCH64)
+    masm.push(ra);
 #endif
     saveRegs.set() = GeneralRegisterSet::Intersect(saveRegs.set(), GeneralRegisterSet::Volatile());
     masm.PushRegsInMask(saveRegs);
@@ -857,6 +859,9 @@ ICStubCompiler::emitPostWriteBarrierSlot(MacroAssembler& masm, Register obj, Val
     masm.passABIArg(obj);
     masm.callWithABI(JS_FUNC_TO_DATA_PTR(void*, PostWriteBarrier));
     masm.PopRegsInMask(saveRegs);
+#ifdef JS_CODEGEN_LOONGARCH64
+    masm.pop(ra);
+#endif
 
     masm.bind(&skipBarrier);
 }
@@ -1292,10 +1297,16 @@ ICBinaryArith_Double::Compiler::generateStubCode(MacroAssembler& masm)
         masm.divDouble(FloatReg1, FloatReg0);
         break;
       case JSOP_MOD:
+#ifdef JS_CODEGEN_LOONGARCH64
+        masm.push(ra);
+#endif
         masm.setupUnalignedABICall(R0.scratchReg());
         masm.passABIArg(FloatReg0, MoveOp::DOUBLE);
         masm.passABIArg(FloatReg1, MoveOp::DOUBLE);
         masm.callWithABI(JS_FUNC_TO_DATA_PTR(void*, NumberMod), MoveOp::DOUBLE);
+#ifdef JS_CODEGEN_LOONGARCH64
+        masm.pop(ra);
+#endif
         MOZ_ASSERT(ReturnDoubleReg == FloatReg0);
         break;
       default:
@@ -1417,9 +1428,15 @@ ICBinaryArith_DoubleWithInt32::Compiler::generateStubCode(MacroAssembler& masm)
 
         masm.bind(&truncateABICall);
         masm.push(intReg);
+#ifdef JS_CODEGEN_LOONGARCH64
+        masm.push(ra);
+#endif
         masm.setupUnalignedABICall(scratchReg);
         masm.passABIArg(FloatReg0, MoveOp::DOUBLE);
         masm.callWithABI(mozilla::BitwiseCast<void*, int32_t(*)(double)>(JS::ToInt32));
+#ifdef JS_CODEGEN_LOONGARCH64
+        masm.pop(ra);
+#endif
         masm.storeCallInt32Result(scratchReg);
         masm.pop(intReg);
 
@@ -1581,9 +1598,15 @@ ICUnaryArith_Double::Compiler::generateStubCode(MacroAssembler& masm)
         masm.jump(&doneTruncate);
 
         masm.bind(&truncateABICall);
+#ifdef JS_CODEGEN_LOONGARCH64
+        masm.push(ra);
+#endif
         masm.setupUnalignedABICall(scratchReg);
         masm.passABIArg(FloatReg0, MoveOp::DOUBLE);
         masm.callWithABI(BitwiseCast<void*, int32_t(*)(double)>(JS::ToInt32));
+#ifdef JS_CODEGEN_LOONGARCH64
+        masm.pop(ra);
+#endif
         masm.storeCallInt32Result(scratchReg);
 
         masm.bind(&doneTruncate);
@@ -3606,6 +3629,17 @@ CheckForTypedObjectWithDetachedStorage(JSContext* cx, MacroAssembler& masm, Labe
     // bail out if needed.
     int32_t* address = &cx->compartment()->detachedTypedObjects;
     masm.branch32(Assembler::NotEqual, AbsoluteAddress(address), Imm32(0), failure);
+}
+
+void
+GuardResizableOrGrowableTypedArray(MacroAssembler& masm, Register obj, Register scratch,
+                                   Label* failure)
+{
+    masm.loadPtr(Address(obj, NativeObject::offsetOfElements()), scratch);
+    masm.branchTest32(Assembler::NonZero,
+                      Address(scratch, ObjectElements::offsetOfFlags()),
+                      Imm32(ObjectElements::RESIZABLE_OR_GROWABLE_BUFFER),
+                      failure);
 }
 
 void

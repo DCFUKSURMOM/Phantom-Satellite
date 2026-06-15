@@ -211,6 +211,7 @@
 # include "jswin.h"
 #endif
 
+#include "builtin/FinalizationRegistryObject.h"
 #include "gc/FindSCCs.h"
 #include "gc/GCInternals.h"
 #include "gc/GCTrace.h"
@@ -1570,7 +1571,7 @@ ArenaLists::prepareForIncrementalGC()
 {
     purge();
     for (auto i : AllAllocKinds()) {
-        arenaLists[i].moveCursorToEnd(); 
+        arenaLists[i].moveCursorToEnd();
     }
 }
 
@@ -3581,14 +3582,14 @@ ShouldCollectZone(Zone* zone, JS::gcreason::Reason reason)
     // Normally we collect all scheduled zones.
     if (reason != JS::gcreason::COMPARTMENT_REVIVED)
         return zone->isGCScheduled();
-	
+
     // If we are repeating a GC because we noticed dead compartments haven't
     // been collected, then only collect zones containing those compartments.
     for (CompartmentsInZoneIter comp(zone); !comp.done(); comp.next()) {
         if (comp->scheduledForDestruction)
             return true;
     }
-     
+
     return false;
 }
 
@@ -3654,7 +3655,7 @@ GCRuntime::beginMarkPhase(JS::gcreason::Reason reason, AutoLockForExclusiveAcces
      * on. If the value of keepAtoms() changes between GC slices, then we'll
      * cancel the incremental GC. See IsIncrementalGCSafe.
      */
-	 
+
     if (isFull && !rt->keepAtoms()) {
         Zone* atomsZone = rt->atomsCompartment(lock)->zone();
         if (atomsZone->isGCScheduled()) {
@@ -3670,7 +3671,7 @@ GCRuntime::beginMarkPhase(JS::gcreason::Reason reason, AutoLockForExclusiveAcces
 
     /*
      * Ensure that after the start of a collection we don't allocate into any
-     * existing arenas, as this can cause unreachable things to be marked.  
+     * existing arenas, as this can cause unreachable things to be marked.
      */
     if (isIncremental) {
         for (GCZonesIter zone(rt); !zone.done(); zone.next())
@@ -3762,7 +3763,7 @@ GCRuntime::beginMarkPhase(JS::gcreason::Reason reason, AutoLockForExclusiveAcces
         bufferGrayRoots();
         markCompartments();
     }
-     
+
     return true;
 }
 
@@ -3801,9 +3802,9 @@ GCRuntime::markCompartments()
      */
 
     /* Propagate the maybeAlive flag via cross-compartment edges. */
-	
+
     Vector<JSCompartment*, 0, js::SystemAllocPolicy> workList;
-    
+
     for (CompartmentsIter comp(rt, SkipAtoms); !comp.done(); comp.next()) {
         if (comp->maybeAlive) {
             if (!workList.append(comp))
@@ -3824,9 +3825,9 @@ GCRuntime::markCompartments()
         }
     }
 
-	
+
     /* Set scheduleForDestruction based on maybeAlive. */
-	
+
     for (GCCompartmentsIter comp(rt); !comp.done(); comp.next()) {
          MOZ_ASSERT(!comp->scheduledForDestruction);
          if (!comp->maybeAlive && !rt->isAtomsCompartment(comp))
@@ -3865,6 +3866,8 @@ GCRuntime::markWeakReferences(gcstats::Phase phase)
     }
     MOZ_ASSERT(marker.isDrained());
 
+    traceFinalizationRegistryWeakRefs<ZoneIterT>();
+
     marker.leaveWeakMarkingMode();
 }
 
@@ -3872,6 +3875,33 @@ void
 GCRuntime::markWeakReferencesInCurrentGroup(gcstats::Phase phase)
 {
     markWeakReferences<GCZoneGroupIter>(phase);
+}
+
+template <class ZoneIterT>
+void
+GCRuntime::traceFinalizationRegistryWeakRefs()
+{
+    for (ZoneIterT zone(rt); !zone.done(); zone.next()) {
+        for (size_t i = 0; i < zone->finalizationRegistries.length(); i++) {
+            WeakRef<JSObject*>& registry = zone->finalizationRegistries[i];
+            if (registry.unbarrieredGet())
+                TraceWeakEdge(&marker, &registry, "FinalizationRegistry registry");
+        }
+    }
+
+    for (ZonesIter zone(rt, WithAtoms); !zone.done(); zone.next()) {
+        for (size_t i = 0; i < zone->finalizationRegistries.length(); i++) {
+            JSObject* registry = zone->finalizationRegistries[i].unbarrieredGet();
+            if (registry && registry->is<FinalizationRegistryObject>())
+                registry->as<FinalizationRegistryObject>().traceWeakEdgesForCollectedZones(&marker);
+        }
+    }
+}
+
+void
+GCRuntime::traceFinalizationRegistryWeakRefsInCurrentGroup()
+{
+    traceFinalizationRegistryWeakRefs<GCZoneGroupIter>();
 }
 
 template <class ZoneIterT, class CompartmentIterT>
@@ -4569,6 +4599,8 @@ GCRuntime::beginSweepingZoneGroup(AutoLockForExclusiveAccess& lock)
             oomUnsafe.crash("clearing weak keys in beginSweepingZoneGroup()");
     }
 
+    sweepFinalizationRegistries();
+
     {
         gcstats::AutoPhase ap(stats, gcstats::PHASE_FINALIZE_START);
         callFinalizeCallbacks(&fop, JSFINALIZE_GROUP_START);
@@ -4618,7 +4650,6 @@ GCRuntime::beginSweepingZoneGroup(AutoLockForExclusiveAccess& lock)
                 c->sweepJitCompartment(&fop);
                 c->sweepTemplateObjects();
             }
-
             for (GCZoneGroupIter zone(rt); !zone.done(); zone.next())
                 zone->sweepWeakMaps();
 
@@ -4718,6 +4749,26 @@ GCRuntime::beginSweepingZoneGroup(AutoLockForExclusiveAccess& lock)
     {
         gcstats::AutoPhase ap(stats, gcstats::PHASE_FINALIZE_END);
         callFinalizeCallbacks(&fop, JSFINALIZE_GROUP_END);
+    }
+}
+
+void
+GCRuntime::sweepFinalizationRegistries()
+{
+    for (ZonesIter zone(rt, WithAtoms); !zone.done(); zone.next()) {
+        for (size_t i = 0; i < zone->finalizationRegistries.length();) {
+            JSObject* obj = zone->finalizationRegistries[i].unbarrieredGet();
+            if (!obj || !obj->is<FinalizationRegistryObject>()) {
+                zone->finalizationRegistries.erase(zone->finalizationRegistries.begin() + i);
+                continue;
+            } 
+            i++;
+        }
+        for (size_t i = 0; i < zone->finalizationRegistries.length(); i++) {
+            JSObject* obj = zone->finalizationRegistries[i].unbarrieredGet();
+            obj->as<FinalizationRegistryObject>().sweepAfterGC(rt);
+        }
+        zone->finalizationRegistries.clear();
     }
 }
 
@@ -5005,7 +5056,7 @@ GCRuntime::performSweepActions(SliceBudget& budget, AutoLockForExclusiveAccess& 
 
         // Reset phase index.
         sweepPhaseIndex = 0;
-        
+
         endSweepingZoneGroup();
         getNextZoneGroup();
         if (!currentZoneGroup)
@@ -5558,7 +5609,7 @@ gc::AbortReason
 gc::IsIncrementalGCUnsafe(JSRuntime* rt)
 {
     MOZ_ASSERT(!rt->mainThread.suppressGC);
-	
+
     if (rt->keepAtoms())
         return gc::AbortReason::KeepAtomsSet;
 
@@ -5579,7 +5630,7 @@ GCRuntime::budgetIncrementalGC(JS::gcreason::Reason reason, SliceBudget& budget,
         else if (mode != JSGC_MODE_INCREMENTAL)
             unsafeReason = gc::AbortReason::ModeChange;
    }
-	
+
     if (unsafeReason != AbortReason::None) {
         resetIncrementalGC(unsafeReason, lock);
         budget.makeUnlimited();
@@ -5587,7 +5638,7 @@ GCRuntime::budgetIncrementalGC(JS::gcreason::Reason reason, SliceBudget& budget,
         return;
     }
 
-  
+
 
     if (isTooMuchMalloc()) {
         budget.makeUnlimited();
@@ -5842,15 +5893,15 @@ bool
 GCRuntime::shouldRepeatForDeadZone(JS::gcreason::Reason reason)
 {
     MOZ_ASSERT_IF(reason == JS::gcreason::COMPARTMENT_REVIVED, !isIncremental);
-    
+
     if (!isIncremental || isIncrementalGCInProgress())
          return false;
-    
+
     for (CompartmentsIter c(rt, SkipAtoms); !c.done(); c.next()) {
         if (c->scheduledForDestruction)
             return true;
     }
-    
+
     return false;
 }
 
@@ -5872,13 +5923,13 @@ GCRuntime::collect(bool nonincrementalByAPI, SliceBudget budget, JS::gcreason::R
     do {
         poked = false;
         bool wasReset = gcCycle(nonincrementalByAPI, budget, reason);
-      
+
         bool repeatForDeadZone = false;
         if (poked && cleanUpEverything) {
             /* Need to re-schedule all zones for GC. */
             JS::PrepareForFullGC(rt->contextFromMainThread());
 
-       
+
         } else if (shouldRepeatForDeadZone(reason) && !wasReset) {
 		    /*
              * This code makes an extra effort to collect compartments that we
@@ -5888,7 +5939,7 @@ GCRuntime::collect(bool nonincrementalByAPI, SliceBudget budget, JS::gcreason::R
             repeatForDeadZone = true;
             reason = JS::gcreason::COMPARTMENT_REVIVED;
         }
-   
+
 
         /*
          * If we reset an existing GC, we need to start a new one. Also, we
@@ -5898,6 +5949,13 @@ GCRuntime::collect(bool nonincrementalByAPI, SliceBudget budget, JS::gcreason::R
          */
         repeat = (poked && cleanUpEverything) || wasReset || repeatForDeadZone;
     } while (repeat);
+
+    if (rt->isBeingDestroyed()) {
+        rt->clearFinalizationRegistryCleanupJobs();
+    } else if (!rt->drainFinalizationRegistryCleanupJobs(rt->contextFromMainThread())) {
+        AutoEnterOOMUnsafeRegion oomUnsafe;
+        oomUnsafe.crash("draining FinalizationRegistry cleanup jobs");
+    }
 
     if (reason == JS::gcreason::COMPARTMENT_REVIVED)
         maybeDoCycleCollection();

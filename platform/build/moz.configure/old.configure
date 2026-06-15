@@ -24,10 +24,10 @@ m4 = check_prog(
 @imports(_from='os.path', _import='exists')
 @imports(_from='mozbuild.shellutil', _import='quote')
 @imports(_from='os', _import='environ')
-@imports(_from='locale', _import='getpreferredencoding')
+@imports(_from='mozbuild.getencoding', _import='getencoding')
 def prepare_configure(old_configure, mozconfig, awk, m4, build_env, shell,
                       old_configure_assignments, build_project):
-    encoding = getpreferredencoding(False)
+    encoding = getencoding()
     # os.path.abspath in the sandbox will ensure forward slashes on Windows,
     # which is actually necessary because this path actually ends up literally
     # as $0, and backslashes there breaks autoconf's detection of the source
@@ -152,6 +152,7 @@ def old_configure_options(*options):
     '--enable-jitspew',
     '--enable-js-lto',
     '--enable-leak-sanitizer',
+    '--enable-libaom',
     '--enable-libjpeg-turbo',
     '--enable-libproxy',
     '--enable-llvm-hacks',
@@ -285,10 +286,10 @@ def old_configure_options(*options):
 @imports('sys')
 @imports(_from='mozbuild.shellutil', _import='quote')
 @imports(_from='mozbuild.util', _import='exec_')
-@imports(_from='locale', _import='getpreferredencoding')
+@imports(_from='mozbuild.getencoding', _import='getencoding')
 def old_configure(prepare_configure, extra_old_configure_args, all_options,
                   *options):
-    encoding = getpreferredencoding()
+    encoding = getencoding()
     cmd = prepare_configure
 
     # old-configure only supports the options listed in @old_configure_options

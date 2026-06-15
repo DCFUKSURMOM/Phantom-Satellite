@@ -17,6 +17,7 @@ import time
 import traceback
 from queue import Queue, Empty
 from datetime import datetime
+from mozbuild.getencoding import getencoding
 
 __all__ = ['ProcessHandlerMixin', 'ProcessHandler', 'LogOutput',
            'StoreOutput', 'StreamOutput']
@@ -96,7 +97,7 @@ class ProcessHandlerMixin(object):
                      startupinfo=None,
                      creationflags=0,
                      ignore_children=False,
-                     encoding='utf-8'):
+                     encoding=getencoding()):
 
             # Parameter for whether or not we should attempt to track child processes
             self._ignore_children = ignore_children
@@ -126,7 +127,7 @@ class ProcessHandlerMixin(object):
             }
             if sys.version_info.minor >= 6 and universal_newlines:
                 kwargs['universal_newlines'] = universal_newlines
-                kwargs['encoding'] = encoding
+                kwargs['encoding'] = getencoding()
 
             try:
                 subprocess.Popen.__init__(self, args, **kwargs)
@@ -135,13 +136,13 @@ class ProcessHandlerMixin(object):
                 raise
             if sys.version_info.minor <= 5 and universal_newlines:
                 if self.stdin is not None:
-                    self.stdin = io.TextIOWrapper(self.stdin, encoding=encoding)
+                    self.stdin = io.TextIOWrapper(self.stdin, encoding=getencoding())
                 if self.stdout is not None:
                     self.stdout = io.TextIOWrapper(self.stdout,
-                                                   encoding=encoding)
+                                                   encoding=getencoding())
                 if self.stderr is not None:
                     self.stderr = io.TextIOWrapper(self.stderr,
-                                                   encoding=encoding)
+                                                   encoding=getencoding())
         def debug(self, msg):
             if not MOZPROCESS_DEBUG:
                 return
@@ -673,6 +674,8 @@ falling back to not using job objects for managing child processes""", file=sys.
                  onTimeout=(),
                  onFinish=(),
                  **kwargs):
+        raw = kwargs.pop("raw", False)
+
         self.cmd = cmd
         self.args = args
         self.cwd = cwd
@@ -708,7 +711,8 @@ falling back to not using job objects for managing child processes""", file=sys.
         self.reader = ProcessReader(stdout_callback=processOutputLine,
                                     stderr_callback=processStderrLine,
                                     finished_callback=onFinish,
-                                    timeout_callback=onTimeout)
+                                    timeout_callback=onTimeout,
+                                    raw=raw)
 
         # It is common for people to pass in the entire array with the cmd and
         # the args together since this is how Popen uses it.  Allow for that.
@@ -912,7 +916,7 @@ class ProcessReader(object):
 
     def __init__(self, stdout_callback=None, stderr_callback=None,
                  finished_callback=None, timeout_callback=None,
-                 timeout=None, output_timeout=None):
+                 timeout=None, output_timeout=None, raw=False):
         self.stdout_callback = stdout_callback or (lambda line: True)
         self.stderr_callback = stderr_callback or (lambda line: True)
         self.finished_callback = finished_callback or (lambda: True)
@@ -920,6 +924,7 @@ class ProcessReader(object):
         self.timeout = timeout
         self.output_timeout = output_timeout
         self.thread = None
+        self.raw = raw
 
     def _create_stream_reader(self, name, stream, queue, callback):
         thread = threading.Thread(name=name,
@@ -941,8 +946,11 @@ class ProcessReader(object):
             if not raw:
                 break
 
-            line = raw.decode(locale.getpreferredencoding(False), errors='replace')
-            queue.put((line, callback))
+            if self.raw:
+                queue.put((raw, callback))
+            else:
+                line = raw.decode(getencoding(), errors='replace')
+                queue.put((line, callback))
         stream.close()
 
     def start(self, proc):
@@ -992,7 +1000,10 @@ class ProcessReader(object):
             else:
                 if output_timeout is not None:
                     output_timeout = now + self.output_timeout
-                callback(line.rstrip())
+                if self.raw:
+                    callback(line.rstrip(b"\r\n"))
+                else:
+                    callback(line.rstrip())
             if timeout is not None and now > timeout:
                 timed_out = True
                 break
@@ -1100,7 +1111,7 @@ class ProcessHandler(ProcessHandlerMixin):
         if stream is True:
             # Print to standard output only if no outputline provided
             if kwargs.get('universal_newlines'):
-                stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
+                stdout = codecs.getwriter(getencoding())(sys.stdout.buffer)
             if not kwargs['processOutputLine']:
                 kwargs['processOutputLine'].append(StreamOutput(sys.stdout,
                                                                 kwargs.get('universal_newlines', False)))

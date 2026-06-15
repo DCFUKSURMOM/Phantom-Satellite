@@ -21,6 +21,7 @@
 #include "mozilla/ArrayUtils.h"
 
 #include "wasm/WasmCode.h"
+#include "wasm/WasmBaselineCompile.h"
 #include "wasm/WasmIonCompile.h"
 
 #include "jit/MacroAssembler-inl.h"
@@ -106,7 +107,8 @@ wasm::GenerateEntry(MacroAssembler& masm, const FuncExport& fe)
     // Save the return address if it wasn't already saved by the call insn.
 #if defined(JS_CODEGEN_ARM)
     masm.push(lr);
-#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || \
+      defined(JS_CODEGEN_LOONGARCH64)
     masm.push(ra);
 #endif
 
@@ -564,11 +566,13 @@ wasm::GenerateImportInterpExit(MacroAssembler& masm, const FuncImport& fi, uint3
     MOZ_ASSERT(NonVolatileRegs.has(WasmTlsReg));
 #if defined(JS_CODEGEN_X64) || \
     defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_ARM64) || \
-    defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+    defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || \
+    defined(JS_CODEGEN_LOONGARCH64)
     MOZ_ASSERT(NonVolatileRegs.has(HeapReg));
 #endif
 #if defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_ARM64) || \
-    defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+    defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || \
+    defined(JS_CODEGEN_LOONGARCH64)
     MOZ_ASSERT(NonVolatileRegs.has(GlobalReg));
 #endif
 
@@ -1049,6 +1053,37 @@ wasm::GenerateInterruptExit(MacroAssembler& masm, Label* throwLabel)
     masm.ret();
 #elif defined(JS_CODEGEN_ARM64)
     MOZ_CRASH();
+#elif defined(JS_CODEGEN_LOONGARCH64)
+    // Reserve space to store the resumePC. We restore all machine state from
+    // the saved register image and use the reserved `rx` register as the final
+    // jump scratch to resume execution.
+    masm.subFromStackPtr(Imm32(sizeof(intptr_t)));
+    masm.setFramePushed(0);
+    static_assert(!SupportsSimd, "high lanes of SIMD registers need to be saved too.");
+    masm.PushRegsInMask(AllRegsExceptSP);
+
+    // Save the unaligned stack pointer in a non-volatile register, then align
+    // for the C++ call into HandleExecutionInterrupt.
+    masm.moveStackPtrTo(s0);
+    masm.andToStackPtr(Imm32(~(ABIStackAlignment - 1)));
+
+    // Store resumePC into the reserved space above the saved register block.
+    masm.loadWasmActivationFromSymbolicAddress(IntArgReg0);
+    masm.loadPtr(Address(IntArgReg0, WasmActivation::offsetOfResumePC()), IntArgReg1);
+    masm.storePtr(IntArgReg1, Address(s0, masm.framePushed()));
+
+    masm.assertStackAlignment(ABIStackAlignment);
+    masm.call(SymbolicAddress::HandleExecutionInterrupt);
+
+    masm.branchIfFalseBool(ReturnReg, throwLabel);
+
+    // Restore the interrupted machine state before resuming execution.
+    masm.moveToStackPtr(s0);
+    masm.PopRegsInMask(AllRegsExceptSP);
+
+    masm.loadPtr(Address(StackPointer, 0), rx);
+    masm.addToStackPtr(Imm32(sizeof(intptr_t)));
+    masm.jump(rx);
 #elif defined (JS_CODEGEN_NONE)
     MOZ_CRASH();
 #else

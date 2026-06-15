@@ -120,6 +120,7 @@ EXPORTS.js += [
 main_deunified_sources = [
     'builtin/AtomicsObject.cpp',
     'builtin/Eval.cpp',
+    'builtin/FinalizationRegistryObject.cpp',
     'builtin/intl/Collator.cpp',
     'builtin/intl/CommonFunctions.cpp',
     'builtin/intl/DateTimeFormat.cpp',
@@ -520,6 +521,28 @@ elif CONFIG['JS_CODEGEN_ARM64']:
             'jit/arm64/vixl/MozSimulator-vixl.cpp',
             'jit/arm64/vixl/Simulator-vixl.cpp'
         ]
+elif CONFIG['JS_CODEGEN_LOONGARCH64']:
+    jit_ioncheck1_deunified_sources += [
+        'jit/mips-shared/Bailouts-mips-shared.cpp',
+        'jit/mips-shared/BaselineCompiler-mips-shared.cpp',
+        'jit/mips-shared/BaselineIC-mips-shared.cpp',
+        'jit/mips-shared/CodeGenerator-mips-shared.cpp',
+        'jit/mips-shared/Lowering-mips-shared.cpp',
+        'jit/mips-shared/MoveEmitter-mips-shared.cpp',
+    ]
+    jit_ioncheck2_deunified_sources += [
+        'jit/loongarch64/Architecture-loongarch64.cpp',
+        'jit/loongarch64/Assembler-loongarch64.cpp',
+        'jit/loongarch64/Bailouts-loongarch64.cpp',
+        'jit/loongarch64/BaselineCompiler-loongarch64.cpp',
+        'jit/loongarch64/BaselineIC-loongarch64.cpp',
+        'jit/loongarch64/CodeGenerator-loongarch64.cpp',
+        'jit/loongarch64/Lowering-loongarch64.cpp',
+        'jit/loongarch64/MacroAssembler-loongarch64.cpp',
+        'jit/loongarch64/MoveEmitter-loongarch64.cpp',
+        'jit/loongarch64/SharedIC-loongarch64.cpp',
+        'jit/loongarch64/Trampoline-loongarch64.cpp',
+    ]
 elif CONFIG['JS_CODEGEN_MIPS32'] or CONFIG['JS_CODEGEN_MIPS64']:
     jit_ioncheck1_deunified_sources += [
         'jit/mips-shared/Architecture-mips-shared.cpp',
@@ -748,5 +771,3 @@ selfhosted.inputs = [
 # We are keeping this in the main moz.build because it is file specific
 if CONFIG['CLANG_CXX'] or CONFIG['GNU_CXX']:
     SOURCES['jsdtoa.cpp'].flags += ['-Wno-implicit-fallthrough']
-
-

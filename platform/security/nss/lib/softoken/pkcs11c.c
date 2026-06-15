@@ -3283,7 +3283,7 @@ NSC_SignFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSignature,
 {
     SFTKSession *session;
     SFTKSessionContext *context;
-    unsigned int outlen;
+    unsigned int outlen = 0;
     unsigned int maxoutlen = *pulSignatureLen;
     CK_RV crv;
 
@@ -6031,8 +6031,10 @@ NSC_WrapKey(CK_SESSION_HANDLE hSession,
 
             /* Find out if this is a block cipher. */
             crv = sftk_GetContext(hSession, &context, SFTK_ENCRYPT, PR_FALSE, NULL);
-            if (crv != CKR_OK || !context)
+            if (crv != CKR_OK || !context) {
+                sftk_FreeAttribute(attribute);
                 break;
+            }
             if (context->blockSize > 1) {
                 unsigned int remainder = pText.len % context->blockSize;
                 if (!context->doPad && remainder) {
@@ -6046,6 +6048,7 @@ NSC_WrapKey(CK_SESSION_HANDLE hSession,
                         memcpy(pText.data, attribute->attrib.pValue,
                                attribute->attrib.ulValueLen);
                     else {
+                        sftk_FreeAttribute(attribute);
                         crv = CKR_HOST_MEMORY;
                         break;
                     }
@@ -8116,8 +8119,8 @@ NSC_DeriveKey(CK_SESSION_HANDLE hSession,
             if (keySize == 0)
                 keySize = tmpKeySize;
             if (keySize > tmpKeySize) {
-                sftk_FreeObject(newKey);
                 sftk_FreeAttribute(att2);
+                sftk_FreeObject(newKey);
                 crv = CKR_TEMPLATE_INCONSISTENT;
                 break;
             }
@@ -8959,12 +8962,13 @@ NSC_DigestKey(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hKey)
     }
     /* get the key value */
     att = sftk_FindAttribute(key, CKA_VALUE);
-    sftk_FreeObject(key);
     if (!att) {
+        sftk_FreeObject(key);
         return CKR_KEY_HANDLE_INVALID;
     }
     crv = NSC_DigestUpdate(hSession, (CK_BYTE_PTR)att->attrib.pValue,
                            att->attrib.ulValueLen);
     sftk_FreeAttribute(att);
+    sftk_FreeObject(key);
     return crv;
 }

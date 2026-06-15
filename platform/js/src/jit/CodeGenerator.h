@@ -19,6 +19,8 @@
 # include "jit/arm/CodeGenerator-arm.h"
 #elif defined(JS_CODEGEN_ARM64)
 # include "jit/arm64/CodeGenerator-arm64.h"
+#elif defined(JS_CODEGEN_LOONGARCH64)
+# include "jit/loongarch64/CodeGenerator-loongarch64.h"
 #elif defined(JS_CODEGEN_MIPS32)
 # include "jit/mips32/CodeGenerator-mips32.h"
 #elif defined(JS_CODEGEN_MIPS64)
@@ -535,8 +537,7 @@ class CodeGenerator final : public CodeGeneratorSpecific
                                      Label* ifDoesntEmulateUndefined,
                                      Register scratch, OutOfLineTestObject* ool);
 
-    // Branch to target unless obj has an emptyObjectElements or emptyObjectElementsShared
-    // elements pointer.
+    // Branch to target unless obj has one of the empty elements pointers.
     void branchIfNotEmptyObjectElements(Register obj, Label* target);
 
     void emitStoreElementTyped(const LAllocation* value, MIRType valueType, MIRType elementType,

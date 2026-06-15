@@ -42,7 +42,10 @@ public:
     // with embedded color bitmaps (Apple Color Emoji), as Core Text renders
     // the glyphs with non-linear scaling at small pixel sizes.
     virtual bool ProvidesGlyphWidths() const override {
-        return mVariationFont ||
+        return
+#if defined(MAC_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+               mVariationFont ||
+#endif
                mFontEntry->HasFontTable(TRUETYPE_TAG('s','b','i','x'));
     }
 

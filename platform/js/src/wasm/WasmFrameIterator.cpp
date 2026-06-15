@@ -242,6 +242,11 @@ static const unsigned PushedRetAddr = 8;
 static const unsigned PushedFP = 32;
 static const unsigned StoredFP = 36;
 static const unsigned PostStorePrePopFP = 4;
+#elif defined(JS_CODEGEN_LOONGARCH64)
+static const unsigned PushedRetAddr = 8;
+static const unsigned PushedFP = 36;
+static const unsigned StoredFP = 40;
+static const unsigned PostStorePrePopFP = 0;
 #elif defined(JS_CODEGEN_NONE)
 # if defined(DEBUG)
 static const unsigned PushedRetAddr = 0;
@@ -258,7 +263,8 @@ PushRetAddr(MacroAssembler& masm)
 {
 #if defined(JS_CODEGEN_ARM)
     masm.push(lr);
-#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || \
+      defined(JS_CODEGEN_LOONGARCH64)
     masm.push(ra);
 #else
     // The x86/x64 call instruction pushes the return address.
@@ -641,19 +647,23 @@ ProfilingFrameIterator::ProfilingFrameIterator(const WasmActivation& activation,
         MOZ_ASSERT(offsetInModule < codeRange->end());
         uint32_t offsetInCodeRange = offsetInModule - codeRange->begin();
         void** sp = (void**)state.sp;
-#if defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+#if defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_MIPS32) || \
+    defined(JS_CODEGEN_MIPS64) || defined(JS_CODEGEN_LOONGARCH64)
         if (offsetInCodeRange < PushedRetAddr || InThunk(*codeRange, offsetInModule)) {
-            // First instruction of the ARM/MIPS function; the return address is
-            // still in lr and fp still holds the caller's fp.
+            // First instruction of the ARM/MIPS/loongarch64 function; the
+            // return address is still in lr and fp still holds the caller's fp.
             callerPC_ = state.lr;
             callerFP_ = fp;
             AssertMatchesCallSite(*activation_, callerPC_, callerFP_, sp - 2);
+# if defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_MIPS32) || \
+    defined(JS_CODEGEN_MIPS64)
         } else if (offsetInModule == codeRange->profilingReturn() - PostStorePrePopFP) {
             // Second-to-last instruction of the ARM/MIPS function; fp points to
             // the caller's fp; have not yet popped Frame.
             callerPC_ = ReturnAddressFromFP(sp);
             callerFP_ = CallerFPFromFP(sp);
             AssertMatchesCallSite(*activation_, callerPC_, callerFP_, sp);
+# endif
         } else
 #endif
         if (offsetInCodeRange < PushedFP || offsetInModule == codeRange->profilingReturn() ||
@@ -826,6 +836,13 @@ wasm::ToggleProfiling(const Code& code, const CallSite& callSite, bool enabled)
     BOffImm16 calleeOffset;
     callerInsn->extractImm16(&calleeOffset);
     void* callee = calleeOffset.getDest(reinterpret_cast<Instruction*>(caller));
+#elif defined(JS_CODEGEN_LOONGARCH64)
+    uint8_t* caller = callerRetAddr - sizeof(uint32_t);
+    Instruction* callerInsn = reinterpret_cast<Instruction*>(caller);
+    MOZ_ASSERT(callerInsn->extractOpcode() == ((uint32_t)op_bl >> OpcodeShift));
+    int32_t calleeOffset =
+        int32_t(reinterpret_cast<InstJump*>(callerInsn)->extractImm26Value() << 8) >> 6;
+    void* callee = caller + calleeOffset;
 #elif defined(JS_CODEGEN_NONE)
     MOZ_CRASH();
     void* callee = nullptr;
@@ -853,6 +870,8 @@ wasm::ToggleProfiling(const Code& code, const CallSite& callSite, bool enabled)
     MOZ_CRASH();
 #elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
     new (caller) InstImm(op_regimm, zero, rt_bgezal, BOffImm16(to - caller));
+#elif defined(JS_CODEGEN_LOONGARCH64)
+    reinterpret_cast<InstJump*>(caller)->setJOffImm26(JOffImm26(to - caller));
 #elif defined(JS_CODEGEN_NONE)
     MOZ_CRASH();
 #else

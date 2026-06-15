@@ -1619,7 +1619,8 @@ CodeGeneratorShared::getJumpLabelForBranch(MBasicBlock* block)
 }
 
 // This function is not used for MIPS/MIPS64. MIPS has branchToBlock.
-#if !defined(JS_CODEGEN_MIPS32) && !defined(JS_CODEGEN_MIPS64)
+#if !defined(JS_CODEGEN_MIPS32) && !defined(JS_CODEGEN_MIPS64) && \
+    !defined(JS_CODEGEN_LOONGARCH64)
 void
 CodeGeneratorShared::jumpToBlock(MBasicBlock* mir, Assembler::Condition cond)
 {

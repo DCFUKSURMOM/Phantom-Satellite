@@ -2016,6 +2016,7 @@ MOZ_FEEDS=1
 MOZ_AUTH_EXTENSION=1
 MOZ_RAW=
 MOZ_AV1=
+AV1_USE_AOM=
 MOZ_VORBIS=
 MOZ_TREMOR=
 MOZ_SAMPLE_TYPE_FLOAT32=
@@ -2407,7 +2408,6 @@ then
     if test "$MOZ_ENABLE_DBUS"
     then
         PKG_CHECK_MODULES(MOZ_DBUS, dbus-1 >= $DBUS_VERSION)
-        PKG_CHECK_MODULES(MOZ_DBUS_GLIB, dbus-glib-1 >= $DBUS_VERSION)
         AC_DEFINE(MOZ_ENABLE_DBUS)
     fi
 fi
@@ -2470,9 +2470,8 @@ AC_TRY_COMPILE([#include <linux/ethtool.h>],
 
 AC_SUBST(MOZ_WEBRTC_HAVE_ETHTOOL_SPEED_HI)
 
-# target_arch is from {ia32|x64|arm|ppc}
 case "$CPU_ARCH" in
-x86_64 | arm | aarch64 | x86 | ppc* | ia64)
+x86_64 | arm | aarch64 | x86 | ppc* | loongarch64)
     :
     ;;
 *)
@@ -2699,10 +2698,10 @@ fi
 AC_SUBST(MOZ_RAW)
 
 dnl ========================================================
-dnl = Enable Libaom AV1 Codec
+dnl = Enable AV1 Codec
 dnl ========================================================
 MOZ_ARG_ENABLE_BOOL(av1,
-[  --enable-av1           Enable libaom for av1 video support],
+[  --enable-av1           Enable AV1 video support],
     MOZ_AV1=1,
     MOZ_AV1=)
 
@@ -2710,7 +2709,25 @@ if test -n "$MOZ_AV1"; then
     AC_DEFINE(MOZ_AV1)
 fi
 
+MOZ_ARG_ENABLE_BOOL(libaom,
+[  --enable-libaom        Use libAOM for AV1 video support instead of Dav1d],
+    AV1_USE_AOM=1,
+    AV1_USE_AOM=)
+
+if test -n "$AV1_USE_AOM"; then
+    AC_DEFINE(AV1_USE_AOM)
+fi
+
+if test -z "$MOZ_AV1" -a -n "$AV1_USE_AOM"; then
+  AC_MSG_ERROR([--enable-av1 is required to be able to use libAOM. Either use --enable-av1 or remove --enable-libaom from your config.])
+fi
+
+if test "${CPU_ARCH}" = "x86" && test -n "$MOZ_AV1" -a -z "$AV1_USE_AOM"; then
+  AC_MSG_ERROR([The Dav1d AV1 decoding library is not compatible with 32-bit x86 builds. Either use --disable-av1 or add --enable-libaom to your config.])
+fi
+
 AC_SUBST(MOZ_AV1)
+AC_SUBST(AV1_USE_AOM)
 
 dnl ========================================================
 dnl = Apple platform decoder support

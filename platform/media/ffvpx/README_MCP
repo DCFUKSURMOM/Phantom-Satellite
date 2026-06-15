@@ -60,3 +60,8 @@ header, causing all sorts of issues.
 
 There are going to be a lot of changes in terms of symbols exported. Adjust libavutil/avutil.symbols and
 libavcodec/avcodec.symbols by removing and adding symbols until the build passes.
+
+========================
+
+After updating, apply patches:
+flac-alloc-failure.patch fix leak in flac decoder in case of alloc failure

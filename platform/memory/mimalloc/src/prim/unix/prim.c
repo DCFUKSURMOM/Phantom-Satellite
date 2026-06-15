@@ -25,7 +25,7 @@ terms of the MIT license. A copy of the license can be found in the file
 #include "mimalloc/prim.h"
 
 #include <sys/mman.h>  // mmap
-#include <unistd.h>    // sysconf
+#include <unistd.h>    // sysconf, sleep
 #include <fcntl.h>     // open, close, read, access
 #include <stdlib.h>    // getenv, arc4random_buf
 
@@ -147,6 +147,24 @@ static bool unix_detect_overcommit(void) {
   return os_overcommit;
 }
 
+static bool unix_detect_thp(void) {
+  bool thp_enabled = false;
+  #if defined(__linux__)
+  int fd = mi_prim_open("/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY);
+  if (fd >= 0) {
+    char buf[32];
+    ssize_t nread = mi_prim_read(fd, &buf, sizeof(buf));
+    mi_prim_close(fd);
+    // <https://www.kernel.org/doc/html/latest/admin-guide/mm/transhuge.html>
+    // between brackets is the current value, for example: always [madvise] never
+    if (nread >= 1) {
+      thp_enabled = (_mi_strnstr(buf,32,"[never]") == NULL);
+    }
+  }
+  #endif
+  return thp_enabled;
+}
+
 // try to detect the physical memory dynamically (if possible)
 static void unix_detect_physical_memory( size_t page_size, size_t* physical_memory_in_kib ) {
   #if defined(CTL_HW) && (defined(HW_PHYSMEM64) || defined(HW_MEMSIZE))  // freeBSD, macOS
@@ -169,8 +187,16 @@ static void unix_detect_physical_memory( size_t page_size, size_t* physical_memo
     MI_UNUSED(page_size);
     struct sysinfo info; _mi_memzero_var(info);
     const int err = sysinfo(&info);
-    if (err==0 && info.totalram > 0 && info.totalram <= SIZE_MAX) {
-      *physical_memory_in_kib = (size_t)info.totalram / MI_KiB;
+    if (err==0 && info.mem_unit > 0 && info.totalram <= SIZE_MAX) {
+      if (info.mem_unit==MI_KiB) {
+        *physical_memory_in_kib = (size_t)info.totalram;
+      }
+      else {
+        size_t total = 0;
+        if (!mi_mul_overflow((size_t)info.totalram, (size_t)info.mem_unit, &total)) {
+          *physical_memory_in_kib = (total / MI_KiB);
+        }
+      }
     }
   #elif defined(_SC_PHYS_PAGES)  // do not use by default as it might cause allocation (by using `fopen` to parse /proc/meminfo) (issue #1100)
     const long pphys = sysconf(_SC_PHYS_PAGES);
@@ -193,21 +219,17 @@ void _mi_prim_mem_init( mi_os_mem_config_t* config )
   config->has_overcommit = unix_detect_overcommit();
   config->has_partial_free = true;    // mmap can free in parts
   config->has_virtual_reserve = true; // todo: check if this true for NetBSD?  (for anonymous mmap with PROT_NONE)
+  config->has_transparent_huge_pages = unix_detect_thp();
 
   // disable transparent huge pages for this process?
   #if (defined(__linux__) || defined(__ANDROID__)) && defined(PR_GET_THP_DISABLE)
-  #if defined(MI_NO_THP)
-  if (true)
-  #else
   if (!mi_option_is_enabled(mi_option_allow_thp)) // disable THP if requested through an option
-  #endif
   {
-    int val = 0;
-    if (prctl(PR_GET_THP_DISABLE, &val, 0, 0, 0) != 0) {
+    config->has_transparent_huge_pages = false;
+    if (prctl(PR_GET_THP_DISABLE, 0, 0, 0, 0) == 0) {   // -1 on error, 1 if already disabled
       // Most likely since distros often come with always/madvise settings.
-      val = 1;
       // Disabling only for mimalloc process rather than touching system wide settings
-      (void)prctl(PR_SET_THP_DISABLE, &val, 0, 0, 0);
+      (void)prctl(PR_SET_THP_DISABLE, 1, 0, 0, 0);
     }
   }
   #endif
@@ -255,7 +277,8 @@ static void* unix_mmap_prim_aligned(void* addr, size_t size, size_t try_alignmen
   void* p = NULL;
   #if defined(MAP_ALIGNED)  // BSD
   if (addr == NULL && try_alignment > 1 && (try_alignment % _mi_os_page_size()) == 0) {
-    size_t n = mi_bsr(try_alignment);
+    size_t n = 0;
+    mi_bsr(try_alignment, &n);
     if (((size_t)1 << n) == try_alignment && n >= 12 && n <= 30) {  // alignment is a power of 2 and 4096 <= alignment <= 1GiB
       p = unix_mmap_prim(addr, size, protect_flags, flags | MAP_ALIGNED(n), fd);
       if (p==MAP_FAILED || !_mi_is_aligned(p,try_alignment)) {
@@ -433,7 +456,7 @@ int _mi_prim_alloc(void* hint_addr, size_t size, size_t try_alignment, bool comm
 //---------------------------------------------
 
 static void unix_mprotect_hint(int err) {
-  #if defined(__linux__) && (MI_SECURE>=2) // guard page around every mimalloc page
+  #if defined(__linux__) && (MI_SECURE>=5) // guard page around every mimalloc page
   if (err == ENOMEM) {
     _mi_warning_message("The next warning may be caused by a low memory map limit.\n"
                         "  On Linux this is controlled by the vm.max_map_count -- maybe increase it?\n"
@@ -443,6 +466,10 @@ static void unix_mprotect_hint(int err) {
   MI_UNUSED(err);
   #endif
 }
+
+
+
+
 
 int _mi_prim_commit(void* start, size_t size, bool* is_zero) {
   // commit: ensure we can access the area
@@ -555,7 +582,7 @@ static long mi_prim_mbind(void* start, unsigned long len, unsigned long mode, co
 int _mi_prim_alloc_huge_os_pages(void* hint_addr, size_t size, int numa_node, bool* is_zero, void** addr) {
   bool is_large = true;
   *is_zero = true;
-  *addr = unix_mmap(hint_addr, size, MI_SEGMENT_SIZE, PROT_READ | PROT_WRITE, true, true, &is_large);
+  *addr = unix_mmap(hint_addr, size, MI_ARENA_SLICE_ALIGN, PROT_READ | PROT_WRITE, true, true, &is_large);
   if (*addr != NULL && numa_node >= 0 && numa_node < 8*MI_INTPTR_SIZE) { // at most 64 nodes
     unsigned long numa_mask = (1UL << numa_node);
     // TODO: does `mbind` work correctly for huge OS pages? should we
@@ -793,38 +820,27 @@ static char** mi_get_environ(void) {
   return (*_NSGetEnviron());
 }
 #else
-#if defined(__GNUC__)
-// Use weak refs to prefer _environ when available (glibc hides environ in DSOs).
-extern char** environ __attribute__((weak));
-extern char** _environ __attribute__((weak));
-static char** mi_get_environ(void) {
-  if (_environ != NULL) return _environ;
-  return environ;
-}
-#else
 extern char** environ;
 static char** mi_get_environ(void) {
   return environ;
 }
 #endif
-#endif
 bool _mi_prim_getenv(const char* name, char* result, size_t result_size) {
   if (name==NULL) return false;
-  if (_mi_preloading()) return false;
-  const char* s = getenv(name);
-  if (s == NULL) {
-    // we check the upper case name too.
-    char buf[64+1];
-    size_t len = _mi_strnlen(name,sizeof(buf)-1);
-    for (size_t i = 0; i < len; i++) {
-      buf[i] = _mi_toupper(name[i]);
+  const size_t len = _mi_strlen(name);
+  if (len == 0) return false;
+  char** env = mi_get_environ();
+  if (env == NULL) return false;
+  // compare up to 10000 entries
+  for (int i = 0; i < 10000 && env[i] != NULL; i++) {
+    const char* s = env[i];
+    if (_mi_strnicmp(name, s, len) == 0 && s[len] == '=') { // case insensitive
+      // found it
+      _mi_strlcpy(result, s + len + 1, result_size);
+      return true;
     }
-    buf[len] = 0;
-    s = getenv(buf);
-    if (s == NULL) return false;
   }
-  _mi_strlcpy(result, s, result_size);
-  return true;
+  return false;
 }
 #else
 // fallback: use standard C `getenv` but this cannot be used while initializing the C runtime
@@ -932,12 +948,12 @@ bool _mi_prim_random_buf(void* buf, size_t buf_len) {
 #if defined(MI_USE_PTHREADS)
 
 // use pthread local storage keys to detect thread ending
-// (and used with MI_TLS_PTHREADS for the default heap)
+// (and used with MI_TLS_PTHREADS for the default theap)
 pthread_key_t _mi_heap_default_key = (pthread_key_t)(-1);
 
 static void mi_pthread_done(void* value) {
   if (value!=NULL) {
-    _mi_thread_done((mi_heap_t*)value);
+    _mi_thread_done((mi_theap_t*)value);
   }
 }
 
@@ -952,9 +968,9 @@ void _mi_prim_thread_done_auto_done(void) {
   }
 }
 
-void _mi_prim_thread_associate_default_heap(mi_heap_t* heap) {
+void _mi_prim_thread_associate_default_theap(mi_theap_t* theap) {
   if (_mi_heap_default_key != (pthread_key_t)(-1)) {  // can happen during recursive invocation on freeBSD
-    pthread_setspecific(_mi_heap_default_key, heap);
+    pthread_setspecific(_mi_heap_default_key, theap);
   }
 }
 
@@ -968,8 +984,16 @@ void _mi_prim_thread_done_auto_done(void) {
   // nothing
 }
 
-void _mi_prim_thread_associate_default_heap(mi_heap_t* heap) {
-  MI_UNUSED(heap);
+void _mi_prim_thread_associate_default_theap(mi_theap_t* theap) {
+  MI_UNUSED(theap);
 }
 
 #endif
+
+bool _mi_prim_thread_is_in_threadpool(void) {
+  return false;
+}
+
+void _mi_prim_thread_yield(void) {
+  sleep(0);
+}
