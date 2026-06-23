@@ -25,6 +25,7 @@ ac_add_options --disable-js-shell
 ac_add_options --disable-precompiled-startupcache
 ac_add_options --disable-elf-hack
 ac_add_options --disable-gold # Disable ld.gold, does not work on all architectures and I want consistent configs
+ac_add_options --enable-libaom # Dav1d is not compatible with 32 bit builds, and requires modern hardware to work well at all, use the legacy libaom library for AV1 support
 
 # Medium optimization (higher seems to make no difference or breaks stuff), suppress warnings, and remove unused function sections.
 ac_add_options --enable-optimize="-O2 -w -ffunction-sections"
