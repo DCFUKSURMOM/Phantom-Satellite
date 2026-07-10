@@ -1,8 +1,0 @@
-protocol manageSelfToplevel {
-    manager manageSelfToplevel;
-    manages manageSelfToplevel;
-
-child:
-    manageSelfToplevel();
-    async __delete__();
-};

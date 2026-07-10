@@ -1,9 +1,0 @@
-commit ea346ffcbdc4cde776147d9456fd71121005e52f
-Author: Robin Leroy <egg.robin.leroy@gmail.com>
-Date:   Thu Dec 18 17:47:46 2025 +0100
-
-    ICU-23296 Update tzdata to 2025c (#46)
-    
-    * ICU-23296 Pick up CLDR changes since 2025b
-    
-    * ICU-23296 Add 2025c data
