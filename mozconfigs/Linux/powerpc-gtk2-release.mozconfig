@@ -31,6 +31,6 @@ ac_add_options --enable-optimize="-O2 -w -ffunction-sections"
 
 export MOZ_PKG_SPECIAL=gtk$_GTK_VERSION
 
-# Set PPC 604e as minimum CPU but optimize for PPC 750/G3+, remove unused data sections
+# Set PPC 604e as minimum CPU but optimize for PPC 750/G3+
 export CFLAGS="-mcpu=604e -mtune=750"
 export CXXFLAGS="-mcpu=604e -mtune=750"
