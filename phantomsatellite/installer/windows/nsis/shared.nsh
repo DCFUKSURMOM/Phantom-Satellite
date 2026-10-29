@@ -188,6 +188,7 @@
     ${EndIf}
   ${EndIf}
 
+  ; clean up obsolete quicklaunch shortcuts if present.
   ${If} ${FileExists} "$QUICKLAUNCH\${BrandFullName}.lnk"
     ShellLink::GetShortCutArgs "$QUICKLAUNCH\${BrandFullName}.lnk"
     Pop $0
@@ -218,8 +219,7 @@
     CreateShortCut "$DESKTOP\${BrandFullName}.lnk" "$INSTDIR\${FileMainEXE}"
     ${If} ${FileExists} "$DESKTOP\${BrandFullName}.lnk"
       ShellLink::SetShortCutWorkingDirectory "$DESKTOP\${BrandFullName}.lnk" "$INSTDIR"
-      ${If} ${AtLeastWin7}
-      ${AndIf} "$AppUserModelID" != ""
+      ${If} "$AppUserModelID" != ""
         ApplicationID::Set "$DESKTOP\${BrandFullName}.lnk" "$AppUserModelID" "true"
       ${EndIf}
     ${Else}
@@ -229,8 +229,7 @@
         ${If} ${FileExists} "$DESKTOP\${BrandFullName}.lnk"
           ShellLink::SetShortCutWorkingDirectory "$DESKTOP\${BrandFullName}.lnk" \
                                                  "$INSTDIR"
-          ${If} ${AtLeastWin7}
-          ${AndIf} "$AppUserModelID" != ""
+          ${If} "$AppUserModelID" != ""
             ApplicationID::Set "$DESKTOP\${BrandFullName}.lnk" "$AppUserModelID" "true"
           ${EndIf}
         ${EndIf}
@@ -244,8 +243,7 @@
     ${If} ${FileExists} "$SMPROGRAMS\${BrandFullName}.lnk"
       ShellLink::SetShortCutWorkingDirectory "$SMPROGRAMS\${BrandFullName}.lnk" \
                                              "$INSTDIR"
-      ${If} ${AtLeastWin7}
-      ${AndIf} "$AppUserModelID" != ""
+      ${If} "$AppUserModelID" != ""
         ApplicationID::Set "$SMPROGRAMS\${BrandFullName}.lnk" "$AppUserModelID" "true"
       ${EndIf}
     ${Else}
@@ -256,23 +254,11 @@
         ${If} ${FileExists} "$SMPROGRAMS\${BrandFullName}.lnk"
           ShellLink::SetShortCutWorkingDirectory "$SMPROGRAMS\${BrandFullName}.lnk" \
                                                  "$INSTDIR"
-          ${If} ${AtLeastWin7}
-          ${AndIf} "$AppUserModelID" != ""
+          ${If} "$AppUserModelID" != ""
             ApplicationID::Set "$SMPROGRAMS\${BrandFullName}.lnk" "$AppUserModelID" "true"
           ${EndIf}
         ${EndIf}
       ${EndUnless}
-    ${EndIf}
-  ${EndUnless}
-
-  ; Windows 7 doesn't use the QuickLaunch directory
-  ${Unless} ${AtLeastWin7}
-  ${AndUnless} ${FileExists} "$QUICKLAUNCH\${BrandFullName}.lnk"
-    CreateShortCut "$QUICKLAUNCH\${BrandFullName}.lnk" \
-                   "$INSTDIR\${FileMainEXE}"
-    ${If} ${FileExists} "$QUICKLAUNCH\${BrandFullName}.lnk"
-      ShellLink::SetShortCutWorkingDirectory "$QUICKLAUNCH\${BrandFullName}.lnk" \
-                                             "$INSTDIR"
     ${EndIf}
   ${EndUnless}
 !macroend
@@ -382,11 +368,7 @@
   ; If the IconsVisible name value pair doesn't exist add it otherwise the
   ; application won't be displayed in Set Program Access and Defaults.
   ${If} ${Errors}
-    ${If} ${FileExists} "$QUICKLAUNCH\${BrandFullName}.lnk"
-      WriteRegDWORD ${RegKey} "$0\InstallInfo" "IconsVisible" 1
-    ${Else}
-      WriteRegDWORD ${RegKey} "$0\InstallInfo" "IconsVisible" 0
-    ${EndIf}
+    WriteRegDWORD ${RegKey} "$0\InstallInfo" "IconsVisible" 0
   ${EndIf}
 
   WriteRegStr ${RegKey} "$0\shell\open\command" "" "$\"$8$\""
@@ -397,7 +379,7 @@
   WriteRegStr ${RegKey} "$0\shell\safemode" "" "$(CONTEXT_SAFE_MODE)"
   WriteRegStr ${RegKey} "$0\shell\safemode\command" "" "$\"$8$\" -safe-mode"
 
-  ; Vista Capabilities registry keys
+  ; Capabilities registry keys
   WriteRegStr ${RegKey} "$0\Capabilities" "ApplicationDescription" "$(REG_APP_DESC)"
   WriteRegStr ${RegKey} "$0\Capabilities" "ApplicationIcon" "$8,0"
   WriteRegStr ${RegKey} "$0\Capabilities" "ApplicationName" "${BrandShortName}"
@@ -839,20 +821,18 @@
     ${If} ${Errors}
       ClearErrors
       WriteIniStr "$0" "TASKBAR" "Migrated" "true"
-      ${If} ${AtLeastWin7}
-        ; No need to check the default on Win8 and later
-        ${If} ${AtMostWin2008R2}
-          ; Check if the Pale Moon is the http handler for this user
-          SetShellVarContext current ; Set SHCTX to the current user
-          ${IsHandlerForInstallDir} "http" $R9
-          ${If} $TmpVal == "HKLM"
-            SetShellVarContext all ; Set SHCTX to all users
-          ${EndIf}
+      ; No need to check the default on Win8 and later
+      ${If} ${AtMostWin2008R2}
+        ; Check if the Pale Moon is the http handler for this user
+        SetShellVarContext current ; Set SHCTX to the current user
+        ${IsHandlerForInstallDir} "http" $R9
+        ${If} $TmpVal == "HKLM"
+          SetShellVarContext all ; Set SHCTX to all users
         ${EndIf}
-        ${If} "$R9" == "true"
-        ${OrIf} ${AtLeastWin8}
-          ${PinToTaskBar}
-        ${EndIf}
+      ${EndIf}
+      ${If} "$R9" == "true"
+      ${OrIf} ${AtLeastWin8}
+        ${PinToTaskBar}
       ${EndIf}
     ${EndIf}
   ${EndIf}
@@ -867,72 +847,70 @@
 ; model ID removes a pinned pinned Start Menu shortcut this will also add a
 ; pinned Start Menu shortcut.
 !macro PinToTaskBar
-  ${If} ${AtLeastWin7}
-    StrCpy $8 "false" ; Whether a shortcut had to be created
-    ${IsPinnedToTaskBar} "$INSTDIR\${FileMainEXE}" $R9
-    ${If} "$R9" == "false"
-      ; Find an existing Start Menu shortcut or create one to use for pinning
-      ${GetShortcutsLogPath} $0
-      ${If} ${FileExists} "$0"
-        ClearErrors
-        ReadINIStr $1 "$0" "STARTMENU" "Shortcut0"
-        ${Unless} ${Errors}
-          SetShellVarContext all ; Set SHCTX to all users
+  StrCpy $8 "false" ; Whether a shortcut had to be created
+  ${IsPinnedToTaskBar} "$INSTDIR\${FileMainEXE}" $R9
+  ${If} "$R9" == "false"
+    ; Find an existing Start Menu shortcut or create one to use for pinning
+    ${GetShortcutsLogPath} $0
+    ${If} ${FileExists} "$0"
+      ClearErrors
+      ReadINIStr $1 "$0" "STARTMENU" "Shortcut0"
+      ${Unless} ${Errors}
+        SetShellVarContext all ; Set SHCTX to all users
+        ${Unless} ${FileExists} "$SMPROGRAMS\$1"
+          SetShellVarContext current ; Set SHCTX to the current user
           ${Unless} ${FileExists} "$SMPROGRAMS\$1"
-            SetShellVarContext current ; Set SHCTX to the current user
-            ${Unless} ${FileExists} "$SMPROGRAMS\$1"
-              StrCpy $8 "true"
-              CreateShortCut "$SMPROGRAMS\$1" "$INSTDIR\${FileMainEXE}"
-              ${If} ${FileExists} "$SMPROGRAMS\$1"
-                ShellLink::SetShortCutWorkingDirectory "$SMPROGRAMS\$1" \
-                                                       "$INSTDIR"
-                ${If} "$AppUserModelID" != ""
-                  ApplicationID::Set "$SMPROGRAMS\$1" "$AppUserModelID" "true"
-                ${EndIf}
+            StrCpy $8 "true"
+            CreateShortCut "$SMPROGRAMS\$1" "$INSTDIR\${FileMainEXE}"
+            ${If} ${FileExists} "$SMPROGRAMS\$1"
+              ShellLink::SetShortCutWorkingDirectory "$SMPROGRAMS\$1" \
+                                                     "$INSTDIR"
+              ${If} "$AppUserModelID" != ""
+                ApplicationID::Set "$SMPROGRAMS\$1" "$AppUserModelID" "true"
               ${EndIf}
-            ${EndUnless}
+            ${EndIf}
+          ${EndUnless}
+        ${EndUnless}
+
+        ${If} ${FileExists} "$SMPROGRAMS\$1"
+          ; Count of Start Menu pinned shortcuts before unpinning.
+          ${PinnedToStartMenuLnkCount} $R9
+
+          ; Having multiple shortcuts pointing to different installations with
+          ; the same AppUserModelID (e.g. side by side installations of the
+          ; same version) will make the TaskBar shortcut's lists into an bad
+          ; state where the lists are not shown. To prevent this first
+          ; uninstall the pinned item.
+          ApplicationID::UninstallPinnedItem "$SMPROGRAMS\$1"
+
+          ; Count of Start Menu pinned shortcuts after unpinning.
+          ${PinnedToStartMenuLnkCount} $R8
+
+          ; If there is a change in the number of Start Menu pinned shortcuts
+          ; assume that unpinning unpinned a side by side installation from
+          ; the Start Menu and pin this installation to the Start Menu.
+          ${Unless} $R8 == $R9
+            ; Pin the shortcut to the Start Menu. 5381 is the shell32.dll
+            ; resource id for the "Pin to Start Menu" string.
+            InvokeShellVerb::DoIt "$SMPROGRAMS" "$1" "5381"
           ${EndUnless}
 
-          ${If} ${FileExists} "$SMPROGRAMS\$1"
-            ; Count of Start Menu pinned shortcuts before unpinning.
-            ${PinnedToStartMenuLnkCount} $R9
+          ; Pin the shortcut to the TaskBar. 5386 is the shell32.dll resource
+          ; id for the "Pin to Taskbar" string.
+          InvokeShellVerb::DoIt "$SMPROGRAMS" "$1" "5386"
 
-            ; Having multiple shortcuts pointing to different installations with
-            ; the same AppUserModelID (e.g. side by side installations of the
-            ; same version) will make the TaskBar shortcut's lists into an bad
-            ; state where the lists are not shown. To prevent this first
-            ; uninstall the pinned item.
-            ApplicationID::UninstallPinnedItem "$SMPROGRAMS\$1"
-
-            ; Count of Start Menu pinned shortcuts after unpinning.
-            ${PinnedToStartMenuLnkCount} $R8
-
-            ; If there is a change in the number of Start Menu pinned shortcuts
-            ; assume that unpinning unpinned a side by side installation from
-            ; the Start Menu and pin this installation to the Start Menu.
-            ${Unless} $R8 == $R9
-              ; Pin the shortcut to the Start Menu. 5381 is the shell32.dll
-              ; resource id for the "Pin to Start Menu" string.
-              InvokeShellVerb::DoIt "$SMPROGRAMS" "$1" "5381"
-            ${EndUnless}
-
-            ; Pin the shortcut to the TaskBar. 5386 is the shell32.dll resource
-            ; id for the "Pin to Taskbar" string.
-            InvokeShellVerb::DoIt "$SMPROGRAMS" "$1" "5386"
-
-            ; Delete the shortcut if it was created
-            ${If} "$8" == "true"
-              Delete "$SMPROGRAMS\$1"
-            ${EndIf}
+          ; Delete the shortcut if it was created
+          ${If} "$8" == "true"
+            Delete "$SMPROGRAMS\$1"
           ${EndIf}
+        ${EndIf}
 
-          ${If} $TmpVal == "HKCU"
-            SetShellVarContext current ; Set SHCTX to the current user
-          ${Else}
-            SetShellVarContext all ; Set SHCTX to all users
-          ${EndIf}
-        ${EndUnless}
-      ${EndIf}
+        ${If} $TmpVal == "HKCU"
+          SetShellVarContext current ; Set SHCTX to the current user
+        ${Else}
+          SetShellVarContext all ; Set SHCTX to all users
+        ${EndIf}
+      ${EndUnless}
     ${EndIf}
   ${EndIf}
 !macroend
@@ -969,8 +947,7 @@
                 ${If} ${FileExists} "$SMPROGRAMS\${BrandFullName}.lnk"
                   ShellLink::SetShortCutWorkingDirectory "$SMPROGRAMS\${BrandFullName}.lnk" \
                                                          "$INSTDIR"
-                  ${If} ${AtLeastWin7}
-                  ${AndIf} "$AppUserModelID" != ""
+                  ${If} "$AppUserModelID" != ""
                     ApplicationID::Set "$SMPROGRAMS\${BrandFullName}.lnk" \
                                        "$AppUserModelID" "true"
                   ${EndIf}
@@ -1050,7 +1027,6 @@
   ${GetShortcutsLogPath} $0
   ${Unless} ${FileExists} "$0"
     ${LogStartMenuShortcut} "${BrandFullName}.lnk"
-    ${LogQuickLaunchShortcut} "${BrandFullName}.lnk"
     ${LogDesktopShortcut} "${BrandFullName}.lnk"
   ${EndUnless}
 !macroend
@@ -1172,27 +1148,24 @@ Function SetAsDefaultAppUserHKCU
 
   ${SetHandlers}
 
-  ${If} ${AtLeastWinVista}
-    ; Only register as the handler on Vista and above if the app registry name
-    ; exists under the RegisteredApplications registry key. The protocol and
-    ; file handlers set previously at the user level will associate this install
-    ; as the default browser.
-    ClearErrors
-    ReadRegStr $0 HKLM "Software\RegisteredApplications" "${AppRegName}"
-    ${Unless} ${Errors}
-      ; This is all protected by a user choice hash in Windows 8 so it won't
-      ; help, but it also won't hurt.
-      AppAssocReg::SetAppAsDefaultAll "${AppRegName}"
-    ${EndUnless}
-  ${EndIf}
+  ; Only register as the handler if the app registry name exists under the
+  ; RegisteredApplications registry key. The protocol and file handlers set
+  ; previously at the user level will associate this install as the default
+  ; browser.
+  ClearErrors
+  ReadRegStr $0 HKLM "Software\RegisteredApplications" "${AppRegName}"
+  ${Unless} ${Errors}
+    ; This is all protected by a user choice hash in Windows 8 so it won't
+    ; help, but it also won't hurt.
+    AppAssocReg::SetAppAsDefaultAll "${AppRegName}"
+  ${EndUnless}
   ${RemoveDeprecatedKeys}
   ${MigrateTaskBarShortcut}
 FunctionEnd
 
 ; Helper for updating the shortcut application model IDs.
 Function FixShortcutAppModelIDs
-  ${If} ${AtLeastWin7}
-  ${AndIf} "$AppUserModelID" != ""
+  ${If} "$AppUserModelID" != ""
     ${UpdateShortcutAppModelIDs} "$INSTDIR\${FileMainEXE}" "$AppUserModelID" $0
   ${EndIf}
 FunctionEnd

@@ -19,13 +19,9 @@ CRCCheck on
 
 RequestExecutionLevel user
 
-; The commands inside this ifdef require NSIS 3.0a2 or greater so the ifdef can
-; be removed after we require NSIS 3.0a2 or greater.
-!ifdef NSIS_PACKEDVERSION
-  Unicode true
-  ManifestSupportedOS all
-  ManifestDPIAware true
-!endif
+Unicode true
+ManifestSupportedOS all
+ManifestDPIAware true
 
 !addplugindir ./
 
@@ -76,7 +72,6 @@ VIAddVersionKey "OriginalFilename" "helper.exe"
 !insertmacro IsHandlerForInstallDir
 !insertmacro IsPinnedToTaskBar
 !insertmacro LogDesktopShortcut
-!insertmacro LogQuickLaunchShortcut
 !insertmacro LogStartMenuShortcut
 !insertmacro PinnedToStartMenuLnkCount
 !insertmacro RegCleanAppHandler
@@ -200,8 +195,7 @@ Section "Uninstall"
   ${un.DeleteShortcuts}
 
   ; Unregister resources associated with Win7 taskbar jump lists.
-  ${If} ${AtLeastWin7}
-  ${AndIf} "$AppUserModelID" != ""
+  ${If} "$AppUserModelID" != ""
     ApplicationID::UninstallJumpLists "$AppUserModelID"
   ${EndIf}
 
@@ -535,14 +529,6 @@ Function un.onInit
   StrCpy $LANGUAGE 0
 
   ${un.UninstallUnOnInitCommon}
-
-; The commands inside this ifndef are needed prior to NSIS 3.0a2 and can be
-; removed after we require NSIS 3.0a2 or greater.
-!ifndef NSIS_PACKEDVERSION
-  ${If} ${AtLeastWinVista}
-    System::Call 'user32::SetProcessDPIAware()'
-  ${EndIf}
-!endif
 
   !insertmacro InitInstallOptionsFile "unconfirm.ini"
 FunctionEnd

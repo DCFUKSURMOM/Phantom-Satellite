@@ -124,7 +124,9 @@
 #endif
 #if defined(MOZ_GTK3) && defined(MOZ_ENABLE_NPAPI)
 @BINPATH@/@DLL_PREFIX@mozgtk@DLL_SUFFIX@
+#ifdef MOZ_ENABLE_NPAPI_GTK2
 @BINPATH@/gtk2/@DLL_PREFIX@mozgtk@DLL_SUFFIX@
+#endif
 #endif
 #if defined(XP_WIN) && defined(MOZ_MIMALLOC)
 @BINPATH@/mimalloc*@DLL_SUFFIX@
@@ -213,6 +215,9 @@
 @RESPATH@/browser/extensions/{972ce4c6-7e08-4474-a285-3208198ce6fd}/chrome.manifest
 @RESPATH@/browser/extensions/{972ce4c6-7e08-4474-a285-3208198ce6fd}/icon.png
 @RESPATH@/browser/extensions/{972ce4c6-7e08-4474-a285-3208198ce6fd}/install.rdf
+@RESPATH@/browser/chrome/internaluserscripts.manifest
+@RESPATH@/browser/chrome/internaluserscripts/*
+@RESPATH@/browser/internal-userscripts/*
 @RESPATH@/chrome/toolkit@JAREXT@
 @RESPATH@/chrome/toolkit.manifest
 #ifdef DEBUG

@@ -21,20 +21,15 @@ CRCCheck on
 
 RequestExecutionLevel user
 
-; The commands inside this ifdef require NSIS 3.0a2 or greater so the ifdef can
-; be removed after we require NSIS 3.0a2 or greater.
-!ifdef NSIS_PACKEDVERSION
-  Unicode true
-  ManifestSupportedOS all
-  ManifestDPIAware true
-!endif
+Unicode true
+ManifestSupportedOS all
+ManifestDPIAware true
 
 !addplugindir ./
 
 Var TmpVal
 Var InstallType
 Var AddStartMenuSC
-Var AddQuickLaunchSC
 Var AddDesktopSC
 Var PageName
 Var PreventRebootRequired
@@ -91,7 +86,6 @@ VIAddVersionKey "OriginalFilename" "setup.exe"
 !insertmacro IsHandlerForInstallDir
 !insertmacro IsPinnedToTaskBar
 !insertmacro LogDesktopShortcut
-!insertmacro LogQuickLaunchShortcut
 !insertmacro LogStartMenuShortcut
 !insertmacro ManualCloseAppPrompt
 !insertmacro PinnedToStartMenuLnkCount
@@ -314,16 +308,6 @@ Section "-Application" APP_IDX
     StrCpy $AddStartMenuSC "1"
   ${EndIf}
 
-  ; Default for creating Quick Launch shortcut (1 = create, 0 = don't create)
-  ${If} $AddQuickLaunchSC == ""
-    ; Don't install the quick launch shortcut on Windows 7
-    ${If} ${AtLeastWin7}
-      StrCpy $AddQuickLaunchSC "0"
-    ${Else}
-      StrCpy $AddQuickLaunchSC "1"
-    ${EndIf}
-  ${EndIf}
-
   ; Default for creating Desktop shortcut (1 = create, 0 = don't create)
   ${If} $AddDesktopSC == ""
     StrCpy $AddDesktopSC "1"
@@ -449,7 +433,6 @@ Section "-Application" APP_IDX
   ; DeleteShortcuts macro will do the right thing on uninstall if the
   ; shortcuts don't exist.
   ${LogStartMenuShortcut} "${BrandFullName}.lnk"
-  ${LogQuickLaunchShortcut} "${BrandFullName}.lnk"
   ${LogDesktopShortcut} "${BrandFullName}.lnk"
 
   ; Best effort to update the Win7 taskbar and start menu shortcut app model
@@ -484,8 +467,7 @@ Section "-Application" APP_IDX
     ${If} ${FileExists} "$SMPROGRAMS\${BrandFullName}.lnk"
       ShellLink::SetShortCutWorkingDirectory "$SMPROGRAMS\${BrandFullName}.lnk" \
                                            "$INSTDIR"
-      ${If} ${AtLeastWin7}
-      ${AndIf} "$AppUserModelID" != ""
+      ${If} "$AppUserModelID" != ""
         ApplicationID::Set "$SMPROGRAMS\${BrandFullName}.lnk" "$AppUserModelID" "true"
       ${EndIf}
       ${LogMsg} "Added Shortcut: $SMPROGRAMS\${BrandFullName}.lnk"
@@ -506,35 +488,13 @@ Section "-Application" APP_IDX
     ${If} ${FileExists} "$DESKTOP\${BrandFullName}.lnk"
       ShellLink::SetShortCutWorkingDirectory "$DESKTOP\${BrandFullName}.lnk" \
                                              "$INSTDIR"
-      ${If} ${AtLeastWin7}
-      ${AndIf} "$AppUserModelID" != ""
+      ${If} "$AppUserModelID" != ""
         ApplicationID::Set "$DESKTOP\${BrandFullName}.lnk" "$AppUserModelID"  "true"
       ${EndIf}
       ${LogMsg} "Added Shortcut: $DESKTOP\${BrandFullName}.lnk"
     ${Else}
       ${LogMsg} "** ERROR Adding Shortcut: $DESKTOP\${BrandFullName}.lnk"
     ${EndIf}
-  ${EndIf}
-
-  ; If elevated the Quick Launch shortcut must be added from the unelevated
-  ; original process.
-  ${If} $AddQuickLaunchSC == 1
-    ${Unless} ${AtLeastWin7}
-      ClearErrors
-      ${GetParameters} $0
-      ${GetOptions} "$0" "/UAC:" $0
-      ${If} ${Errors}
-        Call AddQuickLaunchShortcut
-        ${LogMsg} "Added Shortcut: $QUICKLAUNCH\${BrandFullName}.lnk"
-      ${Else}
-        ; It is not possible to add a log entry from the unelevated process so
-        ; add the log entry without the path since there is no simple way to
-        ; know the correct full path.
-        ${LogMsg} "Added Quick Launch Shortcut: ${BrandFullName}.lnk"
-        GetFunctionAddress $0 AddQuickLaunchShortcut
-        UAC::ExecCodeSegment $0
-      ${EndIf}
-    ${EndUnless}
   ${EndIf}
 SectionEnd
 
@@ -553,15 +513,13 @@ Section "-InstallEndCleanup"
       ; value was before we changed it. To do so, we read it here and store it
       ; in our own registry key.
       StrCpy $0 ""
-      ${If} ${AtLeastWinVista}
-        AppAssocReg::QueryCurrentDefault "http" "protocol" "effective"
-        Pop $1
-        ; If the method hasn't failed, $1 will contain the progid. Check:
-        ${If} "$1" != "method failed"
-        ${AndIf} "$1" != "method not available"
-          ; Read the actual command from the progid
-          ReadRegStr $0 HKCR "$1\shell\open\command" ""
-        ${EndIf}
+      AppAssocReg::QueryCurrentDefault "http" "protocol" "effective"
+      Pop $1
+      ; If the method hasn't failed, $1 will contain the progid. Check:
+      ${If} "$1" != "method failed"
+      ${AndIf} "$1" != "method not available"
+        ; Read the actual command from the progid
+        ReadRegStr $0 HKCR "$1\shell\open\command" ""
       ${EndIf}
       ; If using the App Association Registry didn't happen or failed, fall back
       ; to the effective http default:
@@ -714,14 +672,6 @@ FunctionEnd
 
 ################################################################################
 # Helper Functions
-
-Function AddQuickLaunchShortcut
-  CreateShortCut "$QUICKLAUNCH\${BrandFullName}.lnk" "$INSTDIR\${FileMainEXE}"
-  ${If} ${FileExists} "$QUICKLAUNCH\${BrandFullName}.lnk"
-    ShellLink::SetShortCutWorkingDirectory "$QUICKLAUNCH\${BrandFullName}.lnk" \
-                                           "$INSTDIR"
-  ${EndIf}
-FunctionEnd
 
 Function CheckExistingInstall
   ; If there is a pending file copy from a previous upgrade don't allow
@@ -896,11 +846,6 @@ Function leaveShortcuts
   ${MUI_INSTALLOPTIONS_READ} $AddDesktopSC "shortcuts.ini" "Field 2" "State"
   ${MUI_INSTALLOPTIONS_READ} $AddStartMenuSC "shortcuts.ini" "Field 3" "State"
 
-  ; Don't install the quick launch shortcut on Windows 7
-  ${Unless} ${AtLeastWin7}
-    ${MUI_INSTALLOPTIONS_READ} $AddQuickLaunchSC "shortcuts.ini" "Field 4" "State"
-  ${EndUnless}
-
   ${If} $InstallType == ${INSTALLTYPE_CUSTOM}
     Call CheckExistingInstall
   ${EndIf}
@@ -1048,6 +993,7 @@ Function .onInit
   System::Call "kernel32::IsProcessorFeaturePresent(i 10)i .R7"
 
   ; Windows NT 6.0 and lower are not supported on any architecture.
+  ; Warn users if they try to install.
   ${Unless} ${AtLeastWin7}
     ${If} "$R7" == "0"
       strCpy $R7 "$(WARN_MIN_SUPPORTED_OSVER_CPU_MSG)"
@@ -1118,12 +1064,6 @@ Function .onInit
 
   ${InstallOnInitCommon} "$(WARN_MIN_SUPPORTED_OSVER_CPU_MSG)"
 
-; The commands inside this ifndef are needed prior to NSIS 3.0a2 and can be
-; removed after we require NSIS 3.0a2 or greater.
-!ifndef NSIS_PACKEDVERSION
-  System::Call 'user32::SetProcessDPIAware()'
-!endif
-
   !insertmacro InitInstallOptionsFile "options.ini"
   !insertmacro InitInstallOptionsFile "shortcuts.ini"
   !insertmacro InitInstallOptionsFile "summary.ini"
@@ -1169,12 +1109,7 @@ Function .onInit
   WriteINIStr "$PLUGINSDIR\options.ini" "Field 5" Bottom "87"
 
   ; Setup the shortcuts.ini file for the Custom Shortcuts Page
-  ; Don't offer to install the quick launch shortcut on Windows 7
-  ${If} ${AtLeastWin7}
-    WriteINIStr "$PLUGINSDIR\shortcuts.ini" "Settings" NumFields "3"
-  ${Else}
-    WriteINIStr "$PLUGINSDIR\shortcuts.ini" "Settings" NumFields "4"
-  ${EndIf}
+  WriteINIStr "$PLUGINSDIR\shortcuts.ini" "Settings" NumFields "3"
 
   WriteINIStr "$PLUGINSDIR\shortcuts.ini" "Field 1" Type   "label"
   WriteINIStr "$PLUGINSDIR\shortcuts.ini" "Field 1" Text   "$(CREATE_ICONS_DESC)"
